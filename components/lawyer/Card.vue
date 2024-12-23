@@ -20,6 +20,11 @@ const handleOpenMessage = () => {
   showMessageModal.value = true
   trackMessageEvent(props.lawyer, 'opened')
 }
+
+const handleCallClick = (lawyer: Lawyer) => {
+  showCallModal.value = true
+  trackCallEvent(lawyer, false)
+}
 </script>
 
 <template>
@@ -69,10 +74,7 @@ const handleOpenMessage = () => {
         <!-- Call button -->
         <button
           class="w-full bg-primary-600 text-white px-6 py-3 rounded-md hover:bg-primary-700 transition-colors"
-          @click="
-            showCallModal = true
-            trackCallEvent(lawyer, false)
-          "
+          @click="handleCallClick(lawyer)"
         >
           <span class="flex items-center justify-center gap-2">
             <Phone class="w-4 h-4" />

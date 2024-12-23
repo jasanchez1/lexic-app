@@ -35,7 +35,9 @@ const handleSort = (sortBy: string) => {
 
     <div class="max-w-7xl mx-auto px-4 py-6">
       <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-bold">{{ lawyers.length }} Abogados...</h2>
+        <h2 class="text-xl font-bold">
+          {{ lawyers.length }} {{ lawyers.length == 1 ? 'Abogado' : 'Abogados' }}
+        </h2>
         <SortSelect @sort="handleSort" />
       </div>
 
