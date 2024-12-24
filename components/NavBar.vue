@@ -114,7 +114,7 @@ onClickOutside(dropdownRef, () => {
 })
 
 const currentArea = computed(() => {
-  const areaId = route.params.area
+  const areaId = route.query.area
   return areas.find(area => area.id === areaId)
 })
 </script>
