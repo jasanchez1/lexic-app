@@ -13,7 +13,8 @@ const lawyers = ref<Lawyer[]>([
     bio: 'Gabrielito, socio principal de Libbey Law Offices, enfoca su práctica en las áreas de derecho civil.',
     imageURL:
       'https://www.cidob.org/sites/default/files/styles/max_width_290/public/gabriel_boric_font.jpg.webp',
-    phone: '+34673287793'
+    phone: '+34673287793',
+    city: 'Santiago'
   }
 ])
 const cities = ref<string[]>(['Santiago'])
@@ -31,14 +32,14 @@ const handleSort = (sortBy: string) => {
 
 <template>
   <div class="min-h-screen bg-white">
-    <CityFilter :cities="cities" @select="handleCitySelect" />
+    <CommonCityFilter :cities="cities" @select="handleCitySelect" />
 
     <div class="max-w-7xl mx-auto px-4 py-6">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-xl font-bold">
           {{ lawyers.length }} {{ lawyers.length == 1 ? 'Abogado' : 'Abogados' }}
         </h2>
-        <SortSelect @sort="handleSort" />
+        <CommonSortSelect @sort="handleSort" />
       </div>
 
       <LawyerCard v-for="lawyer in lawyers" :key="lawyer.id" :lawyer="lawyer" />

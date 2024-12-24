@@ -9,4 +9,5 @@ export interface Lawyer {
   bio: string
   imageURL: string
   phone: string
+  city: string
 }
