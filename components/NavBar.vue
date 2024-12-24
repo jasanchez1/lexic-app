@@ -1,4 +1,24 @@
-<!-- components/NavBar.vue -->
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import { ChevronDown } from 'lucide-vue-next'
+import { onClickOutside } from '@vueuse/core'
+import { useLawyerAreas } from '~/composables/useLawyerAreas'
+
+const route = useRoute()
+const { areas, groupedAreas, categories } = useLawyerAreas()
+const isAreasMenuOpen = ref(false)
+const dropdownRef = ref<globalThis.HTMLElement | null>(null)
+
+onClickOutside(dropdownRef, () => {
+  isAreasMenuOpen.value = false
+})
+
+const currentArea = computed(() => {
+  const areaId = route.query.area
+  return areas.find(area => area.id === areaId)
+})
+</script>
+
 <template>
   <header>
     <!-- Top Navigation -->
@@ -85,36 +105,26 @@
     <div v-if="route.path.includes('/lawyers')" class="bg-primary-800 text-white">
       <div class="max-w-7xl mx-auto px-4">
         <div class="flex items-center h-14">
-          <NuxtLink to="/lawyers" class="text-primary-100 hover:text-white text-sm">
-            Buscar Abogado
-          </NuxtLink>
-          <template v-if="currentArea">
+          <template v-if="route.params.id">
+            <!-- Lawyer Profile Page -->
+            <NuxtLink to="/lawyers" class="text-primary-100 hover:text-white text-sm">
+              Abogados
+            </NuxtLink>
             <span class="mx-2 text-primary-300">›</span>
-            <span class="text-white text-sm">{{ currentArea.name }}</span>
+            <span class="text-white text-sm">{{ profile?.mainArea || 'Perfil de Abogado' }}</span>
+          </template>
+          <template v-else>
+            <!-- Lawyer List Page -->
+            <NuxtLink to="/lawyers" class="text-primary-100 hover:text-white text-sm">
+              Abogados
+            </NuxtLink>
+            <template v-if="currentArea">
+              <span class="mx-2 text-primary-300">›</span>
+              <span class="text-white text-sm">{{ currentArea.name }}</span>
+            </template>
           </template>
         </div>
       </div>
     </div>
   </header>
 </template>
-
-<script setup lang="ts">
-import { ref, computed } from 'vue'
-import { ChevronDown } from 'lucide-vue-next'
-import { onClickOutside } from '@vueuse/core'
-import { useLawyerAreas } from '~/composables/useLawyerAreas'
-
-const route = useRoute()
-const { areas, groupedAreas, categories } = useLawyerAreas()
-const isAreasMenuOpen = ref(false)
-const dropdownRef = ref<globalThis.HTMLElement | null>(null)
-
-onClickOutside(dropdownRef, () => {
-  isAreasMenuOpen.value = false
-})
-
-const currentArea = computed(() => {
-  const areaId = route.query.area
-  return areas.find(area => area.id === areaId)
-})
-</script>
