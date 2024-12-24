@@ -35,7 +35,7 @@
                         <NuxtLink
                           v-for="area in areas.slice(0, 3)"
                           :key="area.id"
-                          :to="`/lawyers/area/${area.slug}`"
+                          :to="`/lawyers?area=${area.slug}`"
                           class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
                           @click="isAreasMenuOpen = false"
                         >

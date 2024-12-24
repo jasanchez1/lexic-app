@@ -12,7 +12,7 @@
           <NuxtLink
             v-for="area in areas"
             :key="area.id"
-            :to="`/lawyers/area/${area.slug}`"
+            :to="`/lawyers?area=${area.slug}`"
             class="p-4 rounded-lg border hover:border-primary-500 hover:bg-primary-50 transition-colors"
           >
             <h3 class="font-medium text-gray-900">{{ area.name }}</h3>

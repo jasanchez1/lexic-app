@@ -1,48 +1,50 @@
 <script setup lang="ts">
-import type { Lawyer } from '~/types/lawyer'
+import { watchEffect } from 'vue'
+import { useLawyerSearch } from '~/composables/useLawyerSearch'
 
-const lawyers = ref<Lawyer[]>([
-  {
-    id: '1',
-    name: 'Garbielito Boric',
-    title: 'Abogado Civil Chile',
-    reviewScore: 5.0,
-    reviewCount: 1,
-    professionalStartDate: new Date('2022-09-28T14:30:00Z'),
-    areas: ['Civil', 'Derecho Personal', 'Accidentes'],
-    bio: 'Gabrielito, socio principal de Libbey Law Offices, enfoca su práctica en las áreas de derecho civil.',
-    imageURL:
-      'https://www.cidob.org/sites/default/files/styles/max_width_290/public/gabriel_boric_font.jpg.webp',
-    phone: '+34673287793',
-    city: 'Santiago'
+const route = useRoute()
+const { lawyers, isLoading, error, searchLawyers } = useLawyerSearch()
+
+// Watch for URL changes to update search
+watchEffect(() => {
+  const params = {
+    area: route.query.area as string,
+    city: route.query.city as string,
+    query: route.query.q as string,
+    sort: route.query.sort as string
   }
-])
-const cities = ref<string[]>(['Santiago'])
 
-const handleCitySelect = (city: string) => {
-  city
-  // Handle city filtering
-}
-
-const handleSort = (sortBy: string) => {
-  sortBy
-  // Handle sorting
-}
+  searchLawyers(params)
+})
 </script>
 
 <template>
   <div class="min-h-screen bg-white">
-    <CommonCityFilter :cities="cities" @select="handleCitySelect" />
+    <CityFilter :cities="cities" />
 
     <div class="max-w-7xl mx-auto px-4 py-6">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-xl font-bold">
-          {{ lawyers.length }} {{ lawyers.length == 1 ? 'Abogado' : 'Abogados' }}
+          <template v-if="isLoading">Buscando abogados...</template>
+          <template v-else>
+            {{ lawyers.length }} {{ lawyers.length === 1 ? 'Abogado' : 'Abogados' }}
+            {{ route.query.area ? `en ${route.query.area}` : '' }}
+          </template>
         </h2>
-        <CommonSortSelect @sort="handleSort" />
+        <SortSelect />
       </div>
 
-      <LawyerCard v-for="lawyer in lawyers" :key="lawyer.id" :lawyer="lawyer" />
+      <div v-if="error" class="text-red-600 mb-4">
+        {{ error }}
+      </div>
+
+      <div v-if="isLoading" class="py-12 text-center">
+        <span class="text-gray-500">Cargando...</span>
+      </div>
+
+      <div v-else>
+        <LawyerCard v-for="lawyer in lawyers" :key="lawyer.id" :lawyer="lawyer" />
+      </div>
     </div>
   </div>
 </template>
