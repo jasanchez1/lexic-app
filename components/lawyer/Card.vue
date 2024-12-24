@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { Phone } from 'lucide-vue-next'
 import { useAnalytics } from '~/composables/useAnalytics'
 import { calculateYearsOfExperience } from '~/utils/date'
-import type { Lawyer } from '~/types/lawyer'
+import type { Lawyer, PracticeArea } from '~/types/lawyer'
 import LawyerCallModal from './CallModal.vue'
 import LawyerContactModal from './ContactModal.vue'
 
@@ -45,13 +45,12 @@ const handleCallClick = (lawyer: Lawyer) => {
               {{ lawyer.name }}
             </h3>
           </NuxtLink>
-          <div class="flex items-center mt-2">
-            <span class="text-lg font-bold">{{ lawyer.reviewScore }}</span>
-            <div class="flex text-secondary-400 ml-2">
-              {{ '★'.repeat(5) }}
-            </div>
-            <span class="ml-2 text-sm text-gray-600">{{ lawyer.reviewCount }} reseñas</span>
-          </div>
+          <CommonStarRating
+            :score="lawyer.reviewScore"
+            :review-count="lawyer.reviewCount"
+            :show-score="true"
+            :use-icons="true"
+          />
           <div class="text-sm text-gray-600">{{ lawyer.title }}</div>
           <div class="mt-4">
             <div class="text-sm">
@@ -60,7 +59,8 @@ const handleCallClick = (lawyer: Lawyer) => {
               </span>
             </div>
             <div class="text-sm mt-1">
-              <span class="font-medium">Áreas:</span> {{ lawyer.areas.join(', ') }}
+              <span class="font-medium">Áreas:</span>
+              {{ lawyer.areas.map((x: PracticeArea) => x.name).join(', ') }}
             </div>
             <p class="mt-2 text-sm text-gray-600 line-clamp-2">
               {{ lawyer.bio }}

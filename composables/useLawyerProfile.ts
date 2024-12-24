@@ -1,28 +1,8 @@
 import { ref } from 'vue'
-
-export interface LawyerProfile {
-  id: string
-  name: string
-  imageURL: string
-  alias?: string
-  rating: number
-  reviewCount: number
-  qualification: number
-  licensedYears: number
-  address: string
-  bio: string
-  mainArea: string // Added this for the secondary nav
-  practiceAreas: {
-    name: string
-    percentage: number
-  }[]
-    phone: string
-    email: string
-
-}
+import type { Lawyer } from '~/types/lawyer'
 
 export const useLawyerProfile = () => {
-  const profile = ref<LawyerProfile | null>(null)
+  const profile = ref<Lawyer | null>(null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
@@ -36,25 +16,27 @@ export const useLawyerProfile = () => {
 
       // Mock API response
       profile.value = {
-        id,
-        name: 'Gabrielito Boric',
+        id: '1',
+        name: 'Garbielito Boric',
+        title: 'Abogado Civil Chile',
+        reviewScore: 5.0,
+        reviewCount: 1,
+        professionalStartDate: new Date('2022-09-28T14:30:00Z'),
+        areas: [
+          { name: 'Civil', id: 'civil', experienceScore: 60, slug: 'civil' },
+          {
+            name: 'Derecho Personal',
+            id: 'derecho-personal',
+            experienceScore: 40,
+            slug: 'derecho-personal'
+          },
+          { name: 'Accidentes', id: 'accidentes', experienceScore: 30, slug: 'accidentes' }
+        ],
+        bio: 'Gabrielito, socio principal de Libbey Law Offices, enfoca su práctica en las áreas de derecho civil.',
         imageURL:
           'https://www.cidob.org/sites/default/files/styles/max_width_290/public/gabriel_boric_font.jpg.webp',
-        alias: 'Alexander I. Passo',
-        rating: 4.3,
-        reviewCount: 6,
-        qualification: 10.0,
-        licensedYears: 10,
-        address: '73 Ski Hill Rd., Ogden Dunes, IN, 46368',
-        mainArea: 'Derecho Comercial',
-        bio: 'Gabrielito Boric representa a clientes en una variedad de asuntos...',
-        practiceAreas: [
-          { name: 'Comercial', percentage: 40 },
-          { name: 'Bancario', percentage: 30 },
-          { name: 'Contratos', percentage: 20 },
-          { name: 'Otros', percentage: 10 }
-        ],
-        phone: '+1234567890',
+        phone: '+34673287793',
+        city: 'Santiago',
         email: 'gboric@example.com'
       }
     } catch (e) {

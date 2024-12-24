@@ -24,12 +24,22 @@ export const useLawyerSearch = () => {
           reviewScore: 5.0,
           reviewCount: 1,
           professionalStartDate: new Date('2022-09-28T14:30:00Z'),
-          areas: ['Civil', 'Derecho Personal', 'Accidentes'],
+          areas: [
+            { name: 'Civil', id: 'civil', experienceScore: 60, slug: 'civil' },
+            {
+              name: 'Derecho Personal',
+              id: 'derecho-personal',
+              experienceScore: 40,
+              slug: 'derecho-personal'
+            },
+            { name: 'Accidentes', id: 'accidentes', experienceScore: 30, slug: 'accidentes' }
+          ],
           bio: 'Gabrielito, socio principal de Libbey Law Offices, enfoca su práctica en las áreas de derecho civil.',
           imageURL:
             'https://www.cidob.org/sites/default/files/styles/max_width_290/public/gabriel_boric_font.jpg.webp',
           phone: '+34673287793',
-          city: 'Santiago'
+          city: 'Santiago',
+          email: 'gboric@example.com'
         }
       ]
     } catch (e) {

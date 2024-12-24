@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useLawyerProfile } from '~/composables/useLawyerProfile'
 import { useAnalytics } from '~/composables/useAnalytics'
 import { Phone } from 'lucide-vue-next'
+import { calculateYearsOfExperience } from '~/utils/date'
 import type { Lawyer } from '~/types/lawyer'
 
 const route = useRoute()
@@ -71,29 +72,17 @@ onMounted(() => {
                   también conocido como {{ profile.alias }}
                 </p>
 
-                <div class="mt-2 flex items-center space-x-2">
-                  <span class="text-lg font-semibold">{{ profile.rating }}</span>
-                  <div class="flex text-yellow-400">
-                    <Icon
-                      v-for="i in 5"
-                      :key="i"
-                      name="lucide:star"
-                      :class="i <= profile.rating ? 'fill-current' : 'fill-current text-gray-300'"
-                      class="w-5 h-5"
-                    />
-                  </div>
-                  <span class="text-gray-600">{{ profile.reviewCount }} reseñas</span>
-                  <span class="text-gray-400">|</span>
-                  <span class="flex items-center">
-                    <span class="font-semibold">Calificación:</span>
-                    <span class="ml-1">{{ profile.qualification }}</span>
-                  </span>
-                </div>
+                <CommonStarRating
+                  :score="profile.reviewScore"
+                  :review-count="profile.reviewCount"
+                  :show-score="true"
+                  :use-icons="true"
+                />
 
                 <div class="mt-4 space-y-2">
                   <p class="flex items-center text-gray-600">
-                    <span class="font-medium mr-2">Licenciado por:</span>
-                    {{ profile.licensedYears }} años
+                    <span class="font-medium mr-2">Experienciar:</span>
+                    {{ calculateYearsOfExperience(profile.professionalStartDate) }} años
                   </p>
                   <p class="flex items-center text-gray-600">
                     <Icon name="lucide:map-pin" class="w-4 h-4 mr-2" />
@@ -174,7 +163,7 @@ onMounted(() => {
             <h3 class="text-lg font-semibold mb-4">Áreas de Práctica</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div
-                v-for="area in profile.practiceAreas"
+                v-for="area in profile.areas"
                 :key="area.name"
                 class="flex items-center justify-between"
               >
@@ -182,7 +171,7 @@ onMounted(() => {
                 <div class="w-48 bg-gray-200 rounded-full h-2 ml-4">
                   <div
                     class="bg-primary-500 h-2 rounded-full"
-                    :style="{ width: `${area.percentage}%` }"
+                    :style="{ width: `${area.experienceScore}%` }"
                   ></div>
                 </div>
               </div>
