@@ -14,7 +14,7 @@ const emit = defineEmits<{
 <template>
   <select
     class="border rounded-md px-3 py-2"
-    @change="e => emit('sort', (e.target as HTMLSelectElement).value)"
+    @change="(e: any) => emit('sort', (e.target as HTMLSelectElement).value)"
   >
     <option v-for="option in sortOptions" :key="option.value" :value="option.value">
       {{ option.label }}
