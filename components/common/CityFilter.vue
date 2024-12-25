@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import type { City } from '~/types/city'
 defineProps<{
-  cities: string[]
+  cities: City[]
 }>()
 
 const emit = defineEmits<{
@@ -10,16 +11,16 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="max-w-7xl mx-auto px-4 py-6">
+  <div class="max-w-7xl mx-auto px-4 pt-4">
     <h2 class="text-lg font-medium mb-4">Filtrar por Ciudad</h2>
     <div class="flex flex-wrap gap-2">
       <button
         v-for="city in cities"
-        :key="city"
+        :key="city.id"
         class="px-4 py-2 bg-primary-50 text-primary-700 rounded-full text-sm hover:bg-primary-100"
-        @click="emit('select', city)"
+        @click="emit('select', city.id)"
       >
-        {{ city }}
+        {{ city.name }}
       </button>
     </div>
   </div>

@@ -1,28 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useLawyerProfile } from '~/composables/useLawyerProfile'
-import { useAnalytics } from '~/composables/useAnalytics'
-import { Phone } from 'lucide-vue-next'
-import { calculateYearsOfExperience } from '~/utils/date'
-import type { Lawyer } from '~/types/lawyer'
 
 const route = useRoute()
 const lawyerId = route.params.id as string
 const { profile, isLoading, error, fetchProfile } = useLawyerProfile()
-const showCallModal = ref(false)
-const showMessageModal = ref(false)
-
-const handleOpenMessage = (lawyer: Lawyer) => {
-  showMessageModal.value = true
-  trackMessageEvent(lawyer, 'opened')
-}
-
-const { trackCallEvent, trackMessageEvent } = useAnalytics()
-
-const handleCallClick = (lawyer: Lawyer) => {
-  showCallModal.value = true
-  trackCallEvent(lawyer, false)
-}
 
 const tabs = [
   { id: 'overview', name: 'Resumen' },
@@ -51,86 +33,7 @@ onMounted(() => {
   <div v-else-if="profile" class="min-h-screen bg-gray-50">
     <!-- Profile Content -->
     <div class="mt-8 max-w-7xl mx-auto px-4 pb-12">
-      <!-- Profile Header Card -->
-      <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <div class="flex flex-col md:flex-row gap-6">
-          <!-- Profile Image -->
-          <div class="w-32 h-32 flex-shrink-0">
-            <img
-              :src="profile.imageURL"
-              :alt="`Foto de ${profile.name}`"
-              class="w-full h-full object-cover rounded-lg"
-            />
-          </div>
-
-          <!-- Profile Info -->
-          <div class="flex-1">
-            <div class="flex justify-between items-start">
-              <div>
-                <h1 class="text-2xl font-bold text-gray-900">{{ profile.name }}</h1>
-                <p v-if="profile.alias" class="text-gray-600">
-                  también conocido como {{ profile.alias }}
-                </p>
-
-                <CommonStarRating
-                  :score="profile.reviewScore"
-                  :review-count="profile.reviewCount"
-                  :show-score="true"
-                  :use-icons="true"
-                />
-
-                <div class="mt-4 space-y-2">
-                  <p class="flex items-center text-gray-600">
-                    <span class="font-medium mr-2">Experienciar:</span>
-                    {{ calculateYearsOfExperience(profile.professionalStartDate) }} años
-                  </p>
-                  <p class="flex items-center text-gray-600">
-                    <Icon name="lucide:map-pin" class="w-4 h-4 mr-2" />
-                    {{ profile.address }}
-                  </p>
-                </div>
-              </div>
-
-              <!-- Action Buttons -->
-              <div class="flex flex-col gap-4">
-                <!-- Call button -->
-
-                <button
-                  class="w-full bg-primary-600 text-white px-6 py-3 rounded-md hover:bg-primary-700 transition-colors"
-                  @click="handleCallClick(lawyer)"
-                >
-                  <span class="flex items-center justify-center gap-2">
-                    <Phone class="w-4 h-4" />
-                    Llamar ahora
-                  </span>
-                </button>
-                <!-- Secondary actions -->
-                <button
-                  class="flex items-center justify-center px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
-                  @click="handleOpenMessage(profile)"
-                >
-                  Mensaje
-                </button>
-
-                <!-- Call Modal -->
-                <LawyerCallModal
-                  :lawyer="profile"
-                  :show="showCallModal"
-                  @close="showCallModal = false"
-                />
-
-                <!-- Message Modal -->
-                <LawyerContactModal
-                  :lawyer="profile"
-                  :show="showMessageModal"
-                  @close="showMessageModal = false"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
+      <LawyerCard :lawyer="profile" :view-profile="false" />
       <!-- Tabs Navigation -->
       <div class="border-b border-gray-200 mb-6">
         <nav class="flex space-x-8">
@@ -197,20 +100,12 @@ onMounted(() => {
           <div class="bg-blue-50 p-4 rounded-lg mb-6">
             <div class="flex items-center justify-between">
               <span class="font-semibold">Calificación:</span>
-              <span>{{ profile.qualification }} (Excelente)</span>
+              <span>{{ profile.reviewScore }} (Excelente)</span>
             </div>
           </div>
           <div class="text-gray-500 text-center py-8">Información de experiencia próximamente</div>
         </div>
       </div>
     </div>
-
-    <!-- Message Modal -->
-    <LawyerContactModal
-      v-if="profile"
-      :show="showMessageModal"
-      :lawyer="profile"
-      @close="showMessageModal = false"
-    />
   </div>
 </template>

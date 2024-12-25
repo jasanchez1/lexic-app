@@ -1,4 +1,20 @@
-<!-- pages/index.vue -->
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useLawyerAreas } from '~/composables/useLawyerAreas'
+
+const router = useRouter()
+const { areas } = useLawyerAreas()
+const searchQuery = ref('')
+
+const popularAreas = areas.slice(0, 8) // Just show first 8 areas
+
+const handleSearch = () => {
+  if (!searchQuery.value.trim()) return
+
+  router.push(`/lawyers?q=${encodeURIComponent(searchQuery.value)}`)
+}
+</script>
+
 <template>
   <div>
     <!-- Hero Section -->
@@ -12,7 +28,8 @@
               <span class="text-accent-400">para tu caso</span>
             </h1>
             <p class="text-xl text-primary-100">
-              Búsqueda personalizada, reseñas verificadas y contacto directo con abogados especializados.
+              Búsqueda personalizada, reseñas verificadas y contacto directo con abogados
+              especializados.
             </p>
 
             <!-- Search Box -->
@@ -24,7 +41,7 @@
                   placeholder="Busca por área legal o nombre del abogado"
                   class="w-full rounded-md border-gray-300 text-gray-900"
                 />
-                <button 
+                <button
                   class="w-full bg-accent-600 text-white px-6 py-3 rounded-md hover:bg-accent-700 transition-colors font-medium"
                   @click="handleSearch"
                 >
@@ -37,11 +54,10 @@
           <!-- Right side - Question CTA -->
           <div class="flex-1 max-w-md">
             <div class="bg-white/10 backdrop-blur-sm rounded-lg p-8 border border-white/20">
-              <h3 class="text-2xl font-bold mb-4">
-                ¿Tienes una duda legal?
-              </h3>
+              <h3 class="text-2xl font-bold mb-4">¿Tienes una duda legal?</h3>
               <p class="text-primary-100 mb-6">
-                Obtén respuestas gratuitas de abogados expertos. Pregunta de forma anónima y recibe orientación legal sin compromiso.
+                Obtén respuestas gratuitas de abogados expertos. Pregunta de forma anónima y recibe
+                orientación legal sin compromiso.
               </p>
               <NuxtLink
                 to="/questions/ask"
@@ -94,20 +110,3 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref } from 'vue'
-import { useLawyerAreas } from '~/composables/useLawyerAreas'
-
-const router = useRouter()
-const { areas } = useLawyerAreas()
-const searchQuery = ref('')
-
-const popularAreas = areas.slice(0, 8) // Just show first 8 areas
-
-const handleSearch = () => {
-  if (!searchQuery.value.trim()) return
-  
-  router.push(`/lawyers?q=${encodeURIComponent(searchQuery.value)}`)
-}
-</script>

@@ -40,6 +40,7 @@ export const useLawyerProfile = () => {
         email: 'gboric@example.com'
       }
     } catch (e) {
+      console.error(e)
       error.value = 'Error al cargar el perfil'
       profile.value = null
     } finally {

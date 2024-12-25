@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { ChevronDown } from 'lucide-vue-next'
 import { onClickOutside } from '@vueuse/core'
 import { useLawyerAreas } from '~/composables/useLawyerAreas'
+import type { Lawyer, PracticeArea } from '~/types/lawyer'
 
 const route = useRoute()
 const { areas, groupedAreas, categories } = useLawyerAreas()
@@ -17,6 +18,12 @@ const currentArea = computed(() => {
   const areaId = route.query.area
   return areas.find(area => area.id === areaId)
 })
+
+const props = defineProps<{
+  profile?: Lawyer
+}>()
+
+const bestArea = props.profile?.areas.find((x: PracticeArea) => Math.max(x.experienceScore))?.name
 </script>
 
 <template>
@@ -110,8 +117,12 @@ const currentArea = computed(() => {
             <NuxtLink to="/lawyers" class="text-primary-100 hover:text-white text-sm">
               Abogados
             </NuxtLink>
+            <div v-if="bestArea">
+              <span class="mx-2 text-primary-300">›</span>
+              <span class="text-white text-sm">{{ bestArea }}</span>
+            </div>
             <span class="mx-2 text-primary-300">›</span>
-            <span class="text-white text-sm">{{ profile?.mainArea || 'Perfil de Abogado' }}</span>
+            <span class="text-white text-sm">Perfil de Abogado</span>
           </template>
           <template v-else>
             <!-- Lawyer List Page -->

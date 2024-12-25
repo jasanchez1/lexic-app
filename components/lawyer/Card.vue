@@ -7,9 +7,15 @@ import type { Lawyer, PracticeArea } from '~/types/lawyer'
 import LawyerCallModal from './CallModal.vue'
 import LawyerContactModal from './ContactModal.vue'
 
-const props = defineProps<{
-  lawyer: Lawyer
-}>()
+const props = withDefaults(
+  defineProps<{
+    lawyer: Lawyer
+    viewProfile?: boolean
+  }>(),
+  {
+    viewProfile: true
+  }
+)
 
 const { trackProfileView, trackCallEvent, trackMessageEvent } = useAnalytics()
 
@@ -83,7 +89,7 @@ const handleCallClick = (lawyer: Lawyer) => {
         </button>
 
         <!-- Action buttons -->
-        <div class="grid grid-cols-2 gap-2">
+        <div v-if="viewProfile" class="grid grid-cols-2 gap-2">
           <NuxtLink
             :to="`/lawyers/${lawyer.id}`"
             class="flex items-center justify-center px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
@@ -91,6 +97,14 @@ const handleCallClick = (lawyer: Lawyer) => {
           >
             Ver Perfil
           </NuxtLink>
+          <button
+            class="flex items-center justify-center px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+            @click="handleOpenMessage"
+          >
+            Mensaje
+          </button>
+        </div>
+        <div v-else class="grid grid-cols">
           <button
             class="flex items-center justify-center px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
             @click="handleOpenMessage"
