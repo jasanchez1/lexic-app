@@ -4,13 +4,15 @@ import { useLawyerProfile } from '~/composables/useLawyerProfile'
 import { useNavigation } from '~/composables/useNavigation'
 import { useReviews } from '~/composables/useReviews'
 import { useLawyerTabs } from '~/composables/useLawyerTabs'
+import { useLawyerExperience } from '~/composables/useLawyerExperience'
 import { CheckCircle } from 'lucide-vue-next'
+import { formatDate } from '~/utils/date'
 
 const { setCurrentLawyer } = useNavigation()
 const { profile, isLoading, error, fetchProfile } = useLawyerProfile()
 const {
   reviews,
-  stats,
+  stats: reviewStats,
   isLoading: reviewsLoading,
   error: reviewsError,
   fetchReviews
@@ -18,6 +20,23 @@ const {
 const { tabs, activeTab, setActiveTab } = useLawyerTabs()
 const showReviewModal = ref(false)
 const { submitReview } = useReviews()
+
+const {
+  education,
+  workExperience,
+  achievements,
+  stats: experienceStats,
+  isLoading: expLoading,
+  error: expError,
+  fetchExperience
+} = useLawyerExperience()
+
+// Fetch when tab changes to experience
+watch(activeTab, async newTab => {
+  if (newTab === 'experience' && profile.value) {
+    await fetchExperience(profile.value.id)
+  }
+})
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const handleReviewSubmit = async (review: any) => {
@@ -230,7 +249,7 @@ onMounted(async () => {
               <div class="bg-gray-50 rounded-lg p-6">
                 <h3 class="font-semibold text-lg mb-4">Calificación General</h3>
                 <div class="flex items-center mb-6">
-                  <span class="text-3xl font-bold">{{ stats?.average.toFixed(1) }}</span>
+                  <span class="text-3xl font-bold">{{ reviewStats?.average.toFixed(1) }}</span>
                   <span class="text-gray-500 ml-1">/5.0</span>
                 </div>
 
@@ -241,17 +260,17 @@ onMounted(async () => {
                     <div class="flex-1 mx-2 h-2 bg-gray-200 rounded-full overflow-hidden">
                       <div
                         class="h-full bg-yellow-400 rounded-full"
-                        :style="{ width: `${stats?.distribution[n] || 0}%` }"
+                        :style="{ width: `${reviewStats?.distribution[n] || 0}%` }"
                       ></div>
                     </div>
                     <span class="w-12 text-sm text-gray-600 text-right">
-                      {{ stats?.distribution[n] || 0 }}%
+                      {{ reviewStats?.distribution[n] || 0 }}%
                     </span>
                   </div>
                 </div>
 
                 <div class="mt-4 text-sm text-gray-500 text-center">
-                  Basado en {{ stats?.total }} reseñas
+                  Basado en {{ reviewStats?.total }} reseñas
                 </div>
               </div>
             </div>
@@ -304,7 +323,96 @@ onMounted(async () => {
 
         <!-- Experience Tab -->
         <div v-if="activeTab === 'experience'" class="p-6">
-          <!-- Experience content -->
+          <div v-if="expLoading" class="text-center py-12">
+            <span class="text-gray-500">Cargando experiencia...</span>
+          </div>
+
+          <div v-else-if="expError" class="bg-red-50 p-4 rounded-md text-red-700">
+            {{ expError }}
+          </div>
+
+          <div v-else class="space-y-8">
+            <!-- Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div v-if="reviewStats" class="bg-primary-50 p-4 rounded-lg text-center">
+                <div class="text-2xl font-bold text-primary-600">
+                  {{ experienceStats?.casesWon }}
+                </div>
+                <div class="text-sm text-gray-600">Casos Ganados</div>
+                <div class="text-xs text-gray-500">de {{ experienceStats?.totalCases }} casos</div>
+              </div>
+              <div class="bg-primary-50 p-4 rounded-lg text-center">
+                <div class="text-2xl font-bold text-primary-600">
+                  {{ experienceStats?.yearsExperience }}
+                </div>
+                <div class="text-sm text-gray-600">Años de Experiencia</div>
+              </div>
+              <div class="bg-primary-50 p-4 rounded-lg text-center">
+                <div class="text-2xl font-bold text-primary-600">
+                  {{ experienceStats?.specializedAreas }}
+                </div>
+                <div class="text-sm text-gray-600">Áreas de Especialización</div>
+              </div>
+            </div>
+
+            <!-- Education -->
+            <div>
+              <h3 class="text-lg font-semibold mb-4">Educación</h3>
+              <div class="space-y-4">
+                <div
+                  v-for="edu in education"
+                  :key="edu.institution + edu.year"
+                  class="bg-white p-4 rounded-lg border"
+                >
+                  <div class="font-medium">{{ edu.degree }}</div>
+                  <div class="text-gray-600">{{ edu.institution }}</div>
+                  <div class="flex justify-between mt-1">
+                    <span class="text-sm text-gray-500">{{ edu.year }}</span>
+                    <span v-if="edu.honors" class="text-sm text-primary-600">{{ edu.honors }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Work Experience -->
+            <div>
+              <h3 class="text-lg font-semibold mb-4">Experiencia Laboral</h3>
+              <div class="space-y-4">
+                <div
+                  v-for="work in workExperience"
+                  :key="work.company + work.startDate"
+                  class="bg-white p-4 rounded-lg border"
+                >
+                  <div class="font-medium">{{ work.role }}</div>
+                  <div class="text-gray-600">{{ work.company }}</div>
+                  <div class="text-sm text-gray-500 mt-1">
+                    {{ formatDate(work.startDate) }} -
+                    {{ work.endDate ? formatDate(work.endDate) : 'Presente' }}
+                  </div>
+                  <p v-if="work.description" class="mt-2 text-gray-600">{{ work.description }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Achievements -->
+            <div v-if="achievements.length">
+              <h3 class="text-lg font-semibold mb-4">Logros y Reconocimientos</h3>
+              <div class="space-y-4">
+                <div
+                  v-for="achievement in achievements"
+                  :key="achievement.title"
+                  class="bg-white p-4 rounded-lg border"
+                >
+                  <div class="font-medium">{{ achievement.title }}</div>
+                  <div class="text-gray-600">{{ achievement.issuer }}</div>
+                  <div class="text-sm text-gray-500 mt-1">{{ achievement.year }}</div>
+                  <p v-if="achievement.description" class="mt-2 text-gray-600">
+                    {{ achievement.description }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
