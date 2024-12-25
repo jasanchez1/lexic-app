@@ -1,10 +1,26 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { onMounted, onUnmounted, watch } from 'vue'
 import { useLawyerProfile } from '~/composables/useLawyerProfile'
 import { useNavigation } from '~/composables/useNavigation'
+import { useReviews } from '~/composables/useReviews'
+import { useLawyerTabs } from '~/composables/useLawyerTabs'
 
 const { setCurrentLawyer } = useNavigation()
 const { profile, isLoading, error, fetchProfile } = useLawyerProfile()
+const {
+  reviews,
+  stats,
+  isLoading: reviewsLoading,
+  error: reviewsError,
+  fetchReviews
+} = useReviews()
+const { tabs, activeTab, setActiveTab } = useLawyerTabs()
+
+watch(activeTab, async newTab => {
+  if (newTab === 'reviews' && profile.value) {
+    await fetchReviews(profile.value.id)
+  }
+})
 
 watch(
   () => profile.value,
@@ -22,13 +38,6 @@ onUnmounted(() => {
 
 const route = useRoute()
 const lawyerId = route.params.id as string
-
-const tabs = [
-  { id: 'overview', name: 'Resumen' },
-  { id: 'reviews', name: 'Reseñas' },
-  { id: 'experience', name: 'Experiencia' }
-]
-const activeTab = ref('overview')
 
 // Fetch profile on page load
 onMounted(async () => {
@@ -63,7 +72,7 @@ onMounted(async () => {
                 ? 'border-primary-500 text-primary-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             ]"
-            @click="activeTab = tab.id"
+            @click="setActiveTab(tab.id)"
           >
             {{ tab.name }}
           </button>
@@ -175,18 +184,91 @@ onMounted(async () => {
               Escribir Reseña
             </button>
           </div>
-          <div class="text-gray-500 text-center py-8">No hay reseñas disponibles</div>
+
+          <div v-if="reviewsLoading" class="py-12 text-center">
+            <span class="text-gray-500">Cargando reseñas...</span>
+          </div>
+
+          <div v-else-if="reviewsError" class="text-red-600 mb-4">
+            {{ reviewsError }}
+          </div>
+
+          <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Stats Summary -->
+            <div class="lg:col-span-1">
+              <div class="bg-gray-50 rounded-lg p-6">
+                <h3 class="font-semibold text-lg mb-4">Calificación General</h3>
+                <div class="flex items-center mb-6">
+                  <span class="text-3xl font-bold">{{ stats?.average.toFixed(1) }}</span>
+                  <span class="text-gray-500 ml-1">/5.0</span>
+                </div>
+
+                <!-- Rating Distribution -->
+                <div class="space-y-2">
+                  <div v-for="n in 5" :key="n" class="flex items-center">
+                    <span class="w-12 text-sm text-gray-600">{{ n }} star</span>
+                    <div class="flex-1 mx-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        class="h-full bg-yellow-400 rounded-full"
+                        :style="{ width: `${stats?.distribution[n] || 0}%` }"
+                      ></div>
+                    </div>
+                    <span class="w-12 text-sm text-gray-600 text-right">
+                      {{ stats?.distribution[n] || 0 }}%
+                    </span>
+                  </div>
+                </div>
+
+                <div class="mt-4 text-sm text-gray-500 text-center">
+                  Basado en {{ stats?.total }} reseñas
+                </div>
+              </div>
+            </div>
+
+            <!-- Reviews List -->
+            <div class="lg:col-span-2 space-y-6">
+              <div
+                v-for="review in reviews"
+                :key="review.id"
+                class="bg-white p-6 rounded-lg border"
+              >
+                <!-- Review Header -->
+                <div class="flex justify-between items-start mb-3">
+                  <div class="flex items-center space-x-4">
+                    <h4 v-if="review.title" class="font-medium text-gray-900">
+                      {{ review.title }}
+                    </h4>
+                    <CommonStarRating :score="review.rating" class="mb-2" />
+                  </div>
+                  <div class="text-sm text-gray-500">
+                    {{ new Date(review.date).toLocaleDateString() }}
+                  </div>
+                </div>
+
+                <!-- Review Content -->
+                <p class="text-gray-600 mb-4">{{ review.content }}</p>
+
+                <!-- Review Footer -->
+                <div class="flex items-center justify-between text-sm">
+                  <div class="text-gray-500">Por {{ review.author }}</div>
+                  <div v-if="review.isHiredAttorney" class="flex items-center text-green-600">
+                    <Icon name="check-circle" class="w-4 h-4 mr-1" />
+                    Cliente Verificado
+                  </div>
+                </div>
+              </div>
+
+              <!-- Empty State -->
+              <div v-if="reviews.length === 0" class="text-center py-12 bg-gray-50 rounded-lg">
+                <p class="text-gray-500">No hay reseñas disponibles</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Experience Tab -->
         <div v-if="activeTab === 'experience'" class="p-6">
-          <div class="bg-blue-50 p-4 rounded-lg mb-6">
-            <div class="flex items-center justify-between">
-              <span class="font-semibold">Calificación:</span>
-              <span>{{ profile.reviewScore }} (Excelente)</span>
-            </div>
-          </div>
-          <div class="text-gray-500 text-center py-8">Información de experiencia próximamente</div>
+          <!-- Experience content -->
         </div>
       </div>
     </div>
