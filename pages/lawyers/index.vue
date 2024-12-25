@@ -27,7 +27,7 @@ watchEffect(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-white">
+  <div class="min-h-screen bg-gray-50">
     <template v-if="isCitiesLoading">
       <div class="py-12 text-center">
         <span class="text-gray-500">Cargando...</span>

@@ -34,7 +34,7 @@ const handleCallClick = (lawyer: Lawyer) => {
 </script>
 
 <template>
-  <div class="border rounded-lg p-6 mb-4 shadow-sm hover:shadow-md transition-shadow">
+  <div :class="['bg-white rounded-lg shadow-sm p-6 mb-4', props.viewProfile ? 'hover:shadow-md transition-shadow' : '']">
     <div class="flex justify-between">
       <!-- Left side with lawyer info -->
       <div class="flex">
@@ -46,11 +46,14 @@ const handleCallClick = (lawyer: Lawyer) => {
           />
         </div>
         <div class="ml-6">
-          <NuxtLink :to="`/lawyers/${lawyer.id}`" @click="trackProfileView(lawyer, 'name')">
+          <NuxtLink v-if="viewProfile" :to="`/lawyers/${lawyer.id}`" @click="trackProfileView(lawyer, 'name')">
             <h3 class="text-xl font-bold text-gray-900 hover:text-primary-600 transition-colors">
               {{ lawyer.name }}
             </h3>
           </NuxtLink>
+          <h3 v-else class="text-xl font-bold text-gray-900">
+              {{ lawyer.name }}
+            </h3>
           <CommonStarRating
             :score="lawyer.reviewScore"
             :review-count="lawyer.reviewCount"
