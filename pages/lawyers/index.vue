@@ -50,7 +50,7 @@ watchEffect(() => {
             {{ route.query.area ? `en ${route.query.area}` : '' }}
           </template>
         </h2>
-        <SortSelect />
+        <CommonSortSelect />
       </div>
 
       <div v-if="LawyersError" class="text-red-600 mb-4">

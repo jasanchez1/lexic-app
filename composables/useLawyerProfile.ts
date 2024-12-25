@@ -24,7 +24,7 @@ export const useLawyerProfile = () => {
         reviewCount: 1,
         professionalStartDate: new Date('2022-09-28T14:30:00Z'),
         areas: [
-          { name: 'Civil', id: 'civil', experienceScore: 60, slug: 'civil' },
+          { name: 'Derecho Civil', id: 'civil', experienceScore: 60, slug: 'civil' },
           {
             name: 'Derecho Personal',
             id: 'derecho-personal',

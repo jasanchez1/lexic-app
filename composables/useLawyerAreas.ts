@@ -21,6 +21,14 @@ export type LegalCategory =
 
 export const useLawyerAreas = () => {
   const areas: LegalArea[] = [
+    // Civil Law
+    {
+      id: 'civil',
+      name: 'Derecho Civil',
+      slug: 'civil',
+      category: 'civil',
+      description: 'Propiedad, posesión y otros derechos reales'
+    },
     // Family Law
     {
       id: 'pension-alimenticia',

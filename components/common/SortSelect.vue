@@ -13,7 +13,7 @@ const emit = defineEmits<{
 
 <template>
   <select
-    class="border rounded-md px-3 py-2"
+    class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow px-3 py-2"
     @change="(e: any) => emit('sort', (e.target as HTMLSelectElement).value)"
   >
     <option v-for="option in sortOptions" :key="option.value" :value="option.value">

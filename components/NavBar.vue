@@ -3,7 +3,10 @@ import { ref, computed } from 'vue'
 import { ChevronDown } from 'lucide-vue-next'
 import { onClickOutside } from '@vueuse/core'
 import { useLawyerAreas } from '~/composables/useLawyerAreas'
-import type { Lawyer, PracticeArea } from '~/types/lawyer'
+import type { PracticeArea } from '~/types/lawyer'
+import { useNavigation } from '~/composables/useNavigation'
+
+const { currentLawyer } = useNavigation()
 
 const route = useRoute()
 const { areas, groupedAreas, categories } = useLawyerAreas()
@@ -15,15 +18,13 @@ onClickOutside(dropdownRef, () => {
 })
 
 const currentArea = computed(() => {
-  const areaId = route.query.area
-  return areas.find(area => area.id === areaId)
+  const slug = route.query.area
+  return areas.find(area => area.slug === slug)
 })
 
-const props = defineProps<{
-  profile?: Lawyer
-}>()
-
-const bestArea = props.profile?.areas.find((x: PracticeArea) => Math.max(x.experienceScore))?.name
+const bestArea = computed(() =>
+  currentLawyer.value?.areas.find((x: PracticeArea) => Math.max(x.experienceScore))
+)
 </script>
 
 <template>
@@ -72,7 +73,7 @@ const bestArea = props.profile?.areas.find((x: PracticeArea) => Math.max(x.exper
                     </div>
                     <div class="border-t mt-4 pt-4">
                       <NuxtLink
-                        to="/lawyers/areas"
+                        to="/areas"
                         class="text-sm text-primary-600 hover:text-primary-800 font-medium"
                         @click="isAreasMenuOpen = false"
                       >
@@ -118,8 +119,10 @@ const bestArea = props.profile?.areas.find((x: PracticeArea) => Math.max(x.exper
               Abogados
             </NuxtLink>
             <div v-if="bestArea">
-              <span class="mx-2 text-primary-300">›</span>
-              <span class="text-white text-sm">{{ bestArea }}</span>
+              <NuxtLink :to="`/lawyers?area=${bestArea.slug}`">
+                <span class="mx-2 text-primary-300">›</span>
+                <span class="text-white text-sm">{{ bestArea.name }}</span>
+              </NuxtLink>
             </div>
             <span class="mx-2 text-primary-300">›</span>
             <span class="text-white text-sm">Perfil de Abogado</span>

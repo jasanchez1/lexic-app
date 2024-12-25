@@ -1,10 +1,27 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useLawyerProfile } from '~/composables/useLawyerProfile'
+import { useNavigation } from '~/composables/useNavigation'
+
+const { setCurrentLawyer } = useNavigation()
+const { profile, isLoading, error, fetchProfile } = useLawyerProfile()
+
+watch(
+  () => profile.value,
+  newProfile => {
+    if (newProfile) {
+      setCurrentLawyer(newProfile)
+    }
+  },
+  { immediate: true }
+)
+
+onUnmounted(() => {
+  setCurrentLawyer(null)
+})
 
 const route = useRoute()
 const lawyerId = route.params.id as string
-const { profile, isLoading, error, fetchProfile } = useLawyerProfile()
 
 const tabs = [
   { id: 'overview', name: 'Resumen' },
@@ -14,8 +31,8 @@ const tabs = [
 const activeTab = ref('overview')
 
 // Fetch profile on page load
-onMounted(() => {
-  fetchProfile(lawyerId)
+onMounted(async () => {
+  await fetchProfile(lawyerId)
 })
 </script>
 
