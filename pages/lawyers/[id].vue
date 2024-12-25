@@ -83,6 +83,9 @@ onMounted(async () => {
   if (activeTab.value === 'reviews' && profile.value) {
     await fetchReviews(profile.value.id)
   }
+  if (activeTab.value === 'experience' && profile.value) {
+    await fetchExperience(profile.value.id)
+  }
 })
 </script>
 
