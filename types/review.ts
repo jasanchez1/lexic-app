@@ -5,7 +5,7 @@ export interface LawyerReview {
   content: string
   author: string
   date: string
-  isHiredAttorney: boolean
+  isHired: boolean
 }
 
 export interface ReviewStats {

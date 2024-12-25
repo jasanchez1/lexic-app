@@ -16,6 +16,24 @@ const {
   fetchReviews
 } = useReviews()
 const { tabs, activeTab, setActiveTab } = useLawyerTabs()
+const showReviewModal = ref(false)
+const { submitReview } = useReviews()
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const handleReviewSubmit = async (review: any) => {
+  if (!profile.value) return
+
+  const result = await submitReview(profile.value.id, review)
+
+  if (result.success) {
+    showReviewModal.value = false
+    // Optionally scroll to reviews section
+    globalThis.document.getElementById('reviews-section')?.scrollIntoView({ behavior: 'smooth' })
+  } else {
+    // Handle error
+    console.error(result.error)
+  }
+}
 
 watch(activeTab, async newTab => {
   if (newTab === 'reviews' && profile.value) {
@@ -42,7 +60,7 @@ const lawyerId = route.params.id as string
 
 onMounted(async () => {
   await fetchProfile(lawyerId)
-  
+
   if (activeTab.value === 'reviews' && profile.value) {
     await fetchReviews(profile.value.id)
   }
@@ -184,9 +202,18 @@ onMounted(async () => {
             <h2 class="text-xl font-bold">Reseñas de Clientes</h2>
             <button
               class="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors"
+              @click="showReviewModal = true"
             >
               Escribir Reseña
             </button>
+
+            <LawyerReviewModal
+              v-if="profile"
+              :show="showReviewModal"
+              :lawyer="profile"
+              @close="showReviewModal = false"
+              @submit="handleReviewSubmit"
+            />
           </div>
 
           <div v-if="reviewsLoading" class="py-12 text-center">
@@ -233,6 +260,7 @@ onMounted(async () => {
             <div class="lg:col-span-2 space-y-6">
               <div
                 v-for="review in reviews"
+                :id="`review-${review.id}`"
                 :key="review.id"
                 class="bg-white p-6 rounded-lg border"
               >
@@ -259,7 +287,7 @@ onMounted(async () => {
                 <!-- Review Footer -->
                 <div class="flex items-center justify-between text-sm">
                   <div class="text-gray-500">Por {{ review.author }}</div>
-                  <div v-if="review.isHiredAttorney" class="flex items-center text-green-600">
+                  <div v-if="review.isHired" class="flex items-center text-green-600">
                     <CheckCircle class="w-4 h-4 mr-1" />
                     Cliente Verificado
                   </div>

@@ -10,7 +10,7 @@ const mockReviews: LawyerReview[] = [
       'Gabrielito ha sido mi asesor de confianza durante cuatro años, brindando asistencia invaluable en diversos asuntos durante mi litigio comercial exitoso. Su experiencia, dedicación y enfoque personalizado me hicieron sentir confiado y bien respaldado durante mi caso increíblemente complejo...',
     author: 'Ana M.',
     date: '2024-01-18',
-    isHiredAttorney: true
+    isHired: true
   },
   {
     id: '2',
@@ -20,7 +20,7 @@ const mockReviews: LawyerReview[] = [
       'Un abogado increíble, talentoso, atento e inteligente. Tuve un caso de litigio contra socios comerciales y fue el mejor abogado que pude encontrar. Tiene un gran conocimiento y experiencia en su campo...',
     author: 'Jose F.',
     date: '2023-12-03',
-    isHiredAttorney: true
+    isHired: true
   },
   {
     id: '3',
@@ -29,7 +29,7 @@ const mockReviews: LawyerReview[] = [
     content: 'Best presi ever.',
     author: 'Carlos R.',
     date: '2023-12-03',
-    isHiredAttorney: false
+    isHired: false
   }
 ]
 
@@ -69,11 +69,31 @@ export const useReviews = () => {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const submitReview = async (lawyerId: string, reviewData: any) => {
+    try {
+      // Mock API call
+      await new Promise(resolve => setTimeout(resolve, 1000))
+
+      // In reality, this would be an API POST request
+      console.log('Submitting review:', reviewData)
+
+      // Refresh reviews after submission
+      await fetchReviews(lawyerId)
+
+      return { success: true }
+    } catch (error) {
+      console.error('Error submitting review:', error)
+      return { success: false, error: 'Error al enviar la reseña' }
+    }
+  }
+
   return {
     reviews,
     stats,
     isLoading,
     error,
-    fetchReviews
+    fetchReviews,
+    submitReview
   }
 }
