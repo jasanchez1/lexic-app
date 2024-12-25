@@ -73,28 +73,94 @@ onMounted(async () => {
       <!-- Tab Content -->
       <div class="bg-white rounded-lg shadow-sm">
         <!-- Overview Tab -->
-        <div v-if="activeTab === 'overview'" class="p-6">
-          <h2 class="text-xl font-bold mb-4">Sobre {{ profile.name }}</h2>
-          <div class="prose max-w-none">
-            <p class="text-gray-600">{{ profile.bio }}</p>
+        <div v-if="activeTab === 'overview'" class="p-6 space-y-8">
+          <!-- About Section -->
+          <div>
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">Sobre {{ profile.name }}</h2>
+            <div class="prose max-w-none">
+              <p class="text-gray-600">{{ profile.bio }}</p>
+            </div>
+            <!-- Add a "Read Full Bio" button if bio is long -->
+            <button
+              v-if="profile.bio.length > 300"
+              class="mt-4 text-primary-600 hover:text-primary-700 font-medium"
+            >
+              Leer biografía completa
+            </button>
           </div>
 
-          <div class="mt-8">
-            <h3 class="text-lg font-semibold mb-4">Áreas de Práctica</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div
-                v-for="area in profile.areas"
-                :key="area.name"
-                class="flex items-center justify-between"
-              >
-                <span class="text-gray-700">{{ area.name }}</span>
-                <div class="w-48 bg-gray-200 rounded-full h-2 ml-4">
+          <!-- Catch Phrase if exists -->
+          <div
+            v-if="profile.catchPhrase"
+            class="bg-primary-50 p-6 rounded-lg border-l-4 border-primary-500"
+          >
+            <p class="text-lg text-primary-700 font-medium italic">"{{ profile.catchPhrase }}"</p>
+          </div>
+
+          <!-- Practice Areas Section with Graph -->
+          <div>
+            <h3 class="text-lg font-semibold mb-6">Áreas de Práctica</h3>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              <!-- Areas List -->
+              <div class="lg:col-span-8">
+                <div class="space-y-4">
                   <div
-                    class="bg-primary-500 h-2 rounded-full"
-                    :style="{ width: `${area.experienceScore}%` }"
-                  ></div>
+                    v-for="area in profile.areas"
+                    :key="area.name"
+                    class="flex items-center justify-between"
+                  >
+                    <div class="flex-1">
+                      <div class="flex justify-between mb-1">
+                        <span class="text-gray-700 font-medium">{{ area.name }}</span>
+                        <span class="text-gray-500">{{ area.experienceScore }}%</span>
+                      </div>
+                      <div class="w-full bg-gray-100 rounded-full h-2">
+                        <div
+                          class="bg-primary-500 h-2 rounded-full transition-all duration-500"
+                          :style="{ width: `${area.experienceScore}%` }"
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
+
+              <!-- Stats Circle -->
+              <div class="lg:col-span-4">
+                <div class="bg-gray-50 rounded-lg p-6 text-center">
+                  <div class="text-4xl font-bold text-primary-600 mb-2">
+                    {{ profile.areas.length }}
+                  </div>
+                  <p class="text-gray-600">Áreas de Práctica</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Additional Information -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Languages if any -->
+            <div v-if="profile.languages?.length" class="bg-white p-6 rounded-lg border">
+              <h4 class="font-medium text-gray-900 mb-3">Idiomas</h4>
+              <div class="flex flex-wrap gap-2">
+                <span
+                  v-for="lang in profile.languages"
+                  :key="lang"
+                  class="px-3 py-1 bg-gray-100 rounded-full text-sm text-gray-700"
+                >
+                  {{ lang }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Education if any -->
+            <div v-if="profile.education?.length" class="bg-white p-6 rounded-lg border">
+              <h4 class="font-medium text-gray-900 mb-3">Educación</h4>
+              <ul class="space-y-2">
+                <li v-for="edu in profile.education" :key="edu.school" class="text-gray-600">
+                  {{ edu.degree }} - {{ edu.school }}
+                </li>
+              </ul>
             </div>
           </div>
         </div>

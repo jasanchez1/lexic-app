@@ -38,7 +38,16 @@ export const useLawyerProfile = () => {
           'https://www.cidob.org/sites/default/files/styles/max_width_290/public/gabriel_boric_font.jpg.webp',
         phone: '+34673287793',
         city: 'Santiago',
-        email: 'gboric@example.com'
+        email: 'gboric@example.com',
+        catchPhrase: 'Soluciones Creativas para Problemas Legales',
+        languages: ['Español', 'Inglés', 'Portugués'],
+        education: [
+          {
+            school: 'Universidad de Chile',
+            degree: 'Licenciatura en Derecho',
+            year: 2020
+          }
+        ]
       }
     } catch (e) {
       console.error(e)

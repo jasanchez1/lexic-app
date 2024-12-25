@@ -1,3 +1,9 @@
+interface Education {
+  school: string
+  degree: string
+  year?: number
+}
+
 export interface PracticeArea {
   id: string
   name: string
@@ -18,4 +24,7 @@ export interface Lawyer {
   phone: string
   city: string
   email: string
+  catchPhrase?: string
+  languages?: string[]
+  education?: Education[]
 }
