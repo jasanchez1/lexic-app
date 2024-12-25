@@ -68,6 +68,7 @@ const handleCallClick = (lawyer: Lawyer) => {
             :review-count="lawyer.reviewCount"
             :show-score="true"
             :use-icons="true"
+            :reviews-url="`/lawyers/${lawyer.id}?tab=reviews`"
           />
           <div class="text-sm text-gray-600">{{ lawyer.title }}</div>
           <div class="mt-4">

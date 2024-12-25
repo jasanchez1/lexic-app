@@ -22,8 +22,8 @@ export const useLawyerSearch = () => {
           id: '1',
           name: 'Garbielito Boric',
           title: 'Abogado Civil, Universidad de Chile',
-          reviewScore: 5.0,
-          reviewCount: 1,
+          reviewScore: 4.5,
+          reviewCount: 6,
           professionalStartDate: new Date('2022-09-28T14:30:00Z'),
           areas: [
             { name: 'Civil', id: 'civil', experienceScore: 60, slug: 'civil' },

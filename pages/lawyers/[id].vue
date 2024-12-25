@@ -4,6 +4,7 @@ import { useLawyerProfile } from '~/composables/useLawyerProfile'
 import { useNavigation } from '~/composables/useNavigation'
 import { useReviews } from '~/composables/useReviews'
 import { useLawyerTabs } from '~/composables/useLawyerTabs'
+import { CheckCircle } from 'lucide-vue-next'
 
 const { setCurrentLawyer } = useNavigation()
 const { profile, isLoading, error, fetchProfile } = useLawyerProfile()
@@ -39,9 +40,12 @@ onUnmounted(() => {
 const route = useRoute()
 const lawyerId = route.params.id as string
 
-// Fetch profile on page load
 onMounted(async () => {
   await fetchProfile(lawyerId)
+  
+  if (activeTab.value === 'reviews' && profile.value) {
+    await fetchReviews(profile.value.id)
+  }
 })
 </script>
 
@@ -238,7 +242,11 @@ onMounted(async () => {
                     <h4 v-if="review.title" class="font-medium text-gray-900">
                       {{ review.title }}
                     </h4>
-                    <CommonStarRating :score="review.rating" class="mb-2" />
+                    <CommonStarRating
+                      :score="review.rating"
+                      class="mb-2"
+                      :reviews-url="`/lawyers/${profile.id}?tab=reviews`"
+                    />
                   </div>
                   <div class="text-sm text-gray-500">
                     {{ new Date(review.date).toLocaleDateString() }}
@@ -252,7 +260,7 @@ onMounted(async () => {
                 <div class="flex items-center justify-between text-sm">
                   <div class="text-gray-500">Por {{ review.author }}</div>
                   <div v-if="review.isHiredAttorney" class="flex items-center text-green-600">
-                    <Icon name="check-circle" class="w-4 h-4 mr-1" />
+                    <CheckCircle class="w-4 h-4 mr-1" />
                     Cliente Verificado
                   </div>
                 </div>
