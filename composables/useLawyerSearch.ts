@@ -6,6 +6,7 @@ export const useLawyerSearch = () => {
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const searchLawyers = async (params: {
     area?: string
     city?: string
@@ -20,7 +21,7 @@ export const useLawyerSearch = () => {
         {
           id: '1',
           name: 'Garbielito Boric',
-          title: 'Abogado Civil Chile',
+          title: 'Abogado Civil, Universidad de Chile',
           reviewScore: 5.0,
           reviewCount: 1,
           professionalStartDate: new Date('2022-09-28T14:30:00Z'),
