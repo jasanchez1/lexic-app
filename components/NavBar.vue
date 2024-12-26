@@ -83,13 +83,8 @@ const bestArea = computed(() =>
                   </div>
                 </div>
               </div>
-
-              <NuxtLink
-                to="/questions"
-                class="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium"
-              >
-                Preguntas Abiertas
-              </NuxtLink>
+              <!-- Legal Topics Dropdown -->
+              <LegalTopicsMenu />
             </div>
           </div>
           <div class="flex items-center space-x-4">
