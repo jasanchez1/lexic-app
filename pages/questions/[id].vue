@@ -1,7 +1,5 @@
-<!-- pages/questions/[id].vue -->
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { CheckCircle } from 'lucide-vue-next'
 import { useQuestions } from '~/composables/useQuestions'
 import { useAnswers } from '~/composables/useAnswers'
 import { formatDate } from '~/utils/date'
@@ -67,60 +65,7 @@ onMounted(async () => {
             <!-- Answers -->
             <div class="space-y-6">
               <h2 class="text-xl font-semibold">{{ answers.length }} Respuestas</h2>
-
-              <div
-                v-for="answer in answers"
-                :key="answer.id"
-                class="bg-white rounded-lg shadow-sm border p-6"
-                :class="{ 'border-green-500': answer.isAccepted }"
-              >
-                <!-- Answer Content -->
-                <div class="prose max-w-none mb-6">
-                  <p>{{ answer.content }}</p>
-                </div>
-
-                <!-- Answer Footer -->
-                <div class="flex items-center justify-between border-t pt-4">
-                  <!-- Author Info -->
-                  <div class="flex items-center">
-                    <img
-                      v-if="answer.author.imageUrl"
-                      :src="answer.author.imageUrl"
-                      :alt="answer.author.name"
-                      class="w-10 h-10 rounded-full object-cover"
-                    />
-                    <div class="ml-3">
-                      <div class="font-medium text-gray-900">
-                        {{ answer.author.name }}
-                        <span
-                          v-if="answer.author.isVerified"
-                          class="inline-flex items-center text-green-600 text-sm ml-2"
-                        >
-                          <CheckCircle class="w-4 h-4 mr-1" />
-                          Verificado
-                        </span>
-                      </div>
-                      <div class="text-sm text-gray-500">{{ answer.author.title }}</div>
-                      <div class="flex items-center mt-1 text-sm text-gray-500">
-                        <StarRating 
-                          :score="answer.author.rating" 
-                          :show-score="true" 
-                          class="mr-2"
-                        />
-                        {{ answer.author.reviewCount }} reseñas
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Metadata -->
-                  <div class="text-sm text-gray-500">
-                    <div class="flex items-center gap-4">
-                      <span>{{ formatDate(answer.date) }}</span>
-                      <span>{{ answer.upvotes }} votos</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <AnswerCard v-for="answer in answers" :key="answer.id" :answer="answer" />
             </div>
           </div>
 
@@ -129,9 +74,7 @@ onMounted(async () => {
             <!-- Ask Question Card -->
             <div class="bg-white rounded-lg shadow-sm border p-6">
               <h3 class="text-lg font-semibold mb-4">¿Tiene una pregunta similar?</h3>
-              <p class="text-gray-600 mb-4">
-                Obtenga respuestas gratuitas de abogados expertos.
-              </p>
+              <p class="text-gray-600 mb-4">Obtenga respuestas gratuitas de abogados expertos.</p>
               <NuxtLink
                 to="/questions/ask"
                 class="block text-center bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors"

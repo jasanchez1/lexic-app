@@ -1,61 +1,52 @@
 import { ref } from 'vue'
-import type { Answer } from '~/types/question'
+import type { Reply } from '~/types/question'
 
-const mockAnswers: Record<string, Answer[]> = {
-  '1': [
+const mockReplies: Record<string, Reply[]> = {
+  a1: [
     {
-      id: 'a1',
+      id: 'r1',
       content:
         'Sí, es posible modificar el monto de la pensión de alimentos cuando hay un cambio significativo en las circunstancias económicas. El proceso implica...',
+      answerId: 'a1',
       author: {
         id: 'l1',
         name: 'Gabriel Boric',
         title: 'Abogado de Familia',
         imageUrl:
           'https://www.cidob.org/sites/default/files/styles/max_width_290/public/gabriel_boric_font.jpg.webp',
-        rating: 4.8,
-        reviewCount: 123,
-        isVerified: true
+        isLawyer: true
       },
-      date: '2024-01-24',
-      isAccepted: true,
-      helpfulCount: 15,
-      isHelpful: true,
-      replyCount: 2
+      date: '2024-01-24'
     },
     {
-      id: 'a2',
+      id: 'r2',
       content:
         'Complementando la respuesta anterior, es importante mencionar que los tribunales consideran tanto sus ingresos como los gastos del menor...',
+      answerId: 'a1',
       author: {
         id: 'l2',
         name: 'Carolina Pérez',
         title: 'Abogada Civil',
-        rating: 4.5,
-        reviewCount: 89,
-        isVerified: true
+        isLawyer: true
       },
-      date: '2024-01-25',
-      helpfulCount: 8,
-      isHelpful: false,
-      replyCount: 0
+      date: '2024-01-25'
     }
   ]
 }
 
-export const useAnswers = () => {
-  const answers = ref<Answer[]>([])
+export const useReplies = () => {
+  const replies = ref<Reply[]>([])
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const fetchAnswers = async (questionId: string) => {
+  const fetchReplies = async (answerId: string) => {
     isLoading.value = true
     error.value = null
 
     try {
       await new Promise(resolve => setTimeout(resolve, 200))
-      answers.value = Object.values(mockAnswers).flat()
+      replies.value = Object.values(mockReplies).flat()
     } catch (e) {
       console.error(e)
       error.value = 'Error al cargar las respuestas'
@@ -65,9 +56,9 @@ export const useAnswers = () => {
   }
 
   return {
-    answers,
+    replies,
     isLoading,
     error,
-    fetchAnswers
+    fetchReplies
   }
 }

@@ -12,7 +12,9 @@ export interface Answer {
   }
   date: string
   isAccepted?: boolean
-  upvotes: number
+  replyCount: number
+  helpfulCount: number
+  isHelpful?: boolean
 }
 
 export interface Question {
@@ -28,4 +30,18 @@ export interface Question {
   answerCount: number
   viewCount: number
   answers?: Answer[]
+}
+
+export interface Reply {
+  id: string
+  answerId: string
+  content: string
+  author: {
+    id: string
+    name: string
+    title?: string
+    imageUrl?: string
+    isLawyer?: boolean
+  }
+  date: string
 }
