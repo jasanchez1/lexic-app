@@ -1,3 +1,31 @@
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { MessageCircle } from 'lucide-vue-next'
+import { useLegalTopics } from '~/composables/useLegalTopics'
+
+const { topics, isLoading, error, fetchTopics } = useLegalTopics()
+const searchQuery = ref('')
+
+const filteredTopics = computed(() => {
+  if (!searchQuery.value) return topics.value
+
+  const query = searchQuery.value.toLowerCase()
+  return topics.value.filter(
+    topic =>
+      topic.name.toLowerCase().includes(query) ||
+      topic.description.toLowerCase().includes(query) ||
+      topic.subtopics?.some(
+        sub =>
+          sub.name.toLowerCase().includes(query) || sub.description?.toLowerCase().includes(query)
+      )
+  )
+})
+
+onMounted(() => {
+  fetchTopics()
+})
+</script>
+
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- Hero Section -->
@@ -78,31 +106,3 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { MessageCircle } from 'lucide-vue-next'
-import { useLegalTopics } from '~/composables/useLegalTopics'
-
-const { topics, isLoading, error, fetchTopics } = useLegalTopics()
-const searchQuery = ref('')
-
-const filteredTopics = computed(() => {
-  if (!searchQuery.value) return topics.value
-
-  const query = searchQuery.value.toLowerCase()
-  return topics.value.filter(
-    topic =>
-      topic.name.toLowerCase().includes(query) ||
-      topic.description.toLowerCase().includes(query) ||
-      topic.subtopics?.some(
-        sub =>
-          sub.name.toLowerCase().includes(query) || sub.description?.toLowerCase().includes(query)
-      )
-  )
-})
-
-onMounted(() => {
-  fetchTopics()
-})
-</script>

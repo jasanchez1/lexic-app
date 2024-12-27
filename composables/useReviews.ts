@@ -73,7 +73,7 @@ export const useReviews = () => {
   const submitReview = async (lawyerId: string, reviewData: any) => {
     try {
       // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await new Promise(resolve => setTimeout(resolve, 200))
 
       // In reality, this would be an API POST request
       console.log('Submitting review:', reviewData)

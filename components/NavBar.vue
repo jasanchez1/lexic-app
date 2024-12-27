@@ -5,13 +5,23 @@ import { onClickOutside } from '@vueuse/core'
 import { useLawyerAreas } from '~/composables/useLawyerAreas'
 import type { PracticeArea } from '~/types/lawyer'
 import { useNavigation } from '~/composables/useNavigation'
-
-const { currentLawyer } = useNavigation()
+import { useLegalTopics } from '~/composables/useLegalTopics'
 
 const route = useRoute()
+const { currentLawyer } = useNavigation()
 const { areas, groupedAreas, categories } = useLawyerAreas()
+const { topics } = useLegalTopics()
 const isAreasMenuOpen = ref(false)
 const dropdownRef = ref<globalThis.HTMLElement | null>(null)
+
+const currentTopic = computed(() => {
+  if (!route.params.slug) return null
+
+  return (
+    topics.value.find(t => t.slug === route.params.slug) ||
+    topics.value.flatMap(t => t.subtopics || []).find(st => st.slug === route.params.slug)
+  )
+})
 
 onClickOutside(dropdownRef, () => {
   isAreasMenuOpen.value = false
@@ -131,6 +141,29 @@ const bestArea = computed(() =>
               <span class="mx-2 text-primary-300">›</span>
               <span class="text-white text-sm">{{ currentArea.name }}</span>
             </template>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Secondary Navigation (for questions pages) -->
+    <div v-if="route.path.includes('/questions')" class="bg-primary-800 text-white">
+      <div class="max-w-7xl mx-auto px-4">
+        <div class="flex items-center h-14">
+          <NuxtLink to="/questions/topics" class="text-primary-100 hover:text-white text-sm">
+            Preguntas Legales
+          </NuxtLink>
+
+          <template v-if="route.params.slug">
+            <!-- For topic pages -->
+            <span class="mx-2 text-primary-300">›</span>
+            <span class="text-white text-sm">{{ currentTopic?.name || 'Tema Legal' }}</span>
+          </template>
+
+          <template v-else-if="route.params.id">
+            <!-- For individual question pages -->
+            <span class="mx-2 text-primary-300">›</span>
+            <span class="text-white text-sm">Pregunta Legal</span>
           </template>
         </div>
       </div>
