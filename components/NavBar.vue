@@ -98,12 +98,6 @@ const bestArea = computed(() =>
             </div>
           </div>
           <div class="flex items-center space-x-4">
-            <NuxtLink
-              to="/profile/create"
-              class="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium"
-            >
-              Crear Perfil
-            </NuxtLink>
             <button
               class="bg-accent-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-accent-700"
             >

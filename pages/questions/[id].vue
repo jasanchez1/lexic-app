@@ -90,7 +90,7 @@ onMounted(async () => {
                 <NuxtLink
                   v-for="topicId in question.topicIds"
                   :key="topicId"
-                  :to="`/questions/topic/${topicId}`"
+                  :to="`/questions/topics/${topicId}`"
                   class="block text-gray-600 hover:text-primary-600"
                 >
                   {{ topicId }}
