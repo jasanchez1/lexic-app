@@ -1,9 +1,22 @@
 <!-- components/auth/AuthModal.vue -->
 <template>
-  <div v-if="show" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-lg max-w-md w-full p-6">
+  <div
+    v-if="show"
+    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+    @click.self="$emit('close')"
+  >
+    <div class="bg-white rounded-lg max-w-md w-full p-6 relative">
+      <!-- Close button (X) -->
+      <button
+        class="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
+        @click="$emit('close')"
+      >
+        <X class="w-5 h-5" />
+      </button>
+
       <!-- Header -->
-      <div class="text-center mb-6">
+      <div class="text-center mb-8 mt-2">
+        <!-- Added mt-2 to account for X button -->
         <h2 class="text-2xl font-bold">
           {{ isLogin ? 'Iniciar Sesión' : 'Crear Cuenta' }}
         </h2>
@@ -11,13 +24,16 @@
           {{ isLogin ? 'Bienvenido de vuelta' : 'Únete a la comunidad legal' }}
         </p>
       </div>
-
       <!-- Social Login -->
       <button
         class="w-full flex items-center justify-center gap-2 border rounded-md p-3 hover:bg-gray-50 mb-4"
         @click="handleGoogleLogin"
       >
-        <img src="/google-icon.svg" alt="Google" class="w-5 h-5" />
+        <img
+          src="https://cdn1.iconfinder.com/data/icons/google-s-logo/150/Google_Icons-09-512.png"
+          alt="Google"
+          class="w-5 h-5"
+        />
         Continuar con Google
       </button>
 
@@ -39,7 +55,8 @@
             v-model="form.email"
             type="email"
             required
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+            class="mt-2 block w-full rounded-md border-gray-300 px-4 py-3 text-base shadow-sm focus:border-primary-500 focus:ring-primary-500"
+            placeholder="tu@email.com"
           />
         </div>
 
@@ -50,7 +67,7 @@
             v-model="form.password"
             type="password"
             required
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+            class="mt-2 block w-full rounded-md border-gray-300 px-4 py-3 text-base shadow-sm focus:border-primary-500 focus:ring-primary-500"
           />
         </div>
 
@@ -90,20 +107,12 @@
           {{ isLogin ? 'Regístrate' : 'Inicia sesión' }}
         </button>
       </p>
-
-      <!-- Close Button -->
-      <button
-        class="absolute top-4 right-4 text-gray-400 hover:text-gray-500"
-        @click="$emit('close')"
-      >
-        <X class="w-5 h-5" />
-      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { X } from 'lucide-vue-next'
 
 // eslint-disable-next-line no-unused-vars
@@ -127,6 +136,26 @@ const form = ref({
   password: '',
   passwordConfirm: ''
 })
+
+// ESC key handler
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const handleEscape = (e: any) => {
+  if (e.key === 'Escape' && props.show) {
+    emit('close')
+  }
+}
+
+// Add and remove ESC key listener
+onMounted(() => {
+  // eslint-disable-next-line no-undef
+  document.addEventListener('keydown', handleEscape)
+})
+
+onUnmounted(() => {
+  // eslint-disable-next-line no-undef
+  document.removeEventListener('keydown', handleEscape)
+})
+
 
 const handleGoogleLogin = async () => {
   isLoading.value = true

@@ -6,6 +6,7 @@ import { useLawyerAreas } from '~/composables/useLawyerAreas'
 import type { PracticeArea } from '~/types/lawyer'
 import { useNavigation } from '~/composables/useNavigation'
 import { useLegalTopics } from '~/composables/useLegalTopics'
+import AuthModal from '~/components/auth/Modal.vue'
 
 const route = useRoute()
 const { currentLawyer } = useNavigation()
@@ -35,6 +36,16 @@ const currentArea = computed(() => {
 const bestArea = computed(() =>
   currentLawyer.value?.areas.find((x: PracticeArea) => Math.max(x.experienceScore))
 )
+
+const showAuthModal = ref(false)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const handleLogin = (data: any) => {
+  console.log('Login successful:', data)
+  // Here you would typically:
+  // 1. Store the user data in your auth store
+  // 2. Set the authentication token
+  // 3. Update the UI to show the logged-in state
+}
 </script>
 
 <template>
@@ -100,9 +111,12 @@ const bestArea = computed(() =>
           <div class="flex items-center space-x-4">
             <button
               class="bg-accent-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-accent-700"
+              @click="showAuthModal = true"
             >
               Iniciar Sesión
             </button>
+
+            <AuthModal :show="showAuthModal" @close="showAuthModal = false" @login="handleLogin" />
           </div>
         </div>
       </div>
