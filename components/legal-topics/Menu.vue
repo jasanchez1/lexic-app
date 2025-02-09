@@ -1,7 +1,7 @@
 <template>
   <div ref="dropdownRef" class="relative">
     <button
-      class="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium inline-flex items-center gap-1"
+      class="inline-flex items-center text-gray-600 hover:text-primary-700 px-3 py-2 text-sm font-medium transition-colors duration-200"
       @click="isOpen = !isOpen"
     >
       Preguntas Abiertas

@@ -1,3 +1,4 @@
+# Header.vue
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { ChevronDown } from 'lucide-vue-next'
@@ -49,31 +50,32 @@ const handleLogin = (data: any) => {
 </script>
 
 <template>
-  <header>
+  <header class="relative z-50">
     <!-- Top Navigation -->
     <nav class="bg-white border-b border-gray-200">
       <div class="max-w-7xl mx-auto px-4">
         <div class="flex justify-between h-16 items-center">
-          <div class="flex items-center">
-            <NuxtLink to="/" class="text-xl font-bold text-gray-900">Logo</NuxtLink>
-            <div class="hidden md:flex ml-10 space-x-8">
+          <div class="flex items-center space-x-8">
+            <NuxtLink to="/" class="text-2xl font-bold text-primary-700">Logo</NuxtLink>
+
+            <div class="hidden md:flex space-x-6">
               <!-- Dropdown Menu -->
               <div ref="dropdownRef" class="relative">
                 <button
-                  class="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium inline-flex items-center gap-1"
+                  class="inline-flex items-center text-gray-600 hover:text-primary-700 px-3 py-2 text-sm font-medium transition-colors duration-200"
                   @click="isAreasMenuOpen = !isAreasMenuOpen"
                 >
                   Abogados por Área
                   <ChevronDown
                     :class="{ 'rotate-180': isAreasMenuOpen }"
-                    class="w-4 h-4 transition-transform"
+                    class="ml-1 w-4 h-4 transition-transform"
                   />
                 </button>
 
                 <!-- Dropdown Content -->
                 <div
                   v-if="isAreasMenuOpen"
-                  class="absolute left-0 z-50 mt-2 w-80 bg-white rounded-md shadow-lg"
+                  class="absolute left-0 z-50 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-100"
                 >
                   <div class="p-4">
                     <div v-for="(areas, category) in groupedAreas" :key="category" class="mb-4">
@@ -85,7 +87,7 @@ const handleLogin = (data: any) => {
                           v-for="area in areas.slice(0, 3)"
                           :key="area.id"
                           :to="`/lawyers?area=${area.slug}`"
-                          class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
+                          class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 rounded-md transition-colors duration-200"
                           @click="isAreasMenuOpen = false"
                         >
                           {{ area.name }}
@@ -95,7 +97,7 @@ const handleLogin = (data: any) => {
                     <div class="border-t mt-4 pt-4">
                       <NuxtLink
                         to="/areas"
-                        class="text-sm text-primary-600 hover:text-primary-800 font-medium"
+                        class="text-sm text-primary-600 hover:text-primary-800 font-medium transition-colors duration-200"
                         @click="isAreasMenuOpen = false"
                       >
                         Ver todas las áreas →
@@ -104,35 +106,40 @@ const handleLogin = (data: any) => {
                   </div>
                 </div>
               </div>
-              <!-- Legal Topics Dropdown -->
+
+              <!-- Legal Topics Menu -->
               <LegalTopicsMenu />
             </div>
           </div>
-          <div class="flex items-center space-x-4">
-            <button
-              class="bg-accent-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-accent-700"
-              @click="showAuthModal = true"
-            >
-              Iniciar Sesión
-            </button>
 
-            <AuthModal :show="showAuthModal" @close="showAuthModal = false" @login="handleLogin" />
-          </div>
+          <button
+            class="bg-accent hover:bg-accent-hover text-white px-6 py-2 rounded text-sm font-medium transition-colors duration-200"
+            @click="showAuthModal = true"
+          >
+            Iniciar Sesión
+          </button>
+
+          <AuthModal :show="showAuthModal" @close="showAuthModal = false" @login="handleLogin" />
         </div>
       </div>
     </nav>
 
-    <!-- Secondary Navigation (only for lawyer pages) -->
+    <!-- Secondary Navigation (for lawyer pages) -->
     <div v-if="route.path.includes('/lawyers')" class="bg-primary-800 text-white">
       <div class="max-w-7xl mx-auto px-4">
         <div class="flex items-center h-14">
           <template v-if="route.params.id">
-            <!-- Lawyer Profile Page -->
-            <NuxtLink to="/lawyers" class="text-primary-100 hover:text-white text-sm">
+            <NuxtLink
+              to="/lawyers"
+              class="text-primary-100 hover:text-white text-sm transition-colors duration-200"
+            >
               Abogados
             </NuxtLink>
             <div v-if="bestArea">
-              <NuxtLink :to="`/lawyers?area=${bestArea.slug}`">
+              <NuxtLink
+                :to="`/lawyers?area=${bestArea.slug}`"
+                class="transition-colors duration-200"
+              >
                 <span class="mx-2 text-primary-300">›</span>
                 <span class="text-white text-sm">{{ bestArea.name }}</span>
               </NuxtLink>
@@ -141,8 +148,10 @@ const handleLogin = (data: any) => {
             <span class="text-white text-sm">Perfil de Abogado</span>
           </template>
           <template v-else>
-            <!-- Lawyer List Page -->
-            <NuxtLink to="/lawyers" class="text-primary-100 hover:text-white text-sm">
+            <NuxtLink
+              to="/lawyers"
+              class="text-primary-100 hover:text-white text-sm transition-colors duration-200"
+            >
               Abogados
             </NuxtLink>
             <template v-if="currentArea">
@@ -158,18 +167,19 @@ const handleLogin = (data: any) => {
     <div v-if="route.path.includes('/questions')" class="bg-primary-800 text-white">
       <div class="max-w-7xl mx-auto px-4">
         <div class="flex items-center h-14">
-          <NuxtLink to="/questions/topics" class="text-primary-100 hover:text-white text-sm">
+          <NuxtLink
+            to="/questions/topics"
+            class="text-primary-100 hover:text-white text-sm transition-colors duration-200"
+          >
             Preguntas Legales
           </NuxtLink>
 
           <template v-if="route.params.slug">
-            <!-- For topic pages -->
             <span class="mx-2 text-primary-300">›</span>
             <span class="text-white text-sm">{{ currentTopic?.name || 'Tema Legal' }}</span>
           </template>
 
           <template v-else-if="route.params.id">
-            <!-- For individual question pages -->
             <span class="mx-2 text-primary-300">›</span>
             <span class="text-white text-sm">Pregunta Legal</span>
           </template>

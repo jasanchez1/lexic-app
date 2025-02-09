@@ -156,7 +156,6 @@ onUnmounted(() => {
   document.removeEventListener('keydown', handleEscape)
 })
 
-
 const handleGoogleLogin = async () => {
   isLoading.value = true
   try {
