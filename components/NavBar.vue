@@ -38,7 +38,7 @@ const bestArea = computed(() =>
   currentLawyer.value?.areas.find((x: PracticeArea) => Math.max(x.experienceScore))
 )
 
-const mainCategories = ['civil', 'family', 'labor', 'criminal']
+const mainCategories = ['civil', 'family', 'labor', 'commercial']
 
 const limitedGroupedAreas = computed(() => {
   return Object.fromEntries(
