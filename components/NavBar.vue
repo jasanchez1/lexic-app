@@ -38,6 +38,14 @@ const bestArea = computed(() =>
   currentLawyer.value?.areas.find((x: PracticeArea) => Math.max(x.experienceScore))
 )
 
+const mainCategories = ['civil', 'family', 'labor', 'criminal']
+
+const limitedGroupedAreas = computed(() => {
+  return Object.fromEntries(
+    Object.entries(groupedAreas.value).filter(([category]) => mainCategories.includes(category))
+  )
+})
+
 const showAuthModal = ref(false)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const handleLogin = (data: any) => {
@@ -78,9 +86,13 @@ const handleLogin = (data: any) => {
                   class="absolute left-0 z-50 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-100"
                 >
                   <div class="p-4">
-                    <div v-for="(areas, category) in groupedAreas" :key="category" class="mb-4">
+                    <div
+                      v-for="(areas, category) in limitedGroupedAreas"
+                      :key="category"
+                      class="mb-4"
+                    >
                       <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                        {{ categories[category] }}
+                        {{ categories[category as keyof typeof categories] }}
                       </h3>
                       <div class="space-y-1">
                         <NuxtLink
