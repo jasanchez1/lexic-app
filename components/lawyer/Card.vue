@@ -78,7 +78,7 @@ const handleCallClick = (lawyer: Lawyer) => {
               </span>
             </div>
             <div class="text-sm mt-1">
-              <span class="font-medium">Áreas:</span>
+              <span class="font-medium">Áreas practicas:</span>
               {{ lawyer.areas.map((x: PracticeArea) => x.name).join(', ') }}
             </div>
             <p class="mt-2 text-sm text-gray-600 line-clamp-2">

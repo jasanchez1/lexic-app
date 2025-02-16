@@ -5,10 +5,10 @@
     <div class="max-w-7xl mx-auto px-4 py-12 md:py-16">
       <div class="text-center mb-12">
         <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-          Encuentra ayuda legal profesional
+          Conecta con abogados en todo Chile
         </h1>
         <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-          Conectamos a personas con los mejores abogados especializados
+          Compara y elige la asesoria legal que mejor se adapta a tus necesidades
         </p>
       </div>
 
@@ -124,7 +124,7 @@
             <Shield class="w-8 h-8 text-primary-600 mb-4" />
             <h3 class="font-semibold text-gray-900 mb-2">Abogados Verificados</h3>
             <p class="text-gray-600 text-sm">
-              Todos nuestros abogados están verificados y cuentan con licencia activa
+              Todos nuestros abogados están verificados y cuentan con su titulo otorgado por el ministerio de justicia
             </p>
           </div>
           <div class="flex flex-col items-center">
