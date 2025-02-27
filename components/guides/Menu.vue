@@ -5,7 +5,7 @@
         class="inline-flex items-center text-gray-600 hover:text-primary-700 px-3 py-2 text-sm font-medium transition-colors duration-200"
         @click="isOpen = !isOpen"
       >
-        Guías
+        Guías Legales
         <ChevronDown :class="{ 'rotate-180': isOpen }" class="ml-1 w-4 h-4 transition-transform" />
       </button>
   
