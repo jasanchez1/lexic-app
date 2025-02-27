@@ -1,4 +1,3 @@
-<!-- components/auth/AuthModal.vue -->
 <template>
   <div
     v-if="show"

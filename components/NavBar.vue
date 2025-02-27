@@ -121,6 +121,8 @@ const handleLogin = (data: any) => {
 
               <!-- Legal Topics Menu -->
               <LegalTopicsMenu />
+
+              <GuidesMenu />
             </div>
           </div>
 
