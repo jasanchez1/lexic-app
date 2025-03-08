@@ -15,7 +15,6 @@
 
       <!-- Header -->
       <div class="text-center mb-8 mt-2">
-        <!-- Added mt-2 to account for X button -->
         <h2 class="text-2xl font-bold">
           {{ isLogin ? 'Iniciar Sesión' : 'Crear Cuenta' }}
         </h2>
@@ -23,17 +22,17 @@
           {{ isLogin ? 'Bienvenido de vuelta' : 'Únete a la comunidad legal' }}
         </p>
       </div>
-      <!-- Social Login -->
+      <!-- Social Login (Disabled for now) -->
       <button
-        class="w-full flex items-center justify-center gap-2 border rounded-md p-3 hover:bg-gray-50 mb-4"
-        @click="handleGoogleLogin"
+        class="w-full flex items-center justify-center gap-2 border rounded-md p-3 hover:bg-gray-50 mb-4 opacity-50 cursor-not-allowed"
+        disabled
       >
         <img
           src="https://cdn1.iconfinder.com/data/icons/google-s-logo/150/Google_Icons-09-512.png"
           alt="Google"
           class="w-5 h-5"
         />
-        Continuar con Google
+        Continuar con Google (Próximamente)
       </button>
 
       <div class="relative my-6">
@@ -47,6 +46,32 @@
 
       <!-- Email Form -->
       <form class="space-y-4" @submit.prevent="handleSubmit">
+        <!-- Name fields for signup only -->
+        <div v-if="!isLogin" class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="firstName" class="block text-sm font-medium text-gray-700"> Nombre </label>
+            <input
+              id="firstName"
+              v-model="form.firstName"
+              type="text"
+              required
+              class="mt-2 block w-full rounded-md border-gray-300 px-4 py-3 text-base shadow-sm focus:border-primary-500 focus:ring-primary-500"
+              placeholder="Nombre"
+            />
+          </div>
+          <div>
+            <label for="lastName" class="block text-sm font-medium text-gray-700"> Apellido </label>
+            <input
+              id="lastName"
+              v-model="form.lastName"
+              type="text"
+              required
+              class="mt-2 block w-full rounded-md border-gray-300 px-4 py-3 text-base shadow-sm focus:border-primary-500 focus:ring-primary-500"
+              placeholder="Apellido"
+            />
+          </div>
+        </div>
+
         <div>
           <label for="email" class="block text-sm font-medium text-gray-700"> Email </label>
           <input
@@ -84,15 +109,21 @@
         </div>
 
         <!-- Error Message -->
-        <p v-if="error" class="text-red-600 text-sm">{{ error }}</p>
+        <p v-if="authError" class="text-red-600 text-sm">{{ authError }}</p>
 
         <!-- Submit Button -->
         <button
           type="submit"
           class="w-full bg-primary-800 text-white rounded-md py-2 px-4 hover:bg-primary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-          :disabled="isLoading"
+          :disabled="authLoading"
         >
-          {{ isLoading ? 'Cargando...' : isLogin ? 'Iniciar Sesión' : 'Crear Cuenta' }}
+          <span v-if="authLoading">
+            <span
+              class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2 align-middle"
+            ></span>
+            Cargando...
+          </span>
+          <span v-else>{{ isLogin ? 'Iniciar Sesión' : 'Crear Cuenta' }}</span>
         </button>
       </form>
 
@@ -111,34 +142,47 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { X } from 'lucide-vue-next'
+import { useAuth } from '~/composables/useAuth'
 
-// eslint-disable-next-line no-unused-vars
 const props = defineProps<{
   show: boolean
 }>()
 
 const emit = defineEmits<{
-  // eslint-disable-next-line no-unused-vars
   (e: 'close'): void
-  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-explicit-any
   (e: 'login', data: any): void
 }>()
 
 const isLogin = ref(true)
-const isLoading = ref(false)
-const error = ref('')
+const { authLoading, authError, login, signup } = useAuth()
 
 const form = ref({
   email: '',
   password: '',
-  passwordConfirm: ''
+  passwordConfirm: '',
+  firstName: '',
+  lastName: ''
+})
+
+const resetForm = () => {
+  form.value = {
+    email: '',
+    password: '',
+    passwordConfirm: '',
+    firstName: '',
+    lastName: ''
+  }
+}
+
+// Computed property for validating passwords match
+const passwordsMatch = computed(() => {
+  return isLogin.value || form.value.password === form.value.passwordConfirm
 })
 
 // ESC key handler
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const handleEscape = (e: any) => {
+const handleEscape = (e: KeyboardEvent) => {
   if (e.key === 'Escape' && props.show) {
     emit('close')
   }
@@ -146,51 +190,47 @@ const handleEscape = (e: any) => {
 
 // Add and remove ESC key listener
 onMounted(() => {
-  // eslint-disable-next-line no-undef
   document.addEventListener('keydown', handleEscape)
 })
 
 onUnmounted(() => {
-  // eslint-disable-next-line no-undef
   document.removeEventListener('keydown', handleEscape)
 })
 
-const handleGoogleLogin = async () => {
-  isLoading.value = true
-  try {
-    // Mock Google login
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    emit('login', { provider: 'google', email: 'user@example.com' })
-    emit('close')
-  } catch (e) {
-    error.value = 'Error al iniciar sesión con Google'
-  } finally {
-    isLoading.value = false
-  }
-}
-
 const handleSubmit = async () => {
-  error.value = ''
-
   // Basic validation
-  if (!isLogin.value && form.value.password !== form.value.passwordConfirm) {
-    error.value = 'Las contraseñas no coinciden'
+  if (!isLogin.value && !passwordsMatch.value) {
+    // Don't use authError directly to avoid conflicts with API errors
+    alert('Las contraseñas no coinciden')
     return
   }
 
-  isLoading.value = true
   try {
-    // Mock API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    emit('login', {
-      provider: 'email',
-      email: form.value.email
-    })
-    emit('close')
+    let result
+
+    if (isLogin.value) {
+      // Login flow
+      result = await login(form.value.email, form.value.password)
+    } else {
+      // Signup flow
+      result = await signup(
+        form.value.email,
+        form.value.password,
+        form.value.firstName,
+        form.value.lastName
+      )
+    }
+
+    if (result.success) {
+      emit('login', {
+        provider: 'email',
+        email: form.value.email
+      })
+      emit('close')
+      resetForm()
+    }
   } catch (e) {
-    error.value = 'Error al iniciar sesión'
-  } finally {
-    isLoading.value = false
+    console.error('Authentication error:', e)
   }
 }
 </script>

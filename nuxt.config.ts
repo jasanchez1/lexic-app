@@ -12,5 +12,18 @@ export default defineNuxtConfig({
       tailwindcss: {},
       autoprefixer: {}
     }
-  }
+  },
+  runtimeConfig: {
+    // Private keys that are exposed only on the server
+    apiSecret: process.env.API_SECRET || 'default_secret',
+    
+    // Public keys that are exposed to the client
+    public: {
+      apiUrl: process.env.NUXT_PUBLIC_API_URL || 'https://ec2-15-229-42-136.sa-east-1.compute.amazonaws.com'
+    }
+  },
+  // Add plugin to initialize auth on app start
+  plugins: [
+    '~/plugins/auth.ts'
+  ]
 })

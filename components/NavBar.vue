@@ -1,62 +1,3 @@
-# Header.vue
-<script setup lang="ts">
-import { ref, computed } from 'vue'
-import { ChevronDown } from 'lucide-vue-next'
-import { onClickOutside } from '@vueuse/core'
-import { useLawyerAreas } from '~/composables/useLawyerAreas'
-import type { PracticeArea } from '~/types/lawyer'
-import { useNavigation } from '~/composables/useNavigation'
-import { useLegalTopics } from '~/composables/useLegalTopics'
-import AuthModal from '~/components/auth/Modal.vue'
-
-const route = useRoute()
-const { currentLawyer } = useNavigation()
-const { areas, groupedAreas, categories } = useLawyerAreas()
-const { topics } = useLegalTopics()
-const isAreasMenuOpen = ref(false)
-const dropdownRef = ref<globalThis.HTMLElement | null>(null)
-
-const currentTopic = computed(() => {
-  if (!route.params.slug) return null
-
-  return (
-    topics.value.find(t => t.slug === route.params.slug) ||
-    topics.value.flatMap(t => t.subtopics || []).find(st => st.slug === route.params.slug)
-  )
-})
-
-onClickOutside(dropdownRef, () => {
-  isAreasMenuOpen.value = false
-})
-
-const currentArea = computed(() => {
-  const slug = route.query.area
-  return areas.find(area => area.slug === slug)
-})
-
-const bestArea = computed(() =>
-  currentLawyer.value?.areas.find((x: PracticeArea) => Math.max(x.experienceScore))
-)
-
-const mainCategories = ['civil', 'family', 'labor', 'commercial']
-
-const limitedGroupedAreas = computed(() => {
-  return Object.fromEntries(
-    Object.entries(groupedAreas.value).filter(([category]) => mainCategories.includes(category))
-  )
-})
-
-const showAuthModal = ref(false)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const handleLogin = (data: any) => {
-  console.log('Login successful:', data)
-  // Here you would typically:
-  // 1. Store the user data in your auth store
-  // 2. Set the authentication token
-  // 3. Update the UI to show the logged-in state
-}
-</script>
-
 <template>
   <header class="relative z-50">
     <!-- Top Navigation -->
@@ -126,12 +67,61 @@ const handleLogin = (data: any) => {
             </div>
           </div>
 
-          <button
-            class="bg-accent hover:bg-accent-hover text-white px-6 py-2 rounded text-sm font-medium transition-colors duration-200"
-            @click="showAuthModal = true"
-          >
-            Iniciar Sesión
-          </button>
+          <!-- Auth Section -->
+          <div>
+            <!-- Show login button if not authenticated -->
+            <button
+              v-if="!isAuthenticated"
+              class="bg-accent hover:bg-accent-hover text-white px-6 py-2 rounded text-sm font-medium transition-colors duration-200"
+              @click="showAuthModal = true"
+            >
+              Iniciar Sesión
+            </button>
+
+            <!-- Show user dropdown if authenticated -->
+            <div v-else class="relative" ref="userMenuRef">
+              <button
+                class="flex items-center text-gray-700 hover:text-primary-600 transition-colors"
+                @click="isUserMenuOpen = !isUserMenuOpen"
+              >
+                <div
+                  class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 mr-2"
+                >
+                  {{ userInitials }}
+                </div>
+                <span class="mr-1">{{ user?.first_name || 'Usuario' }}</span>
+                <ChevronDown
+                  :class="{ 'rotate-180': isUserMenuOpen }"
+                  class="w-4 h-4 transition-transform"
+                />
+              </button>
+
+              <!-- User Dropdown Menu -->
+              <div
+                v-if="isUserMenuOpen"
+                class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-100 z-50"
+              >
+                <div class="p-2">
+                  <div class="border-b pb-2 mb-2 px-3 py-2">
+                    <p class="text-sm font-medium">{{ user?.email }}</p>
+                  </div>
+                  <NuxtLink
+                    to="/profile"
+                    class="block px-3 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 rounded-md transition-colors duration-200"
+                    @click="isUserMenuOpen = false"
+                  >
+                    Mi Perfil
+                  </NuxtLink>
+                  <button
+                    class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 rounded-md transition-colors duration-200"
+                    @click="handleLogout"
+                  >
+                    Cerrar Sesión
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <AuthModal :show="showAuthModal" @close="showAuthModal = false" @login="handleLogin" />
         </div>
@@ -202,3 +192,94 @@ const handleLogin = (data: any) => {
     </div>
   </header>
 </template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { ChevronDown } from 'lucide-vue-next'
+import { onClickOutside } from '@vueuse/core'
+import { useLawyerAreas } from '~/composables/useLawyerAreas'
+import type { PracticeArea } from '~/types/lawyer'
+import { useNavigation } from '~/composables/useNavigation'
+import { useLegalTopics } from '~/composables/useLegalTopics'
+import { useAuth } from '~/composables/useAuth'
+import AuthModal from '~/components/auth/Modal.vue'
+
+const route = useRoute()
+const { currentLawyer } = useNavigation()
+const { areas, groupedAreas, categories } = useLawyerAreas()
+const { topics } = useLegalTopics()
+const { user, isAuthenticated, logout } = useAuth()
+
+// Auth state and modals
+const showAuthModal = ref(false)
+const isAreasMenuOpen = ref(false)
+const isUserMenuOpen = ref(false)
+const dropdownRef = ref<HTMLElement | null>(null)
+const userMenuRef = ref<HTMLElement | null>(null)
+
+// User initials for avatar
+const userInitials = computed(() => {
+  if (!user.value) return '?'
+
+  const firstName = user.value.first_name || ''
+  const lastName = user.value.last_name || ''
+
+  const firstInitial = firstName.charAt(0).toUpperCase()
+  const lastInitial = lastName.charAt(0).toUpperCase()
+
+  return firstInitial + (lastInitial || '')
+})
+
+const currentTopic = computed(() => {
+  if (!route.params.slug) return null
+
+  return (
+    topics.value.find(t => t.slug === route.params.slug) ||
+    topics.value.flatMap(t => t.subtopics || []).find(st => st.slug === route.params.slug)
+  )
+})
+
+// Close dropdowns when clicking outside
+onClickOutside(dropdownRef, () => {
+  isAreasMenuOpen.value = false
+})
+
+onClickOutside(userMenuRef, () => {
+  isUserMenuOpen.value = false
+})
+
+const currentArea = computed(() => {
+  const slug = route.query.area
+  return areas.find(area => area.slug === slug)
+})
+
+const bestArea = computed(() =>
+  currentLawyer.value?.areas.find((x: PracticeArea) => Math.max(x.experienceScore))
+)
+
+const mainCategories = ['civil', 'family', 'labor', 'commercial']
+
+const limitedGroupedAreas = computed(() => {
+  return Object.fromEntries(
+    Object.entries(groupedAreas.value).filter(([category]) => mainCategories.includes(category))
+  )
+})
+
+// Handle login success
+const handleLogin = (data: any) => {
+  console.log('Login successful:', data)
+  showAuthModal.value = false
+}
+
+// Handle logout
+const handleLogout = async () => {
+  await logout()
+  isUserMenuOpen.value = false
+}
+
+// Initialize auth state on page load
+onMounted(async () => {
+  const { initAuth } = useAuth()
+  await initAuth()
+})
+</script>
