@@ -1,5 +1,6 @@
 // composables/useAuth.ts
 import { ref } from 'vue'
+import { useAuthService } from '~/services/api'
 
 // User type definition
 export interface User {
@@ -9,6 +10,8 @@ export interface User {
   last_name: string | null
   is_active: boolean
   is_verified: boolean
+  created_at: string
+  updated_at: string
 }
 
 // Auth state
@@ -20,43 +23,28 @@ const tokens = ref<{
   access_token: string
   refresh_token: string
   expires_in: number
+  user_id: string
+  token_type: string
 } | null>(null)
 
-// Get API URL from environment variable with fallback
-const getApiUrl = () => {
-  // Using runtime config (will need to be set up in nuxt.config.ts)
-  const config = useRuntimeConfig()
-  return config.public.apiUrl || 'https://ec2-15-229-42-136.sa-east-1.compute.amazonaws.com'
-}
-
 export const useAuth = () => {
+  const authService = useAuthService()
+
   // Login function
   const login = async (email: string, password: string) => {
     authLoading.value = true
     authError.value = null
 
     try {
-      const apiUrl = getApiUrl()
-      const response = await fetch(`${apiUrl}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, password })
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.detail || 'Error al iniciar sesión')
-      }
-
-      const data = await response.json()
+      const data = await authService.login(email, password)
       
       // Store tokens
       tokens.value = {
         access_token: data.access_token,
         refresh_token: data.refresh_token,
-        expires_in: data.expires_in
+        expires_in: data.expires_in,
+        user_id: data.user_id,
+        token_type: data.token_type || 'bearer'
       }
       
       // Store tokens in localStorage for persistence (client-side only)
@@ -86,32 +74,15 @@ export const useAuth = () => {
     authError.value = null
 
     try {
-      const apiUrl = getApiUrl()
-      const response = await fetch(`${apiUrl}/auth/signup`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          first_name: firstName,
-          last_name: lastName
-        })
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.detail || 'Error al crear cuenta')
-      }
-
-      const data = await response.json()
+      const data = await authService.signup(email, password, firstName, lastName)
       
       // Store tokens
       tokens.value = {
         access_token: data.access_token,
         refresh_token: data.refresh_token,
-        expires_in: data.expires_in
+        expires_in: data.expires_in,
+        user_id: data.user_id,
+        token_type: data.token_type || 'bearer'
       }
       
       // Store tokens in localStorage for persistence (client-side only)
@@ -140,18 +111,7 @@ export const useAuth = () => {
     if (!tokens.value) return null
 
     try {
-      const apiUrl = getApiUrl()
-      const response = await fetch(`${apiUrl}/auth/me`, {
-        headers: {
-          'Authorization': `Bearer ${tokens.value.access_token}`
-        }
-      })
-
-      if (!response.ok) {
-        throw new Error('Error al obtener perfil de usuario')
-      }
-
-      const userData = await response.json()
+      const userData = await authService.getCurrentUser()
       user.value = userData
       return userData
     } catch (error) {
@@ -167,17 +127,7 @@ export const useAuth = () => {
     try {
       if (tokens.value?.refresh_token) {
         // Call logout endpoint
-        const apiUrl = getApiUrl()
-        await fetch(`${apiUrl}/auth/logout`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${tokens.value.access_token}`
-          },
-          body: JSON.stringify({
-            refresh_token: tokens.value.refresh_token
-          })
-        })
+        await authService.logout(tokens.value.refresh_token)
       }
     } catch (error) {
       console.error('Logout error:', error)
@@ -217,28 +167,15 @@ export const useAuth = () => {
     if (!tokens.value?.refresh_token) return false
 
     try {
-      const apiUrl = getApiUrl()
-      const response = await fetch(`${apiUrl}/auth/refresh`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          refresh_token: tokens.value.refresh_token
-        })
-      })
-
-      if (!response.ok) {
-        throw new Error('Token refresh failed')
-      }
-
-      const data = await response.json()
+      const data = await authService.refreshToken(tokens.value.refresh_token)
       
       // Update tokens
       tokens.value = {
         access_token: data.access_token,
         refresh_token: data.refresh_token,
-        expires_in: data.expires_in
+        expires_in: data.expires_in,
+        user_id: data.user_id,
+        token_type: data.token_type || 'bearer'
       }
       
       // Update localStorage (client-side only)
@@ -259,6 +196,7 @@ export const useAuth = () => {
     isAuthenticated,
     authLoading,
     authError,
+    tokens,
     login,
     signup,
     logout,

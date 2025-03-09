@@ -11,9 +11,11 @@ const props = withDefaults(
   defineProps<{
     lawyer: Lawyer
     viewProfile?: boolean
+    loading?: boolean
   }>(),
   {
-    viewProfile: true
+    viewProfile: true,
+    loading: false
   }
 )
 
@@ -34,7 +36,38 @@ const handleCallClick = (lawyer: Lawyer) => {
 </script>
 
 <template>
+  <!-- Skeleton loader -->
+  <div v-if="loading" class="bg-white rounded-lg shadow-sm p-6 mb-4 animate-pulse">
+    <div class="flex justify-between">
+      <!-- Left side with lawyer info -->
+      <div class="flex">
+        <div class="w-32 h-32 flex-shrink-0 bg-gray-200 rounded-lg"></div>
+        <div class="ml-6 space-y-3">
+          <div class="h-6 bg-gray-200 rounded w-40"></div>
+          <div class="h-4 bg-gray-200 rounded w-32"></div>
+          <div class="h-4 bg-gray-200 rounded w-24"></div>
+          <div class="mt-4 space-y-2">
+            <div class="h-4 bg-gray-200 rounded w-48"></div>
+            <div class="h-4 bg-gray-200 rounded w-64"></div>
+            <div class="h-4 bg-gray-200 rounded w-56"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right side with actions -->
+      <div class="flex flex-col gap-4 self-center">
+        <div class="w-32 h-10 bg-gray-200 rounded-md"></div>
+        <div class="grid grid-cols-2 gap-2">
+          <div class="h-10 bg-gray-200 rounded-md"></div>
+          <div class="h-10 bg-gray-200 rounded-md"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actual content -->
   <div
+    v-else
     :class="[
       'bg-white rounded-lg shadow-sm p-6 mb-4',
       props.viewProfile ? 'hover:shadow-md transition-shadow' : ''
@@ -77,7 +110,7 @@ const handleCallClick = (lawyer: Lawyer) => {
                 Experiencia: {{ calculateYearsOfExperience(lawyer.professionalStartDate) }}
               </span>
             </div>
-            <div class="text-sm mt-1">
+            <div v-if="lawyer.areas.length > 0" class="text-sm mt-1">
               <span class="font-medium">Áreas practicas:</span>
               {{ lawyer.areas.map((x: PracticeArea) => x.name).join(', ') }}
             </div>

@@ -1,7 +1,10 @@
+// composables/useLawyerExperience.ts
 import { ref } from 'vue'
+import { useFetch } from '~/utils/api'
 import type { Education, WorkExperience, Achievement, LawyerStats } from '~/types/experience'
 
 export const useLawyerExperience = () => {
+  const api = useFetch()
   const education = ref<Education[]>([])
   const workExperience = ref<WorkExperience[]>([])
   const achievements = ref<Achievement[]>([])
@@ -9,15 +12,16 @@ export const useLawyerExperience = () => {
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const fetchExperience = async (lawyerId: string) => {
     isLoading.value = true
     error.value = null
 
     try {
-      // Mock API delay
-      await new Promise(resolve => setTimeout(resolve, 200))
-
+      // Note: Assuming there will be an experience endpoint in the future
+      // For now, we'll use mocked data
+      // When the API endpoint becomes available, uncomment the next line
+      // const response = await api.get(`/lawyers/${lawyerId}/experience`)
+      
       // Mock data
       education.value = [
         {
@@ -68,9 +72,17 @@ export const useLawyerExperience = () => {
         yearsExperience: 2,
         specializedAreas: 3
       }
+      
+      return {
+        education: education.value,
+        workExperience: workExperience.value,
+        achievements: achievements.value,
+        stats: stats.value
+      }
     } catch (e) {
-      console.error(e)
-      error.value = 'Error al cargar la experiencia'
+      console.error(`Error fetching experience for lawyer ${lawyerId}:`, e)
+      error.value = e instanceof Error ? e.message : 'Error al cargar la experiencia'
+      return null
     } finally {
       isLoading.value = false
     }

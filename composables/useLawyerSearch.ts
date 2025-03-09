@@ -1,52 +1,101 @@
+// composables/useLawyerSearch.ts
 import { ref } from 'vue'
-import type { Lawyer } from '~/types/lawyer'
+import type { Lawyer, PracticeArea } from '~/types/lawyer'
+import { useLawyersService } from '~/services/api'
+
+interface LawyerAPIResponse {
+  lawyers: Lawyer[]
+  total: number
+  page: number
+  size: number
+  pages: number
+}
 
 export const useLawyerSearch = () => {
+  const lawyersService = useLawyersService()
   const lawyers = ref<Lawyer[]>([])
+  const totalLawyers = ref(0)
+  const totalPages = ref(0)
+  const currentPage = ref(1)
+  const pageSize = ref(10)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // Format API response to match our frontend model
+  const formatLawyer = (apiLawyer: any): Lawyer => {
+    return {
+      id: apiLawyer.id,
+      name: apiLawyer.name,
+      title: apiLawyer.title || '',
+      email: apiLawyer.email,
+      reviewScore: apiLawyer.review_score || 0,
+      reviewCount: apiLawyer.review_count || 0,
+      // Convert string date to Date object
+      professionalStartDate: apiLawyer.professional_start_date 
+        ? new Date(apiLawyer.professional_start_date) 
+        : new Date(),
+      // Map API areas format to our format
+      areas: Array.isArray(apiLawyer.areas) 
+        ? apiLawyer.areas.map((area: any): PracticeArea => ({
+            id: area.id,
+            name: area.name,
+            slug: area.slug,
+            experienceScore: area.experience_score || 50
+          }))
+        : [],
+      bio: apiLawyer.bio || '',
+      imageURL: apiLawyer.image_url || 'https://via.placeholder.com/150',
+      phone: apiLawyer.phone || '',
+      city: apiLawyer.city || 'Santiago',
+      // Optional fields
+      catchPhrase: apiLawyer.catchphrase,
+      languages: apiLawyer.languages || []
+    }
+  }
+
   const searchLawyers = async (params: {
     area?: string
     city?: string
-    query?: string
+    q?: string
     sort?: string
+    page?: number
+    size?: number
   }) => {
     isLoading.value = true
     error.value = null
+    
     try {
-      await new Promise(resolve => setTimeout(resolve, 200))
-      lawyers.value = [
-        {
-          id: '1',
-          name: 'Garbielito Boric',
-          title: 'Abogado Civil, Universidad de Chile',
-          reviewScore: 4.3,
-          reviewCount: 6,
-          professionalStartDate: new Date('2022-09-28T14:30:00Z'),
-          areas: [
-            { name: 'Civil', id: 'civil', experienceScore: 60, slug: 'civil' },
-            {
-              name: 'Derecho Personal',
-              id: 'derecho-personal',
-              experienceScore: 40,
-              slug: 'derecho-personal'
-            },
-            { name: 'Accidentes', id: 'accidentes', experienceScore: 30, slug: 'accidentes' }
-          ],
-          bio: 'Gabrielito, socio principal de Libbey Law Offices, enfoca su práctica en las áreas de derecho civil.',
-          imageURL:
-            'https://www.cidob.org/sites/default/files/styles/max_width_290/public/gabriel_boric_font.jpg.webp',
-          phone: '+34673287793',
-          city: 'Santiago',
-          email: 'gboric@example.com'
-        }
-      ]
+      // Use the search method from the service
+      const response = await lawyersService.search(params)
+      
+      lawyers.value = response.lawyers.map(formatLawyer)
+      totalLawyers.value = response.total
+      totalPages.value = response.pages
+      currentPage.value = response.page
+      pageSize.value = response.size
+      
+      return response
     } catch (e) {
-      console.error(e)
-      error.value = 'Error al buscar abogados'
+      console.error('Error searching lawyers:', e)
+      error.value = e instanceof Error ? e.message : 'Error al buscar abogados'
       lawyers.value = []
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const getLawyer = async (id: string) => {
+    isLoading.value = true
+    error.value = null
+    
+    try {
+      const response = await lawyersService.get(id)
+      return formatLawyer(response)
+    } catch (e) {
+      console.error(`Error fetching lawyer with ID ${id}:`, e)
+      error.value = e instanceof Error ? e.message : 'Error al cargar el perfil del abogado'
+      return null
     } finally {
       isLoading.value = false
     }
@@ -54,8 +103,13 @@ export const useLawyerSearch = () => {
 
   return {
     lawyers,
+    totalLawyers,
+    totalPages,
+    currentPage,
+    pageSize,
     isLoading,
     error,
-    searchLawyers
+    searchLawyers,
+    getLawyer
   }
 }

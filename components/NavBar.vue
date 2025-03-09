@@ -8,7 +8,7 @@
             <NuxtLink to="/" class="text-2xl font-bold text-primary-700">Logo</NuxtLink>
 
             <div class="hidden md:flex space-x-6">
-              <!-- Dropdown Menu -->
+              <!-- Areas Dropdown Menu -->
               <div ref="dropdownRef" class="relative">
                 <button
                   class="inline-flex items-center text-gray-600 hover:text-primary-700 px-3 py-2 text-sm font-medium transition-colors duration-200"
@@ -26,27 +26,43 @@
                   v-if="isAreasMenuOpen"
                   class="absolute left-0 z-50 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-100"
                 >
-                  <div class="p-4">
-                    <div
-                      v-for="(areas, category) in limitedGroupedAreas"
-                      :key="category"
-                      class="mb-4"
-                    >
-                      <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                        {{ categories[category as keyof typeof categories] }}
-                      </h3>
-                      <div class="space-y-1">
-                        <NuxtLink
-                          v-for="area in areas.slice(0, 3)"
-                          :key="area.id"
-                          :to="`/lawyers?area=${area.slug}`"
-                          class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 rounded-md transition-colors duration-200"
-                          @click="isAreasMenuOpen = false"
-                        >
-                          {{ area.name }}
-                        </NuxtLink>
-                      </div>
+                  <div v-if="isAreasLoading" class="p-4 text-center">
+                    <div class="animate-spin w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full mx-auto mb-2"></div>
+                    <p class="text-sm text-gray-500">Cargando áreas...</p>
+                  </div>
+                  
+                  <div v-else-if="areasError" class="p-4">
+                    <p class="text-sm text-red-500">{{ areasError }}</p>
+                  </div>
+                  
+                  <div v-else class="p-4">
+                    <div v-if="Object.keys(groupedAreas).length === 0" class="text-center py-2">
+                      <p class="text-sm text-gray-500">No hay áreas disponibles</p>
                     </div>
+                    
+                    <template v-else>
+                      <div
+                        v-for="categoryId in mainCategoryIds"
+                        :key="categoryId"
+                        class="mb-4"
+                      >
+                        <h3 v-if="categoriesData[categoryId]" class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                          {{ categoriesData[categoryId].name }}
+                        </h3>
+                        <div class="space-y-1">
+                          <NuxtLink
+                            v-for="area in groupedAreas[categoryId]?.slice(0, 3) || []"
+                            :key="area.id"
+                            :to="`/lawyers?area=${area.slug}`"
+                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 rounded-md transition-colors duration-200"
+                            @click="isAreasMenuOpen = false"
+                          >
+                            {{ area.name }}
+                          </NuxtLink>
+                        </div>
+                      </div>
+                    </template>
+                    
                     <div class="border-t mt-4 pt-4">
                       <NuxtLink
                         to="/areas"
@@ -206,7 +222,14 @@ import AuthModal from '~/components/auth/Modal.vue'
 
 const route = useRoute()
 const { currentLawyer } = useNavigation()
-const { areas, groupedAreas, categories } = useLawyerAreas()
+const { 
+  areas, 
+  categoriesData, 
+  groupedAreas, 
+  isLoading: isAreasLoading, 
+  error: areasError 
+} = useLawyerAreas()
+
 const { topics } = useLegalTopics()
 const { user, isAuthenticated, logout } = useAuth()
 
@@ -250,19 +273,28 @@ onClickOutside(userMenuRef, () => {
 
 const currentArea = computed(() => {
   const slug = route.query.area
-  return areas.find(area => area.slug === slug)
+  return areas.value.find(area => area.slug === slug)
 })
 
 const bestArea = computed(() =>
   currentLawyer.value?.areas.find((x: PracticeArea) => Math.max(x.experienceScore))
 )
 
-const mainCategories = ['civil', 'family', 'labor', 'commercial']
-
-const limitedGroupedAreas = computed(() => {
-  return Object.fromEntries(
-    Object.entries(groupedAreas.value).filter(([category]) => mainCategories.includes(category))
-  )
+// Get top categories by number of areas
+const mainCategoryIds = computed(() => {
+  // Get categories that have areas
+  const categoriesWithAreas = Object.keys(groupedAreas.value)
+    .filter(categoryId => groupedAreas.value[categoryId]?.length > 0)
+  
+  // Sort by number of areas (descending)
+  categoriesWithAreas.sort((a, b) => {
+    const aCount = groupedAreas.value[a]?.length || 0
+    const bCount = groupedAreas.value[b]?.length || 0
+    return bCount - aCount
+  })
+  
+  // Take top 4 categories
+  return categoriesWithAreas.slice(0, 4)
 })
 
 // Handle login success
@@ -281,5 +313,11 @@ const handleLogout = async () => {
 onMounted(async () => {
   const { initAuth } = useAuth()
   await initAuth()
+  
+  // For debugging
+  console.log('Areas loaded:', areas.value)
+  console.log('Categories loaded:', categoriesData.value)
+  console.log('Grouped areas:', groupedAreas.value)
+  console.log('Main category IDs:', mainCategoryIds.value)
 })
 </script>

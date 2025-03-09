@@ -38,7 +38,7 @@ watch(activeTab, async newTab => {
   }
 })
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// Handle review submission
 const handleReviewSubmit = async (review: any) => {
   if (!profile.value) return
 
@@ -47,19 +47,21 @@ const handleReviewSubmit = async (review: any) => {
   if (result.success) {
     showReviewModal.value = false
     // Optionally scroll to reviews section
-    globalThis.document.getElementById('reviews-section')?.scrollIntoView({ behavior: 'smooth' })
+    document.getElementById('reviews-section')?.scrollIntoView({ behavior: 'smooth' })
   } else {
     // Handle error
     console.error(result.error)
   }
 }
 
+// Fetch reviews when reviews tab is active
 watch(activeTab, async newTab => {
   if (newTab === 'reviews' && profile.value) {
     await fetchReviews(profile.value.id)
   }
 })
 
+// Update current lawyer in navigation store
 watch(
   () => profile.value,
   newProfile => {
@@ -70,6 +72,7 @@ watch(
   { immediate: true }
 )
 
+// Clean up on component unmount
 onUnmounted(() => {
   setCurrentLawyer(null)
 })
@@ -77,6 +80,7 @@ onUnmounted(() => {
 const route = useRoute()
 const lawyerId = route.params.id as string
 
+// Initial data fetch on mount
 onMounted(async () => {
   await fetchProfile(lawyerId)
 
@@ -90,14 +94,12 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div v-if="isLoading" class="max-w-7xl mx-auto px-4 py-12 text-center">
-    <span class="text-gray-500">Cargando perfil...</span>
+  <div v-if="isLoading" class="max-w-7xl mx-auto px-4 py-12">
+    <CommonLoading message="Cargando perfil..." :full-screen="true" />
   </div>
 
   <div v-else-if="error" class="max-w-7xl mx-auto px-4 py-12">
-    <div class="bg-red-50 p-4 rounded-md text-red-700">
-      {{ error }}
-    </div>
+    <CommonErrorMessage :message="error" full-width />
   </div>
 
   <div v-else-if="profile" class="min-h-screen bg-gray-50">
@@ -159,7 +161,7 @@ onMounted(async () => {
                 <div class="space-y-4">
                   <div
                     v-for="area in profile.areas"
-                    :key="area.name"
+                    :key="area.id"
                     class="flex items-center justify-between"
                   >
                     <div class="flex-1">
@@ -219,7 +221,7 @@ onMounted(async () => {
         </div>
 
         <!-- Reviews Tab -->
-        <div v-if="activeTab === 'reviews'" class="p-6">
+        <div v-if="activeTab === 'reviews'" id="reviews-section" class="p-6">
           <div class="flex justify-between items-center mb-6">
             <h2 class="text-xl font-bold">Reseñas de Clientes</h2>
             <button
@@ -238,12 +240,12 @@ onMounted(async () => {
             />
           </div>
 
-          <div v-if="reviewsLoading" class="py-12 text-center">
-            <span class="text-gray-500">Cargando reseñas...</span>
+          <div v-if="reviewsLoading" class="py-8">
+            <CommonLoading message="Cargando reseñas..." />
           </div>
 
-          <div v-else-if="reviewsError" class="text-red-600 mb-4">
-            {{ reviewsError }}
+          <div v-else-if="reviewsError" class="mb-4">
+            <CommonErrorMessage :message="reviewsError" type="error" />
           </div>
 
           <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -288,7 +290,7 @@ onMounted(async () => {
               >
                 <!-- Review Header -->
                 <div class="flex justify-between items-start mb-3">
-                  <div class="flex items-center space-x-4">
+                  <div>
                     <h4 v-if="review.title" class="font-medium text-gray-900">
                       {{ review.title }}
                     </h4>
@@ -299,7 +301,7 @@ onMounted(async () => {
                     />
                   </div>
                   <div class="text-sm text-gray-500">
-                    {{ new Date(review.date).toLocaleDateString() }}
+                    {{ formatDate(review.date) }}
                   </div>
                 </div>
 
@@ -319,6 +321,12 @@ onMounted(async () => {
               <!-- Empty State -->
               <div v-if="reviews.length === 0" class="text-center py-12 bg-gray-50 rounded-lg">
                 <p class="text-gray-500">No hay reseñas disponibles</p>
+                <button
+                  class="mt-2 text-primary-600 hover:text-primary-700 font-medium"
+                  @click="showReviewModal = true"
+                >
+                  Sé el primero en escribir una reseña
+                </button>
               </div>
             </div>
           </div>
@@ -326,33 +334,33 @@ onMounted(async () => {
 
         <!-- Experience Tab -->
         <div v-if="activeTab === 'experience'" class="p-6">
-          <div v-if="expLoading" class="text-center py-12">
-            <span class="text-gray-500">Cargando experiencia...</span>
+          <div v-if="expLoading" class="py-8">
+            <CommonLoading message="Cargando experiencia..." />
           </div>
 
-          <div v-else-if="expError" class="bg-red-50 p-4 rounded-md text-red-700">
-            {{ expError }}
+          <div v-else-if="expError" class="mb-4">
+            <CommonErrorMessage :message="expError" />
           </div>
 
           <div v-else class="space-y-8">
             <!-- Stats -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div v-if="reviewStats" class="bg-primary-50 p-4 rounded-lg text-center">
+              <div v-if="experienceStats?.casesWon" class="bg-primary-50 p-4 rounded-lg text-center">
                 <div class="text-2xl font-bold text-primary-600">
-                  {{ experienceStats?.casesWon }}
+                  {{ experienceStats.casesWon }}
                 </div>
                 <div class="text-sm text-gray-600">Casos Ganados</div>
-                <div class="text-xs text-gray-500">de {{ experienceStats?.totalCases }} casos</div>
+                <div class="text-xs text-gray-500">de {{ experienceStats.totalCases }} casos</div>
               </div>
               <div class="bg-primary-50 p-4 rounded-lg text-center">
                 <div class="text-2xl font-bold text-primary-600">
-                  {{ experienceStats?.yearsExperience }}
+                  {{ experienceStats?.yearsExperience || calculateYearsOfExperience(profile.professionalStartDate) }}
                 </div>
                 <div class="text-sm text-gray-600">Años de Experiencia</div>
               </div>
               <div class="bg-primary-50 p-4 rounded-lg text-center">
                 <div class="text-2xl font-bold text-primary-600">
-                  {{ experienceStats?.specializedAreas }}
+                  {{ experienceStats?.specializedAreas || profile.areas.length }}
                 </div>
                 <div class="text-sm text-gray-600">Áreas de Especialización</div>
               </div>
@@ -363,12 +371,12 @@ onMounted(async () => {
               <h3 class="text-lg font-semibold mb-4">Educación</h3>
               <div class="space-y-4">
                 <div
-                  v-for="edu in education"
-                  :key="edu.institution + edu.year"
+                  v-for="edu in education.length ? education : profile.education"
+                  :key="edu.institution || edu.school + (edu.year || '')"
                   class="bg-white p-4 rounded-lg border"
                 >
                   <div class="font-medium">{{ edu.degree }}</div>
-                  <div class="text-gray-600">{{ edu.institution }}</div>
+                  <div class="text-gray-600">{{ edu.institution || edu.school }}</div>
                   <div class="flex justify-between mt-1">
                     <span class="text-sm text-gray-500">{{ edu.year }}</span>
                     <span v-if="edu.honors" class="text-sm text-primary-600">{{ edu.honors }}</span>
@@ -378,7 +386,7 @@ onMounted(async () => {
             </div>
 
             <!-- Work Experience -->
-            <div>
+            <div v-if="workExperience.length">
               <h3 class="text-lg font-semibold mb-4">Experiencia Laboral</h3>
               <div class="space-y-4">
                 <div
@@ -414,6 +422,11 @@ onMounted(async () => {
                   </p>
                 </div>
               </div>
+            </div>
+
+            <!-- No Experience Data Placeholder -->
+            <div v-if="!education.length && !workExperience.length && !achievements.length && !profile.education?.length" class="text-center py-12 bg-gray-50 rounded-lg">
+              <p class="text-gray-500">No hay información de experiencia disponible</p>
             </div>
           </div>
         </div>
