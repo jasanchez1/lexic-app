@@ -9,7 +9,6 @@ const {
   lawyers,
   totalLawyers,
   totalPages,
-  currentPage,
   isLoading: isLawyersLoading,
   error: LawyersError,
   searchLawyers
@@ -90,15 +89,15 @@ watchEffect(() => {
           <template v-else>
             {{ totalLawyers }} {{ totalLawyers === 1 ? 'Abogado' : 'Abogados' }}
             <template v-if="route.query.area">
-              <span class="text-gray-700">especialistas en</span> 
+              <span class="text-gray-700">especialistas en </span> 
               <span class="text-primary-600">{{ route.query.area }}</span>
             </template>
             <template v-if="route.query.city">
-              <span class="text-gray-700">en</span>
+              <span class="text-gray-700"> en </span>
               <span class="text-primary-600">{{ route.query.city }}</span>
             </template>
             <template v-if="route.query.q">
-              <span class="text-gray-700">para</span>
+              <span class="text-gray-700"> para </span>
               <span class="text-primary-600">"{{ route.query.q }}"</span>
             </template>
           </template>

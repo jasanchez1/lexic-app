@@ -1,15 +1,7 @@
-// composables/useLawyerSearch.ts
 import { ref } from 'vue'
 import type { Lawyer, PracticeArea } from '~/types/lawyer'
 import { useLawyersService } from '~/services/api'
 
-interface LawyerAPIResponse {
-  lawyers: Lawyer[]
-  total: number
-  page: number
-  size: number
-  pages: number
-}
 
 export const useLawyerSearch = () => {
   const lawyersService = useLawyersService()

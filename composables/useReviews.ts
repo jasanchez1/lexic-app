@@ -1,4 +1,3 @@
-// composables/useReviews.ts
 import { ref } from 'vue'
 import { useFetch } from '~/utils/api'
 import type { LawyerReview, ReviewStats } from '~/types/review'

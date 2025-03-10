@@ -1,25 +1,3 @@
-<script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useQuestions } from '~/composables/useQuestions'
-import { useAnswers } from '~/composables/useAnswers'
-import { formatDate } from '~/utils/date'
-import type { Question } from '~/types/question'
-
-const route = useRoute()
-const { fetchQuestion, isLoading: questionLoading, error: questionError } = useQuestions()
-const { answers, fetchAnswers, isLoading: answersLoading, error: answersError } = useAnswers()
-
-const question = ref<Question | null>(null)
-
-onMounted(async () => {
-  const result = await fetchQuestion(route.params.id as string)
-  if (result) {
-    question.value = result
-    await fetchAnswers(result.id)
-  }
-})
-</script>
-
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- Loading States -->
@@ -64,7 +42,40 @@ onMounted(async () => {
 
             <!-- Answers -->
             <div class="space-y-6">
-              <h2 class="text-xl font-semibold">{{ answers.length }} Respuestas</h2>
+              <div class="flex justify-between items-center">
+                <h2 class="text-xl font-semibold">{{ answers.length }} Respuestas</h2>
+
+                <!-- Add Answer button for authenticated users -->
+                <button
+                  v-if="isAuthenticated"
+                  @click="showAddAnswerForm = !showAddAnswerForm"
+                  class="text-primary-600 hover:text-primary-700 font-medium"
+                >
+                  {{ showAddAnswerForm ? 'Cancelar' : 'Agregar respuesta' }}
+                </button>
+              </div>
+
+              <!-- Add Answer Form -->
+              <div v-if="showAddAnswerForm" class="bg-white rounded-lg shadow-sm border p-6">
+                <h3 class="text-lg font-medium mb-4">Tu respuesta</h3>
+                <textarea
+                  v-model="newAnswerContent"
+                  rows="6"
+                  class="w-full rounded-md border-gray-300 shadow-sm px-4 py-3 text-gray-900 placeholder-gray-500 focus:border-primary-500 focus:ring-primary-500"
+                  placeholder="Escribe tu respuesta aquí..."
+                ></textarea>
+                <div class="flex justify-end mt-4">
+                  <button
+                    @click="submitAnswer"
+                    class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
+                    :disabled="isSubmittingAnswer"
+                  >
+                    {{ isSubmittingAnswer ? 'Enviando...' : 'Publicar respuesta' }}
+                  </button>
+                </div>
+              </div>
+
+              <!-- List of answers -->
               <AnswerCard v-for="answer in answers" :key="answer.id" :answer="answer" />
             </div>
           </div>
@@ -87,13 +98,14 @@ onMounted(async () => {
             <div class="bg-white rounded-lg shadow-sm border p-6 mt-6">
               <h3 class="text-lg font-semibold mb-4">Temas Relacionados</h3>
               <div class="space-y-2">
+                <div v-if="isLoadingTopics" class="text-sm text-gray-500">Cargando temas...</div>
                 <NuxtLink
-                  v-for="topicId in question.topicIds"
-                  :key="topicId"
-                  :to="`/questions/topics/${topicId}`"
+                  v-for="topic in relatedTopics"
+                  :key="topic.id"
+                  :to="`/questions/topics/${topic.slug}`"
                   class="block text-gray-600 hover:text-primary-600"
                 >
-                  {{ topicId }}
+                  {{ topic.name }}
                 </NuxtLink>
               </div>
             </div>
@@ -103,3 +115,73 @@ onMounted(async () => {
     </template>
   </div>
 </template>
+
+<script setup lang="ts">
+import { ref, onMounted, computed } from 'vue'
+import { useQuestions } from '~/composables/useQuestions'
+import { useAnswers } from '~/composables/useAnswers'
+import { useLegalTopics } from '~/composables/useLegalTopics'
+import { useAuth } from '~/composables/useAuth'
+import { formatDate } from '~/utils/date'
+import type { Question } from '~/types/question'
+import type { LegalTopic } from '~/types/legalTopics'
+
+const route = useRoute()
+const { fetchQuestion, isLoading: questionLoading, error: questionError } = useQuestions()
+const {
+  answers,
+  fetchAnswers,
+  createAnswer,
+  isLoading: answersLoading,
+  error: answersError
+} = useAnswers()
+const { topics, isLoading: isLoadingTopics, fetchTopics } = useLegalTopics()
+const { isAuthenticated } = useAuth()
+
+const question = ref<Question | null>(null)
+const showAddAnswerForm = ref(false)
+const newAnswerContent = ref('')
+const isSubmittingAnswer = ref(false)
+
+// Related topics based on question.topicIds
+const relatedTopics = computed(() => {
+  if (!question.value || !question.value.topicIds || !topics.value.length) return []
+
+  const result: LegalTopic[] = []
+
+  // Get all topics and subtopics
+  const allTopics: LegalTopic[] = [...topics.value, ...topics.value.flatMap(t => t.subtopics || [])]
+
+  // Find topics that match the question's topicIds
+  question.value.topicIds.forEach(id => {
+    const found = allTopics.find(t => t.id === id)
+    if (found) result.push(found)
+  })
+
+  return result
+})
+
+const submitAnswer = async () => {
+  if (!question.value || !newAnswerContent.value.trim() || !isAuthenticated.value) return
+
+  isSubmittingAnswer.value = true
+  try {
+    await createAnswer(question.value.id, newAnswerContent.value)
+    newAnswerContent.value = ''
+    showAddAnswerForm.value = false
+  } catch (error) {
+    console.error('Error submitting answer:', error)
+  } finally {
+    isSubmittingAnswer.value = false
+  }
+}
+
+onMounted(async () => {
+  await fetchTopics()
+  const result = await fetchQuestion(route.params.id as string)
+  if (result) {
+    question.value = result
+    await fetchAnswers(result.id)
+  }
+})
+</script>

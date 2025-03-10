@@ -7,7 +7,7 @@
           <div class="flex items-center">
             <div class="flex items-center text-primary-600">
               <div class="rounded-full bg-primary-100 p-1">
-                <Check v-if="currentStep === 'review'" class="w-5 h-5" />
+                <Check v-if="currentStep !== 'ask'" class="w-5 h-5" />
                 <span v-else class="w-5 h-5 flex items-center justify-center font-medium">1</span>
               </div>
               <span class="ml-2 font-medium">Preguntar</span>
@@ -39,26 +39,61 @@
 
     <!-- Form Content -->
     <div class="max-w-3xl mx-auto px-4 py-8">
+      <!-- Auth Check Overlay -->
+      <div v-if="showAuthOverlay" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
+          <h2 class="text-xl font-bold mb-4">Inicia sesión para continuar</h2>
+          <p class="text-gray-600 mb-6">Para publicar una pregunta y recibir respuestas de expertos legales, necesitas crear una cuenta o iniciar sesión.</p>
+
+          <div class="space-y-4">
+            <button 
+              @click="openLoginModal('login')"
+              class="w-full bg-primary-600 text-white p-3 rounded-md font-medium hover:bg-primary-700"
+            >
+              Iniciar Sesión
+            </button>
+            
+            <button 
+              @click="openLoginModal('signup')"
+              class="w-full bg-gray-800 text-white p-3 rounded-md font-medium hover:bg-gray-900"
+            >
+              Crear Cuenta
+            </button>
+            
+            <button 
+              @click="showAuthOverlay = false"
+              class="w-full border border-gray-300 p-3 rounded-md font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Volver
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Ask Step -->
       <template v-if="currentStep === 'ask'">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">Preguntas y respuestas gratuitas</h1>
         <p class="text-gray-600 mb-8">Cada 5 segundos alguien recibe asesoría legal gratuita.</p>
 
+        <div v-if="error" class="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
+          {{ error }}
+        </div>
+
         <form class="space-y-6" @submit.prevent="handleReview">
-          <!-- Your existing form fields -->
+          <!-- Title -->
           <div>
             <label for="title" class="block text-sm font-medium text-gray-700 required"
               >Pregunta</label
             >
             <textarea
               id="title"
-              v-model="form.title"
+              v-model="formData.title"
               rows="2"
               maxlength="128"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm px-4 py-3 text-gray-900 placeholder-gray-500 focus:border-primary-500 focus:ring-primary-500"
               placeholder="Comience su pregunta con 'cómo', 'qué', 'por qué', 'cuándo'..."
             />
-            <p class="mt-1 text-sm text-right text-gray-500">{{ form.title.length }}/128</p>
+            <p class="mt-1 text-sm text-right text-gray-500">{{ formData.title.length }}/128</p>
           </div>
 
           <!-- Details -->
@@ -68,27 +103,129 @@
             </label>
             <textarea
               id="content"
-              v-model="form.content"
+              v-model="formData.content"
               rows="6"
               maxlength="1200"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm px-4 py-3 text-gray-900 placeholder-gray-500 focus:border-primary-500 focus:ring-primary-500"
               placeholder="Proporcione detalles claves. No es necesario que sea perfecto, puede hacer aclaraciones después."
             />
-            <p class="mt-1 text-sm text-right text-gray-500">{{ form.content.length }}/1200</p>
+            <p class="mt-1 text-sm text-right text-gray-500">{{ formData.content.length }}/1200</p>
           </div>
 
-          <!-- Location -->
+          <!-- Topic Selection with Typeahead -->
           <div>
-            <label for="location" class="block text-sm font-medium text-gray-700 required">
+            <label class="block text-sm font-medium text-gray-700 required">
+              Tema Legal
+            </label>
+            <div class="mt-2">
+              <div v-if="topicsLoading" class="py-2">
+                <span class="text-sm text-gray-500">Cargando temas...</span>
+              </div>
+              <div v-else>
+                <div class="relative topic-dropdown">
+                  <input
+                    type="text"
+                    v-model="topicSearch"
+                    placeholder="Buscar temas legales..."
+                    class="w-full px-4 py-3 border border-gray-300 rounded-md focus:border-primary-500 focus:ring-primary-500"
+                    @focus="showTopicOptions = true"
+                    @click.stop
+                  />
+                  
+                  <!-- Topic dropdown -->
+                  <div
+                    v-if="showTopicOptions"
+                    class="absolute z-10 mt-1 w-full bg-white rounded-md shadow-lg border max-h-60 overflow-y-auto"
+                    @click.stop
+                  >
+                    <div 
+                      v-for="topic in filteredTopics" 
+                      :key="topic.id"
+                      class="p-2 hover:bg-gray-100 cursor-pointer"
+                      @click.stop="addTopic(topic)"
+                    >
+                      {{ topic.name }}
+                    </div>
+                    <div 
+                      v-for="topic in topics" 
+                      :key="`parent-${topic.id}`"
+                    >
+                      <div
+                        v-for="subtopic in topic.subtopics || []"
+                        :key="`child-${subtopic.id}`"
+                        v-show="subtopic.name.toLowerCase().includes(topicSearch.toLowerCase())"
+                        class="p-2 pl-6 hover:bg-gray-100 cursor-pointer text-sm"
+                        @click.stop="addTopic(subtopic)"
+                      >
+                        {{ subtopic.name }} <span class="text-gray-500 text-xs">({{ topic.name }})</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Selected Topics -->
+                <div v-if="selectedTopics.length > 0" class="mt-2 flex flex-wrap gap-2">
+                  <div
+                    v-for="topic in selectedTopics"
+                    :key="topic.id"
+                    class="bg-primary-50 text-primary-700 px-3 py-1 rounded-full text-sm flex items-center"
+                  >
+                    {{ topic.name }}
+                    <button
+                      type="button"
+                      class="ml-1 text-primary-500 hover:text-primary-700"
+                      @click.stop="removeTopic(topic.id)"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+                <!-- Show validation message only after form submission attempt -->
+                <p v-else-if="formSubmitted" class="mt-2 text-xs text-red-500">
+                  Por favor, seleccione al menos un tema legal
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- City Selection Dropdown -->
+          <div>
+            <label for="city" class="block text-sm font-medium text-gray-700 required">
               Ciudad
             </label>
-            <input
-              id="location"
-              v-model="form.location"
-              type="text"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm px-4 py-3 text-gray-900 placeholder-gray-500 focus:border-primary-500 focus:ring-primary-500"
-              placeholder="Ejemplo: Santiago, Chile"
-            />
+            <div class="mt-2 relative">
+              <div v-if="citiesLoading" class="py-2">
+                <span class="text-sm text-gray-500">Cargando ciudades...</span>
+              </div>
+              <div v-else>
+                <div class="relative city-dropdown">
+                  <input
+                    type="text"
+                    v-model="citySearch"
+                    placeholder="Seleccione una ciudad..."
+                    class="w-full px-4 py-3 border border-gray-300 rounded-md focus:border-primary-500 focus:ring-primary-500"
+                    @focus="showCityOptions = true"
+                    @click.stop
+                  />
+                  
+                  <!-- City dropdown -->
+                  <div
+                    v-if="showCityOptions && filteredCities.length > 0"
+                    class="absolute z-10 mt-1 w-full bg-white rounded-md shadow-lg border max-h-60 overflow-y-auto"
+                    @click.stop
+                  >
+                    <div 
+                      v-for="city in filteredCities" 
+                      :key="city.id"
+                      class="p-2 hover:bg-gray-100 cursor-pointer"
+                      @click.stop="selectCity(city)"
+                    >
+                      {{ city.name }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
             <p class="mt-1 text-sm text-gray-500">
               Usamos su ubicación para proporcionar asesoría específica de abogados locales.
             </p>
@@ -102,7 +239,7 @@
             <div class="mt-2 space-y-2">
               <label class="inline-flex items-center">
                 <input
-                  v-model="form.planToHire"
+                  v-model="formData.planToHire"
                   type="radio"
                   value="yes"
                   name="planToHire"
@@ -113,7 +250,7 @@
               <br />
               <label class="inline-flex items-center">
                 <input
-                  v-model="form.planToHire"
+                  v-model="formData.planToHire"
                   type="radio"
                   value="maybe"
                   name="planToHire"
@@ -124,7 +261,7 @@
               <br />
               <label class="inline-flex items-center">
                 <input
-                  v-model="form.planToHire"
+                  v-model="formData.planToHire"
                   type="radio"
                   value="no"
                   name="planToHire"
@@ -168,10 +305,10 @@
               <!-- Question Preview -->
               <div>
                 <h3 class="font-medium text-gray-900">Pregunta</h3>
-                <p class="mt-2">{{ form.title }}</p>
+                <p class="mt-2">{{ formData.title }}</p>
                 <button
                   class="mt-2 text-primary-600 hover:text-primary-700 text-sm font-medium"
-                  @click="currentStep = 'ask'"
+                  @click="moveToEdit()"
                 >
                   Editar
                 </button>
@@ -180,19 +317,33 @@
               <!-- Details Preview -->
               <div>
                 <h3 class="font-medium text-gray-900">Detalles</h3>
-                <p class="mt-2 whitespace-pre-wrap">{{ form.content }}</p>
+                <p class="mt-2 whitespace-pre-wrap">{{ formData.content }}</p>
+              </div>
+
+              <!-- Topics Preview -->
+              <div>
+                <h3 class="font-medium text-gray-900">Temas</h3>
+                <div class="mt-2 flex flex-wrap gap-2">
+                  <span 
+                    v-for="topic in selectedTopics" 
+                    :key="topic.id"
+                    class="inline-block px-2 py-1 bg-primary-50 text-primary-700 text-sm rounded-full"
+                  >
+                    {{ topic.name }}
+                  </span>
+                </div>
               </div>
 
               <!-- Location Preview -->
               <div>
                 <h3 class="font-medium text-gray-900">Ciudad</h3>
-                <p class="mt-2">{{ form.location }}</p>
+                <p class="mt-2">{{ selectedCity ? selectedCity.name : formData.location }}</p>
               </div>
 
               <!-- Intent Preview -->
               <div>
                 <h3 class="font-medium text-gray-900">¿Planea contratar un abogado?</h3>
-                <p class="mt-2">{{ formatHireIntent(form.planToHire) }}</p>
+                <p class="mt-2">{{ formatHireIntent(formData.planToHire) }}</p>
               </div>
             </div>
 
@@ -201,7 +352,7 @@
               <button
                 type="button"
                 class="text-gray-600 hover:text-gray-900"
-                @click="currentStep = 'ask'"
+                @click="moveToEdit()"
               >
                 ← Volver a editar
               </button>
@@ -221,47 +372,159 @@
               <a href="#" class="text-primary-600 hover:text-primary-700">Términos de uso</a>,
               <a href="#" class="text-primary-600 hover:text-primary-700">Pautas de la comunidad</a>
               y
-              <a href="#" class="text-primary-600 hover:text-primary-700">Política de privacidad</a
-              >.
+              <a href="#" class="text-primary-600 hover:text-primary-700">Política de privacidad</a>.
             </p>
           </div>
         </div>
       </template>
     </div>
+
+    <!-- Auth Modal -->
+    <AuthModal 
+      :show="showAuthModal" 
+      :initial-mode="authMode"
+      @close="showAuthModal = false" 
+      @login="handleLoginSuccess" 
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
 import { Check } from 'lucide-vue-next'
+import { useQuestionForm } from '~/composables/useQuestionForm'
+import { useLegalTopics } from '~/composables/useLegalTopics'
+import { useCities } from '~/composables/useCities'
+import { useAuth } from '~/composables/useAuth'
+import AuthModal from '~/components/auth/Modal.vue'
+import type { LegalTopic } from '~/types/legalTopics'
+import type { City } from '~/types/city'
 
 const router = useRouter()
+const { formData, currentStep, isSubmitting, error, moveToReview, moveToEdit, submitQuestion } = useQuestionForm()
+const { topics, isLoading: topicsLoading, error: topicsError, fetchTopics } = useLegalTopics()
+const { cities, isLoading: citiesLoading, error: citiesError, fetchCities } = useCities()
+const { isAuthenticated, user } = useAuth()
 
-interface QuestionForm {
-  title: string
-  content: string
-  location: string
-  planToHire: 'yes' | 'maybe' | 'no' | null
+// Auth related
+const showAuthModal = ref(false)
+const showAuthOverlay = ref(false)
+const authMode = ref<'login' | 'signup'>('login')
+
+// Track form submission attempt
+const formSubmitted = ref(false)
+
+// Topic selection
+const topicSearch = ref('')
+const showTopicOptions = ref(false)
+const selectedTopics = ref<LegalTopic[]>([])
+
+// City selection
+const citySearch = ref('')
+const showCityOptions = ref(false)
+const selectedCity = ref<City | null>(null)
+
+// Click outside handlers - FIXED
+const handleClickOutside = (event: MouseEvent) => {
+  const target = event.target as HTMLElement
+  
+  // Close topic options if clicking outside
+  const topicDropdown = document.querySelector('.topic-dropdown')
+  if (topicDropdown && !topicDropdown.contains(target) && showTopicOptions.value) {
+    showTopicOptions.value = false
+  }
+  
+  // Close city options if clicking outside
+  const cityDropdown = document.querySelector('.city-dropdown')
+  if (cityDropdown && !cityDropdown.contains(target) && showCityOptions.value) {
+    showCityOptions.value = false
+  }
 }
 
-const form = ref<QuestionForm>({
-  title: '',
-  content: '',
-  location: '',
-  planToHire: null
+// Setup event listeners - FIXED
+onMounted(() => {
+  // Remove any existing handlers to prevent duplicates
+  document.removeEventListener('click', handleClickOutside)
+  // Add the handler
+  document.addEventListener('click', handleClickOutside)
+  
+  // Fetch data
+  fetchTopics()
+  fetchCities()
+  
+  // Initialize selected topics from formData if already present
+  if (formData.value.topicIds.length > 0) {
+    // We'll need to wait for topics to load first
+    watch(
+      () => topicsLoading.value,
+      (loading) => {
+        if (!loading && topics.value.length > 0) {
+          // Find topics by IDs
+          formData.value.topicIds.forEach(id => {
+            const topic = findTopicById(id)
+            if (topic) selectedTopics.value.push(topic)
+          })
+        }
+      },
+      { immediate: true }
+    )
+  }
 })
 
-const currentStep = ref<'ask' | 'review'>('ask')
-const isSubmitting = ref(false)
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 
+// Filtered topics based on search input
+const filteredTopics = computed(() => {
+  if (!topicSearch.value) return topics.value
+  const search = topicSearch.value.toLowerCase()
+  return topics.value.filter(t => t.name.toLowerCase().includes(search))
+})
+
+// Filtered cities based on search input
+const filteredCities = computed(() => {
+  if (!citySearch.value) return cities.value
+  const search = citySearch.value.toLowerCase()
+  return cities.value.filter(c => c.name.toLowerCase().includes(search))
+})
+
+// Form validation
 const isFormValid = computed(() => {
   return (
-    form.value.title.length > 0 &&
-    form.value.content.length > 0 &&
-    form.value.location.length > 0 &&
-    form.value.planToHire !== null
+    formData.value.title.length > 0 &&
+    formData.value.content.length > 0 &&
+    (selectedCity.value !== null || formData.value.location.length > 0) &&
+    formData.value.planToHire !== null &&
+    (selectedTopics.value.length > 0 || formData.value.topicIds.length > 0)
   )
 })
+
+// Add a topic to the selection
+const addTopic = (topic: LegalTopic) => {
+  // Don't add duplicates
+  if (!selectedTopics.value.some(t => t.id === topic.id)) {
+    selectedTopics.value.push(topic)
+    formData.value.topicIds.push(topic.id)
+  }
+  topicSearch.value = ''
+  showTopicOptions.value = false
+}
+
+// Remove a topic from the selection
+const removeTopic = (topicId: string) => {
+  selectedTopics.value = selectedTopics.value.filter(t => t.id !== topicId)
+  formData.value.topicIds = formData.value.topicIds.filter(id => id !== topicId)
+}
+
+// Select a city
+const selectCity = (city: City) => {
+  selectedCity.value = city
+  citySearch.value = city.name
+  formData.value.location = city.name  // Keep the location field synchronized
+  formData.value.cityId = city.id      // Store the city ID for API
+  showCityOptions.value = false
+}
 
 const formatHireIntent = (intent: string | null) => {
   switch (intent) {
@@ -276,26 +539,88 @@ const formatHireIntent = (intent: string | null) => {
   }
 }
 
-const handleReview = () => {
-  if (!isFormValid.value) return
-  currentStep.value = 'review'
-  // eslint-disable-next-line no-undef
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+// Handle opening login modal with correct mode
+const openLoginModal = (mode: 'login' | 'signup') => {
+  authMode.value = mode
+  showAuthModal.value = true
+  showAuthOverlay.value = false
 }
 
-const handleSubmit = async () => {
-  isSubmitting.value = true
-
-  try {
-    // Mock API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    router.push('/questions/1')
-  } catch (error) {
-    console.error('Error submitting question:', error)
-  } finally {
-    isSubmitting.value = false
+// Handle login success
+const handleLoginSuccess = () => {
+  showAuthModal.value = false
+  
+  // If user is now authenticated, proceed to review
+  if (isAuthenticated.value) {
+    // Update selected topics if not already selected
+    if (selectedTopics.value.length === 0 && formData.value.topicIds.length > 0) {
+      formData.value.topicIds.forEach(id => {
+        const topic = findTopicById(id)
+        if (topic) selectedTopics.value.push(topic)
+      })
+    }
+    
+    moveToReview()
   }
 }
+
+// Helper to find a topic by ID
+const findTopicById = (id: string): LegalTopic | null => {
+  // Check main topics
+  const mainTopic = topics.value.find(t => t.id === id)
+  if (mainTopic) return mainTopic
+  
+  // Check subtopics
+  for (const topic of topics.value) {
+    if (topic.subtopics) {
+      const subtopic = topic.subtopics.find(s => s.id === id)
+      if (subtopic) return subtopic
+    }
+  }
+  return null
+}
+
+// Handle review button
+const handleReview = () => {
+  // Mark that form submission was attempted
+  formSubmitted.value = true
+  
+  if (!isFormValid.value) return
+  
+  // Transfer the selected topics to the form data
+  formData.value.topicIds = selectedTopics.value.map(t => t.id)
+  
+  // Check if authenticated
+  if (!isAuthenticated.value) {
+    showAuthOverlay.value = true
+  } else {
+    moveToReview()
+  }
+}
+
+// Handle form submission
+const handleSubmit = async () => {
+  if (!isAuthenticated.value) {
+    showAuthOverlay.value = true
+    return
+  }
+  
+  const result = await submitQuestion()
+  
+  if (result.success && result.question) {
+    // Navigate to the question page
+    router.push(`/questions/${result.question.id}`)
+  }
+}
+
+// Watch authentication state
+watch(isAuthenticated, (newValue) => {
+  if (newValue && showAuthOverlay.value) {
+    showAuthOverlay.value = false
+    moveToReview()
+  }
+})
+
 </script>
 
 <style scoped>

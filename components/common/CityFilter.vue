@@ -18,7 +18,7 @@ const emit = defineEmits<{
         v-for="city in cities"
         :key="city.id"
         class="px-4 py-2 bg-primary-50 text-primary-700 rounded-full text-sm hover:bg-primary-100"
-        @click="emit('select', city.id)"
+        @click="emit('select', city.name)"
       >
         {{ city.name }}
       </button>

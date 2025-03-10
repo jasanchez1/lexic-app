@@ -1,4 +1,3 @@
-// composables/useAuth.ts
 import { ref } from 'vue'
 import { useAuthService } from '~/services/api'
 

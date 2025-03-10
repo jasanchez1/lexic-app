@@ -1,13 +1,23 @@
+import { useAnswersService } from '~/services/api'
+
 export const useAnswerActions = () => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const answersService = useAnswersService()
+
   const toggleHelpful = async (answerId: string) => {
     try {
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 200))
-      return { success: true }
+      // Replace mock with real API call
+      const response = await answersService.toggleHelpful(answerId)
+      return {
+        success: response.success,
+        isHelpful: response.is_helpful,
+        helpfulCount: response.helpfulCount
+      }
     } catch (e) {
       console.error('Error toggling helpful:', e)
-      return { success: false, error: 'Error al marcar como útil' }
+      return {
+        success: false,
+        error: e instanceof Error ? e.message : 'Error al marcar como útil'
+      }
     }
   }
 

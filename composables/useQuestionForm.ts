@@ -1,10 +1,13 @@
 import { ref } from 'vue'
+import { useQuestionsService } from '~/services/api'
 
 interface QuestionForm {
   title: string
   content: string
   location: string
   planToHire: 'yes' | 'maybe' | 'no' | null
+  topicIds: string[]
+  cityId?: string  // Added to store the selected city ID
 }
 
 // Keep state outside the composable
@@ -12,12 +15,17 @@ const formData = ref<QuestionForm>({
   title: '',
   content: '',
   location: '',
-  planToHire: null
+  planToHire: null,
+  topicIds: []
 })
 
 const currentStep = ref<'ask' | 'review'>('ask')
 
 export const useQuestionForm = () => {
+  const questionsService = useQuestionsService()
+  const isSubmitting = ref(false)
+  const error = ref<string | null>(null)
+
   const moveToReview = () => {
     currentStep.value = 'review'
   }
@@ -27,20 +35,39 @@ export const useQuestionForm = () => {
   }
 
   const submitQuestion = async () => {
+    if (!formData.value.title || !formData.value.content || !formData.value.planToHire || !formData.value.topicIds.length) {
+      return { success: false, error: 'Información incompleta' }
+    }
+
+    isSubmitting.value = true
+    error.value = null
+    
     try {
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      // Here you would submit to your API
-      return { success: true }
-    } catch (error) {
-      console.error('Error submitting question:', error)
-      return { success: false, error }
+      // Use the updated service with case conversion
+      const response = await questionsService.create({
+        title: formData.value.title,
+        content: formData.value.content,
+        location: formData.value.location || undefined,
+        planToHire: formData.value.planToHire,
+        topicIds: formData.value.topicIds,
+        cityId: formData.value.cityId // Pass the city ID if available
+      })
+      
+      return { success: true, question: response }
+    } catch (e) {
+      console.error('Error submitting question:', e)
+      error.value = e instanceof Error ? e.message : 'Error al enviar la pregunta'
+      return { success: false, error: error.value }
+    } finally {
+      isSubmitting.value = false
     }
   }
 
   return {
     formData,
     currentStep,
+    isSubmitting,
+    error,
     moveToReview,
     moveToEdit,
     submitQuestion

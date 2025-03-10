@@ -313,11 +313,5 @@ const handleLogout = async () => {
 onMounted(async () => {
   const { initAuth } = useAuth()
   await initAuth()
-  
-  // For debugging
-  console.log('Areas loaded:', areas.value)
-  console.log('Categories loaded:', categoriesData.value)
-  console.log('Grouped areas:', groupedAreas.value)
-  console.log('Main category IDs:', mainCategoryIds.value)
 })
 </script>

@@ -1,70 +1,40 @@
 import { ref } from 'vue'
+import { useQuestionsService } from '~/services/api'
 import type { Question } from '~/types/question'
 
-const mockQuestions: Question[] = [
-  {
-    id: '1',
-    title: '¿Puedo modificar el monto de pensión de alimentos?',
-    content:
-      'Hace dos años se fijó una pensión de alimentos para mis hijos, pero mi situación económica ha cambiado significativamente...',
-    author: {
-      name: 'Ana M.',
-      location: 'Santiago, Chile'
-    },
-    date: '2024-01-24',
-    topicIds: ['family', 'alimony'],
-    answerCount: 3,
-    viewCount: 124
-  },
-  {
-    id: '2',
-    title: '¿Cómo proceder ante un despido sin justificación?',
-    content:
-      'Mi empleador me despidió sin darme ninguna razón específica después de 5 años de trabajo...',
-    author: {
-      name: 'Carlos R.',
-      location: 'Valparaíso, Chile'
-    },
-    date: '2024-01-23',
-    topicIds: ['labor', 'wrongful-termination'],
-    answerCount: 2,
-    viewCount: 89
-  },
-  {
-    id: '3',
-    title: 'Problemas con contrato de arriendo',
-    content:
-      'Mi arrendador quiere terminar el contrato antes de tiempo sin respetar el plazo acordado...',
-    author: {
-      name: 'Pedro S.',
-      location: 'Concepción, Chile'
-    },
-    date: '2024-01-22',
-    topicIds: ['property', 'rental'],
-    answerCount: 4,
-    viewCount: 156
-  }
-]
-
 export const useQuestions = () => {
+  const questionsService = useQuestionsService()
   const questions = ref<Question[]>([])
+  const totalQuestions = ref(0)
+  const totalPages = ref(0)
+  const currentPage = ref(1)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
-  const fetchQuestions = async (topicId?: string) => {
+  const fetchQuestions = async (topicId?: string, page: number = 1, sort: string = 'latest') => {
     isLoading.value = true
     error.value = null
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 200))
-
-      // If topicId is provided, filter questions
-      questions.value = topicId
-        ? mockQuestions.filter(q => q.topicIds.includes(topicId))
-        : mockQuestions
+      // Replace the mock code with actual API call
+      const response = await questionsService.listQuestions({
+        topic: topicId,
+        page,
+        size: 10,
+        sort
+      })
+      
+      questions.value = response.questions
+      totalQuestions.value = response.total
+      totalPages.value = response.pages
+      currentPage.value = response.page
+      
+      return questions.value
     } catch (e) {
-      console.error(e)
-      error.value = 'Error al cargar las preguntas'
+      console.error('Error fetching questions:', e)
+      error.value = e instanceof Error ? e.message : 'Error al cargar las preguntas'
+      questions.value = []
+      return []
     } finally {
       isLoading.value = false
     }
@@ -75,13 +45,8 @@ export const useQuestions = () => {
     error.value = null
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 200))
-      const question = mockQuestions.find(q => q.id === id)
-
-      if (!question) {
-        throw new Error('Pregunta no encontrada')
-      }
-
+      // Replace mock with API call
+      const question = await questionsService.get(id)
       return question
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Error al cargar la pregunta'
@@ -91,11 +56,36 @@ export const useQuestions = () => {
     }
   }
 
+  const createQuestion = async (data: {
+    title: string
+    content: string
+    location?: string
+    plan_to_hire: 'yes' | 'no' | 'maybe'
+    topic_ids: string[]
+  }) => {
+    isLoading.value = true
+    error.value = null
+    
+    try {
+      const question = await questionsService.create(data)
+      return { success: true, question }
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Error al crear la pregunta'
+      return { success: false, error: error.value }
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     questions,
+    totalQuestions,
+    totalPages,
+    currentPage,
     isLoading,
     error,
     fetchQuestions,
-    fetchQuestion
+    fetchQuestion,
+    createQuestion
   }
 }

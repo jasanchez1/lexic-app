@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { ChevronDown, ThumbsUp, CheckCircle } from 'lucide-vue-next'
 import { useReplies } from '~/composables/useReplies'
 import { useAnswerActions } from '~/composables/useAnswerActions'
+import { useAuth } from '~/composables/useAuth'
 import type { Answer } from '~/types/question'
 
 const props = defineProps<{
@@ -10,8 +11,10 @@ const props = defineProps<{
 }>()
 
 const showReplies = ref(false)
+const showLoginPrompt = ref(false)
 const { replies, isLoading: repliesLoading, fetchReplies } = useReplies()
 const { toggleHelpful } = useAnswerActions()
+const { isAuthenticated } = useAuth()
 
 const handleToggleReplies = async () => {
   if (!showReplies.value && !replies.value.length) {
@@ -21,11 +24,24 @@ const handleToggleReplies = async () => {
 }
 
 const handleToggleHelpful = async () => {
+  // If not authenticated, show login prompt
+  if (!isAuthenticated.value) {
+    showLoginPrompt.value = true
+    return
+  }
+
   const result = await toggleHelpful(props.answer.id)
   if (result.success) {
     props.answer.helpfulCount += props.answer.isHelpful ? -1 : 1
     props.answer.isHelpful = !props.answer.isHelpful
   }
+}
+
+// Hide login prompt after 3 seconds
+const hideLoginPrompt = () => {
+  setTimeout(() => {
+    showLoginPrompt.value = false
+  }, 3000)
 }
 </script>
 
@@ -45,6 +61,12 @@ const handleToggleHelpful = async () => {
           :alt="answer.author.name"
           class="w-10 h-10 rounded-full object-cover"
         />
+        <div
+          v-else
+          class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-medium"
+        >
+          {{ answer.author.name.charAt(0) }}
+        </div>
         <div class="ml-3">
           <div class="flex items-center">
             <span class="font-medium text-gray-900">{{ answer.author.name }}</span>
@@ -57,23 +79,38 @@ const handleToggleHelpful = async () => {
             </span>
           </div>
           <div class="text-sm text-gray-500">{{ answer.author.title }}</div>
-          <div class="text-sm text-gray-500">{{ answer.author.reviewCount }} reseñas</div>
+          <div v-if="answer.author.reviewCount" class="text-sm text-gray-500">
+            {{ answer.author.reviewCount }} reseñas
+          </div>
         </div>
       </div>
 
       <!-- Helpful Button -->
-      <button
-        class="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-sm transition-colors"
-        :class="[
-          answer.isHelpful
-            ? 'text-primary-600 border-primary-600 bg-primary-50'
-            : 'text-gray-700 border-gray-200 hover:bg-gray-50'
-        ]"
-        @click="handleToggleHelpful"
-      >
-        <ThumbsUp class="w-4 h-4" :class="{ 'fill-current': answer.isHelpful }" />
-        <span>Útil ({{ answer.helpfulCount }})</span>
-      </button>
+      <div>
+        <button
+          class="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-sm transition-colors"
+          :class="[
+            answer.isHelpful
+              ? 'text-primary-600 border-primary-600 bg-primary-50'
+              : isAuthenticated
+                ? 'text-gray-700 border-gray-200 hover:bg-gray-50'
+                : 'text-gray-400 border-gray-200 cursor-not-allowed'
+          ]"
+          @click="handleToggleHelpful"
+        >
+          <ThumbsUp class="w-4 h-4" :class="{ 'fill-current': answer.isHelpful }" />
+          <span>Útil ({{ answer.helpfulCount }})</span>
+        </button>
+
+        <!-- Login prompt tooltip -->
+        <div
+          v-if="showLoginPrompt"
+          class="mt-2 absolute bg-gray-800 text-white text-xs rounded py-1 px-2 right-8"
+          @mouseenter="hideLoginPrompt"
+        >
+          Inicia sesión para marcar respuestas como útiles
+        </div>
+      </div>
     </div>
 
     <!-- Replies Section -->

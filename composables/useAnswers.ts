@@ -1,66 +1,70 @@
 import { ref } from 'vue'
+import { useAnswersService } from '~/services/api'
 import type { Answer } from '~/types/question'
 
-const mockAnswers: Record<string, Answer[]> = {
-  '1': [
-    {
-      id: 'a1',
-      content:
-        'Sí, es posible modificar el monto de la pensión de alimentos cuando hay un cambio significativo en las circunstancias económicas. El proceso implica...',
-      author: {
-        id: 'l1',
-        name: 'Gabriel Boric',
-        title: 'Abogado de Familia',
-        imageUrl:
-          'https://www.cidob.org/sites/default/files/styles/max_width_290/public/gabriel_boric_font.jpg.webp',
-        rating: 4.8,
-        reviewCount: 123,
-        isVerified: true
-      },
-      date: '2024-01-24',
-      isAccepted: true,
-      helpfulCount: 15,
-      isHelpful: true,
-      replyCount: 2
-    },
-    {
-      id: 'a2',
-      content:
-        'Complementando la respuesta anterior, es importante mencionar que los tribunales consideran tanto sus ingresos como los gastos del menor...',
-      author: {
-        id: 'l2',
-        name: 'Carolina Pérez',
-        title: 'Abogada Civil',
-        rating: 4.5,
-        reviewCount: 89,
-        isVerified: true
-      },
-      date: '2024-01-25',
-      helpfulCount: 8,
-      isHelpful: false,
-      replyCount: 0
-    }
-  ]
-}
 
 export const useAnswers = () => {
+  const answersService = useAnswersService()
   const answers = ref<Answer[]>([])
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const fetchAnswers = async (questionId: string) => {
     isLoading.value = true
     error.value = null
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 200))
-      answers.value = Object.values(mockAnswers).flat()
+      // Replace mock with API call
+      const response = await answersService.getForQuestion(questionId)
+      answers.value = response
+      return answers.value
     } catch (e) {
-      console.error(e)
-      error.value = 'Error al cargar las respuestas'
+      console.error('Error fetching answers:', e)
+      error.value = e instanceof Error ? e.message : 'Error al cargar las respuestas'
+      answers.value = []
+      return []
     } finally {
       isLoading.value = false
+    }
+  }
+
+  const createAnswer = async (questionId: string, content: string, lawyerId?: string) => {
+    isLoading.value = true
+    error.value = null
+    
+    try {
+      const response = await answersService.create(questionId, {
+        content,
+        lawyer_id: lawyerId
+      })
+      
+      // Add the new answer to the list
+      answers.value.push(response)
+      return { success: true, answer: response }
+    } catch (e) {
+      console.error('Error creating answer:', e)
+      error.value = e instanceof Error ? e.message : 'Error al crear la respuesta'
+      return { success: false, error: error.value }
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const acceptAnswer = async (answerId: string) => {
+    try {
+      const response = await answersService.accept(answerId)
+      
+      // Update the answer in the list
+      const index = answers.value.findIndex(a => a.id === answerId)
+      if (index !== -1) {
+        answers.value[index] = response
+      }
+      
+      return { success: true, answer: response }
+    } catch (e) {
+      console.error('Error accepting answer:', e)
+      error.value = e instanceof Error ? e.message : 'Error al aceptar la respuesta'
+      return { success: false, error: error.value }
     }
   }
 
@@ -68,6 +72,8 @@ export const useAnswers = () => {
     answers,
     isLoading,
     error,
-    fetchAnswers
+    fetchAnswers,
+    createAnswer,
+    acceptAnswer
   }
 }

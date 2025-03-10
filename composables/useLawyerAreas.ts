@@ -5,7 +5,7 @@ export interface PracticeArea {
   id: string
   name: string
   slug: string
-  category_id: string
+  category_id: string // Keep this as snake_case to match the API response
   description?: string
 }
 
@@ -21,7 +21,6 @@ export interface GroupedAreas {
 
 export const useLawyerAreas = () => {
   const areasService = useAreasService()
-  const categoriesService = useCategoriesService()
   const areas = ref<PracticeArea[]>([])
   const categories = ref<Record<string, PracticeAreaCategory>>({})
   const isLoading = ref(false)
@@ -32,14 +31,25 @@ export const useLawyerAreas = () => {
   const categoryLabels = ref<Record<string, string>>({})
   
   const groupedAreas = computed(() => {
-    return areas.value.reduce((acc: GroupedAreas, area) => {
-      const categoryId = area.category_id
-      if (!acc[categoryId]) {
-        acc[categoryId] = []
+    const result: GroupedAreas = {}
+    
+    areas.value.forEach(area => {
+      // Handle both snake_case and camelCase property names
+      const categoryId = area.category_id || (area as any).categoryId
+      
+      if (!categoryId) {
+        console.warn('Area missing category ID:', area)
+        return
       }
-      acc[categoryId].push(area)
-      return acc
-    }, {})
+      
+      if (!result[categoryId]) {
+        result[categoryId] = []
+      }
+      
+      result[categoryId].push(area)
+    })
+    
+    return result
   })
   
   // Fetch all practice areas
@@ -75,15 +85,20 @@ export const useLawyerAreas = () => {
       categories.value = {}
       
       data.forEach((item: any) => {
-        if (item.id && item.name) {
-          categories.value[item.id] = {
-            id: item.id,
-            name: item.name,
-            slug: item.slug
+        // Handle both snake_case and camelCase property names
+        const id = item.id
+        const name = item.name
+        const slug = item.slug
+        
+        if (id && name) {
+          categories.value[id] = {
+            id,
+            name,
+            slug
           }
           
           // Also update category labels
-          categoryLabels.value[item.id] = item.name
+          categoryLabels.value[id] = name
         }
       })
       

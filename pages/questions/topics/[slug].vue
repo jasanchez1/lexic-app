@@ -6,7 +6,7 @@ import { formatDate } from '~/utils/date'
 
 const route = useRoute()
 const { questions, isLoading, error, fetchQuestions } = useQuestions()
-const { topics, fetchTopics } = useLegalTopics()
+const { topics, fetchTopics, fetchTopicBySlug } = useLegalTopics()
 
 const currentTopic = computed(
   () =>
@@ -15,8 +15,20 @@ const currentTopic = computed(
 )
 
 onMounted(async () => {
+  // First try to fetch topics to see if current topic is in the list
   await fetchTopics()
-  await fetchQuestions(currentTopic.value?.id)
+
+  // If we couldn't find the topic in the list, fetch it directly by slug
+  if (!currentTopic.value) {
+    const topic = await fetchTopicBySlug(route.params.slug as string)
+    if (topic) {
+      // Now fetch questions for this topic
+      await fetchQuestions(topic.id)
+    }
+  } else {
+    // We found the topic in the list, fetch questions for it
+    await fetchQuestions(currentTopic.value.id)
+  }
 })
 </script>
 
@@ -42,6 +54,19 @@ onMounted(async () => {
 
           <div v-else-if="error" class="bg-red-50 p-4 rounded-md text-red-700">
             {{ error }}
+          </div>
+
+          <div
+            v-else-if="questions.length === 0"
+            class="text-center py-12 bg-white rounded-lg shadow-sm"
+          >
+            <p class="text-gray-600 mb-4">No hay preguntas en este tema todavía.</p>
+            <NuxtLink
+              to="/questions/ask"
+              class="text-primary-600 hover:text-primary-700 font-medium"
+            >
+              Haz la primera pregunta
+            </NuxtLink>
           </div>
 
           <div v-else class="space-y-6">
@@ -86,7 +111,10 @@ onMounted(async () => {
           </div>
 
           <!-- Related Topics -->
-          <div v-if="currentTopic?.subtopics" class="bg-white rounded-lg shadow-sm border p-6 mt-6">
+          <div
+            v-if="currentTopic?.subtopics?.length"
+            class="bg-white rounded-lg shadow-sm border p-6 mt-6"
+          >
             <h3 class="text-lg font-semibold mb-4">Temas Relacionados</h3>
             <div class="space-y-2">
               <NuxtLink

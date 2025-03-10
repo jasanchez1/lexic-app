@@ -13,7 +13,7 @@ const filteredTopics = computed(() => {
   return topics.value.filter(
     topic =>
       topic.name.toLowerCase().includes(query) ||
-      topic.description.toLowerCase().includes(query) ||
+      topic.description?.toLowerCase().includes(query) ||
       topic.subtopics?.some(
         sub =>
           sub.name.toLowerCase().includes(query) || sub.description?.toLowerCase().includes(query)
@@ -21,8 +21,8 @@ const filteredTopics = computed(() => {
   )
 })
 
-onMounted(() => {
-  fetchTopics()
+onMounted(async () => {
+  await fetchTopics()
 })
 </script>
 
@@ -68,10 +68,10 @@ onMounted(() => {
           <h3 class="text-lg font-semibold text-gray-900 group-hover:text-primary-600">
             {{ topic.name }}
           </h3>
-          <p class="mt-2 text-gray-600">{{ topic.description }}</p>
+          <p class="mt-2 text-gray-600">{{ topic.description || 'No description available' }}</p>
           <div class="mt-4 flex items-center text-sm text-gray-500">
             <MessageCircle class="w-4 h-4 mr-1" />
-            {{ topic.questionsCount.toLocaleString() }} preguntas
+            {{ (topic.questionsCount || 0).toLocaleString() }} preguntas
           </div>
 
           <!-- Subtopics if any -->
@@ -82,7 +82,7 @@ onMounted(() => {
               class="text-sm text-gray-600 hover:text-primary-600"
             >
               • {{ subtopic.name }}
-              <span class="text-gray-400">({{ subtopic.questionsCount }})</span>
+              <span class="text-gray-400">({{ subtopic.questionsCount || 0 }})</span>
             </div>
           </div>
         </NuxtLink>
