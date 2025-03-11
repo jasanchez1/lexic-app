@@ -384,6 +384,22 @@ export const useAreasService = () => {
       return mapApiResponseToModel<PracticeArea>(response)
     },
 
+    // Get areas with lawyer counts
+    getWithCounts: async () => {
+      const response = await api.get('/areas/with-counts') as PracticeArea[]
+      return response.map(area => {
+        // Convert snake_case to camelCase, including lawyer_count -> lawyerCount
+        const modelArea = mapApiResponseToModel<PracticeArea>(area)
+        
+        // Handle the potential naming differences
+        if ('lawyer_count' in area) {
+          modelArea.lawyerCount = area.lawyer_count as number
+        }
+        
+        return modelArea
+      })
+    },
+
     // Get areas by category
     getByCategory: async (categoryId: string) => {
       const response = await api.get(`/categories/${categoryId}/areas`) as PracticeArea[]

@@ -7,6 +7,7 @@ export interface PracticeArea {
   slug: string
   category_id: string // Keep this as snake_case to match the API response
   description?: string
+  lawyerCount?: number // Add lawyer count property
 }
 
 export interface PracticeAreaCategory {
@@ -68,6 +69,29 @@ export const useLawyerAreas = () => {
       return data
     } catch (err) {
       console.error('Error fetching practice areas:', err)
+      error.value = err instanceof Error ? err.message : 'Error al cargar áreas de práctica'
+      return []
+    } finally {
+      isLoading.value = false
+    }
+  }
+  
+  // Fetch all practice areas with lawyer counts
+  const fetchAreasWithCounts = async () => {
+    isLoading.value = true
+    error.value = null
+    
+    try {
+      // First fetch categories
+      await fetchCategories()
+      
+      // Then fetch areas with counts
+      const data = await areasService.getWithCounts()
+      areas.value = data
+      
+      return data
+    } catch (err) {
+      console.error('Error fetching practice areas with counts:', err)
       error.value = err instanceof Error ? err.message : 'Error al cargar áreas de práctica'
       return []
     } finally {
@@ -156,6 +180,7 @@ export const useLawyerAreas = () => {
     isLoading,
     error,
     fetchAreas,
+    fetchAreasWithCounts, // New method to fetch areas with counts
     fetchAreasByCategory,
     fetchAreasByCategorySlug
   }
