@@ -1,5 +1,29 @@
 <template>
   <div class="min-h-screen bg-gray-50">
+    <!-- Warning dialog when navigating away -->
+    <div v-if="showNavigationWarning" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
+        <h2 class="text-xl font-bold mb-4">¿Abandonar la pregunta?</h2>
+        <p class="text-gray-600 mb-6">Si sales ahora perderás los cambios en tu pregunta. ¿Estás seguro de que quieres salir?</p>
+
+        <div class="flex gap-3">
+          <button 
+            @click="confirmLeave"
+            class="flex-1 bg-gray-800 text-white p-3 rounded-md font-medium hover:bg-gray-900"
+          >
+            Sí, salir
+          </button>
+          
+          <button 
+            @click="cancelLeave"
+            class="flex-1 bg-primary-600 text-white p-3 rounded-md font-medium hover:bg-primary-700"
+          >
+            Continuar editando
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Progress Steps -->
     <div class="bg-white border-b">
       <div class="max-w-3xl mx-auto px-4 py-4">
@@ -40,24 +64,17 @@
     <!-- Form Content -->
     <div class="max-w-3xl mx-auto px-4 py-8">
       <!-- Auth Check Overlay -->
-      <div v-if="showAuthOverlay" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+      <div v-if="showAuthOverlay" class="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
-          <h2 class="text-xl font-bold mb-4">Inicia sesión para continuar</h2>
-          <p class="text-gray-600 mb-6">Para publicar una pregunta y recibir respuestas de expertos legales, necesitas crear una cuenta o iniciar sesión.</p>
+          <h2 class="text-xl font-bold mb-4 text-gray-900">Inicia sesión para continuar</h2>
+          <p class="text-gray-600 mb-6">Para publicar una pregunta y recibir respuestas de expertos legales, necesitas iniciar sesión.</p>
 
           <div class="space-y-4">
             <button 
-              @click="openLoginModal('login')"
+              @click="openLoginModal()"
               class="w-full bg-primary-600 text-white p-3 rounded-md font-medium hover:bg-primary-700"
             >
-              Iniciar Sesión
-            </button>
-            
-            <button 
-              @click="openLoginModal('signup')"
-              class="w-full bg-gray-800 text-white p-3 rounded-md font-medium hover:bg-gray-900"
-            >
-              Crear Cuenta
+              Iniciar Sesión / Crear Cuenta
             </button>
             
             <button 
@@ -92,6 +109,7 @@
               maxlength="128"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm px-4 py-3 text-gray-900 placeholder-gray-500 focus:border-primary-500 focus:ring-primary-500"
               placeholder="Comience su pregunta con 'cómo', 'qué', 'por qué', 'cuándo'..."
+              @input="markAsDirty"
             />
             <p class="mt-1 text-sm text-right text-gray-500">{{ formData.title.length }}/128</p>
           </div>
@@ -108,6 +126,7 @@
               maxlength="1200"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm px-4 py-3 text-gray-900 placeholder-gray-500 focus:border-primary-500 focus:ring-primary-500"
               placeholder="Proporcione detalles claves. No es necesario que sea perfecto, puede hacer aclaraciones después."
+              @input="markAsDirty"
             />
             <p class="mt-1 text-sm text-right text-gray-500">{{ formData.content.length }}/1200</p>
           </div>
@@ -244,6 +263,7 @@
                   value="yes"
                   name="planToHire"
                   class="text-primary-600"
+                  @change="markAsDirty"
                 />
                 <span class="ml-2">Sí</span>
               </label>
@@ -255,6 +275,7 @@
                   value="maybe"
                   name="planToHire"
                   class="text-primary-600"
+                  @change="markAsDirty"
                 />
                 <span class="ml-2">No estoy seguro</span>
               </label>
@@ -266,6 +287,7 @@
                   value="no"
                   name="planToHire"
                   class="text-primary-600"
+                  @change="markAsDirty"
                 />
                 <span class="ml-2">No</span>
               </label>
@@ -382,7 +404,7 @@
     <!-- Auth Modal -->
     <AuthModal 
       :show="showAuthModal" 
-      :initial-mode="authMode"
+      :initial-mode="'login'"
       @close="showAuthModal = false" 
       @login="handleLoginSuccess" 
     />
@@ -391,6 +413,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { Check } from 'lucide-vue-next'
 import { useQuestionForm } from '~/composables/useQuestionForm'
 import { useLegalTopics } from '~/composables/useLegalTopics'
@@ -401,7 +424,7 @@ import type { LegalTopic } from '~/types/legalTopics'
 import type { City } from '~/types/city'
 
 const router = useRouter()
-const { formData, currentStep, isSubmitting, error, moveToReview, moveToEdit, submitQuestion } = useQuestionForm()
+const { formData, currentStep, isSubmitting, error, isDirty, wasSubmitted, moveToReview, moveToEdit, submitQuestion, resetForm, markAsDirty } = useQuestionForm()
 const { topics, isLoading: topicsLoading, error: topicsError, fetchTopics } = useLegalTopics()
 const { cities, isLoading: citiesLoading, error: citiesError, fetchCities } = useCities()
 const { isAuthenticated, user } = useAuth()
@@ -409,7 +432,6 @@ const { isAuthenticated, user } = useAuth()
 // Auth related
 const showAuthModal = ref(false)
 const showAuthOverlay = ref(false)
-const authMode = ref<'login' | 'signup'>('login')
 
 // Track form submission attempt
 const formSubmitted = ref(false)
@@ -424,7 +446,37 @@ const citySearch = ref('')
 const showCityOptions = ref(false)
 const selectedCity = ref<City | null>(null)
 
-// Click outside handlers - FIXED
+// Navigation warning
+const showNavigationWarning = ref(false)
+const pendingPath = ref<string | null>(null)
+
+// Handle navigation - use router guards instead of onBeforeRouteLeave
+router.beforeEach((to, from, next) => {
+  if (isDirty.value && !wasSubmitted.value && from.path === '/questions/ask') {
+    showNavigationWarning.value = true
+    pendingPath.value = to.fullPath
+    return next(false)
+  }
+  return next()
+})
+
+// Confirm navigation and reset form
+const confirmLeave = () => {
+  showNavigationWarning.value = false
+  resetForm()
+  if (pendingPath.value) {
+    router.push(pendingPath.value)
+    pendingPath.value = null
+  }
+}
+
+// Cancel navigation
+const cancelLeave = () => {
+  showNavigationWarning.value = false
+  pendingPath.value = null
+}
+
+// Click outside handlers
 const handleClickOutside = (event: MouseEvent) => {
   const target = event.target as HTMLElement
   
@@ -441,8 +493,11 @@ const handleClickOutside = (event: MouseEvent) => {
   }
 }
 
-// Setup event listeners - FIXED
+// Setup event listeners
 onMounted(() => {
+  // Reset form state on page load
+  resetForm()
+  
   // Remove any existing handlers to prevent duplicates
   document.removeEventListener('click', handleClickOutside)
   // Add the handler
@@ -506,6 +561,7 @@ const addTopic = (topic: LegalTopic) => {
   if (!selectedTopics.value.some(t => t.id === topic.id)) {
     selectedTopics.value.push(topic)
     formData.value.topicIds.push(topic.id)
+    markAsDirty()
   }
   topicSearch.value = ''
   showTopicOptions.value = false
@@ -515,6 +571,7 @@ const addTopic = (topic: LegalTopic) => {
 const removeTopic = (topicId: string) => {
   selectedTopics.value = selectedTopics.value.filter(t => t.id !== topicId)
   formData.value.topicIds = formData.value.topicIds.filter(id => id !== topicId)
+  markAsDirty()
 }
 
 // Select a city
@@ -524,6 +581,7 @@ const selectCity = (city: City) => {
   formData.value.location = city.name  // Keep the location field synchronized
   formData.value.cityId = city.id      // Store the city ID for API
   showCityOptions.value = false
+  markAsDirty()
 }
 
 const formatHireIntent = (intent: string | null) => {
@@ -539,9 +597,8 @@ const formatHireIntent = (intent: string | null) => {
   }
 }
 
-// Handle opening login modal with correct mode
-const openLoginModal = (mode: 'login' | 'signup') => {
-  authMode.value = mode
+// Open login modal directly
+const openLoginModal = () => {
   showAuthModal.value = true
   showAuthOverlay.value = false
 }
@@ -589,6 +646,7 @@ const handleReview = () => {
   
   // Transfer the selected topics to the form data
   formData.value.topicIds = selectedTopics.value.map(t => t.id)
+  markAsDirty()
   
   // Check if authenticated
   if (!isAuthenticated.value) {
@@ -621,6 +679,10 @@ watch(isAuthenticated, (newValue) => {
   }
 })
 
+// Reset form when entering the page
+onMounted(() => {
+  resetForm()
+})
 </script>
 
 <style scoped>

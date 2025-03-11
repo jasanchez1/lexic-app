@@ -25,13 +25,34 @@ export const useQuestionForm = () => {
   const questionsService = useQuestionsService()
   const isSubmitting = ref(false)
   const error = ref<string | null>(null)
+  const isDirty = ref(false)
+  const wasSubmitted = ref(false)
+
+  const resetForm = () => {
+    formData.value = {
+      title: '',
+      content: '',
+      location: '',
+      planToHire: null,
+      topicIds: []
+    }
+    currentStep.value = 'ask'
+    isDirty.value = false
+    wasSubmitted.value = false
+    error.value = null
+  }
 
   const moveToReview = () => {
     currentStep.value = 'review'
+    isDirty.value = true
   }
 
   const moveToEdit = () => {
     currentStep.value = 'ask'
+  }
+
+  const markAsDirty = () => {
+    isDirty.value = true
   }
 
   const submitQuestion = async () => {
@@ -53,6 +74,9 @@ export const useQuestionForm = () => {
         cityId: formData.value.cityId // Pass the city ID if available
       })
       
+      wasSubmitted.value = true
+      isDirty.value = false
+      
       return { success: true, question: response }
     } catch (e) {
       console.error('Error submitting question:', e)
@@ -68,8 +92,12 @@ export const useQuestionForm = () => {
     currentStep,
     isSubmitting,
     error,
+    isDirty,
+    wasSubmitted,
     moveToReview,
     moveToEdit,
-    submitQuestion
+    submitQuestion,
+    resetForm,
+    markAsDirty
   }
 }
