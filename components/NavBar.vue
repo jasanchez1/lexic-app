@@ -83,60 +83,69 @@
             </div>
           </div>
 
-          <!-- Auth Section -->
+          <!-- Auth Section - Improved with smoother state transition -->
           <div>
-            <!-- Show login button if not authenticated -->
-            <button
-              v-if="!isAuthenticated"
-              class="bg-accent hover:bg-accent-hover text-white px-6 py-2 rounded text-sm font-medium transition-colors duration-200"
-              @click="showAuthModal = true"
-            >
-              Iniciar Sesión
-            </button>
-
-            <!-- Show user dropdown if authenticated -->
-            <div v-else class="relative" ref="userMenuRef">
+            <template v-if="!isFullyInitialized">
+              <!-- Show loading spinner during initialization -->
+              <div class="flex items-center justify-center w-10 h-10">
+                <div class="w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            </template>
+            
+            <template v-else>
+              <!-- Show login button if not authenticated -->
               <button
-                class="flex items-center text-gray-700 hover:text-primary-600 transition-colors"
-                @click="isUserMenuOpen = !isUserMenuOpen"
+                v-if="!isAuthenticated"
+                class="bg-accent hover:bg-accent-hover text-white px-6 py-2 rounded text-sm font-medium transition-colors duration-200"
+                @click="showAuthModal = true"
               >
-                <div
-                  class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 mr-2"
-                >
-                  {{ userInitials }}
-                </div>
-                <span class="mr-1">{{ user?.firstName || 'Usuario' }}</span>
-                <ChevronDown
-                  :class="{ 'rotate-180': isUserMenuOpen }"
-                  class="w-4 h-4 transition-transform"
-                />
+                Iniciar Sesión
               </button>
 
-              <!-- User Dropdown Menu -->
-              <div
-                v-if="isUserMenuOpen"
-                class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-100 z-50"
-              >
-                <div class="p-2">
-                  <div class="border-b pb-2 mb-2 px-3 py-2">
-                    <p class="text-sm font-medium">{{ user?.email }}</p>
+              <!-- Show user dropdown if authenticated -->
+              <div v-else class="relative" ref="userMenuRef">
+                <button
+                  class="flex items-center text-gray-700 hover:text-primary-600 transition-colors"
+                  @click="isUserMenuOpen = !isUserMenuOpen"
+                >
+                  <div
+                    class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 mr-2"
+                  >
+                    {{ userInitials }}
                   </div>
-                  <NuxtLink
-                    to="/profile"
-                    class="block px-3 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 rounded-md transition-colors duration-200"
-                    @click="isUserMenuOpen = false"
-                  >
-                    Mi Perfil
-                  </NuxtLink>
-                  <button
-                    class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 rounded-md transition-colors duration-200"
-                    @click="handleLogout"
-                  >
-                    Cerrar Sesión
-                  </button>
+                  <span class="mr-1">{{ user?.firstName || 'Usuario' }}</span>
+                  <ChevronDown
+                    :class="{ 'rotate-180': isUserMenuOpen }"
+                    class="w-4 h-4 transition-transform"
+                  />
+                </button>
+
+                <!-- User Dropdown Menu -->
+                <div
+                  v-if="isUserMenuOpen"
+                  class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-100 z-50"
+                >
+                  <div class="p-2">
+                    <div class="border-b pb-2 mb-2 px-3 py-2">
+                      <p class="text-sm font-medium">{{ user?.email }}</p>
+                    </div>
+                    <NuxtLink
+                      to="/profile"
+                      class="block px-3 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 rounded-md transition-colors duration-200"
+                      @click="isUserMenuOpen = false"
+                    >
+                      Mi Perfil
+                    </NuxtLink>
+                    <button
+                      class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 rounded-md transition-colors duration-200"
+                      @click="handleLogout"
+                    >
+                      Cerrar Sesión
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
+            </template>
           </div>
 
           <AuthModal :show="showAuthModal" @close="showAuthModal = false" @login="handleLogin" />
@@ -231,7 +240,10 @@ const {
 } = useLawyerAreas()
 
 const { topics } = useLegalTopics()
-const { user, isAuthenticated, logout } = useAuth()
+const { user, isAuthenticated, logout, authLoading } = useAuth()
+
+// State to track full initialization
+const isFullyInitialized = ref(false)
 
 // Auth state and modals
 const showAuthModal = ref(false)
@@ -312,6 +324,22 @@ const handleLogout = async () => {
 // Initialize auth state on page load
 onMounted(async () => {
   const { initAuth } = useAuth()
+  
+  // Set a minimum loading time of 300ms to avoid flickering
+  const loadingStart = Date.now()
+  
+  // Initialize auth state
   await initAuth()
+  
+  // Calculate how much time has passed
+  const timeElapsed = Date.now() - loadingStart
+  
+  // If less than 300ms has passed, wait the remaining time
+  if (timeElapsed < 300) {
+    await new Promise(resolve => setTimeout(resolve, 300 - timeElapsed))
+  }
+  
+  // Mark initialization as complete
+  isFullyInitialized.value = true
 })
 </script>

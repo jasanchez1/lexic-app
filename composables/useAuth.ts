@@ -1,5 +1,6 @@
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useAuthService } from '~/services/api'
+import { useFetch } from '~/utils/api'
 
 // User type definition
 export interface User {
@@ -19,25 +20,55 @@ const isAuthenticated = ref(false)
 const authLoading = ref(false)
 const authError = ref<string | null>(null)
 const userLoaded = ref(false)
+const loginAction = ref(false)     // Track explicit login actions
+const logoutAction = ref(false)    // Track explicit logout actions
 const tokens = ref<{
   access_token: string
   refresh_token: string
   expires_in: number
   user_id: string
   token_type: string
+  expires_at?: string
 } | null>(null)
 
 export const useAuth = () => {
   const authService = useAuthService()
+  const api = useFetch()
+
+  // Auto-refresh tokens on expiration
+  const setupTokenRefresh = () => {
+    if (process.client) {
+      // Listen for token refresh events
+      api.authEvents.on('tokenRefreshed', (newTokens: any) => {
+        tokens.value = newTokens
+        isAuthenticated.value = true
+      })
+      
+      // Listen for refresh failures
+      api.authEvents.on('tokenRefreshFailed', () => {
+        logout(false) // Silent logout, don't trigger notification
+      })
+      
+      // Listen for unauthorized responses
+      api.authEvents.on('unauthorized', () => {
+        logout(false) // Silent logout, don't trigger notification
+      })
+    }
+  }
 
   // Login function
   const login = async (email: string, password: string) => {
     authLoading.value = true
     authError.value = null
     userLoaded.value = false
+    loginAction.value = false // Reset login action flag
 
     try {
       const data = await authService.login(email, password)
+      
+      // Calculate expiration time and store it
+      const expiresInMs = data.expiresIn * 1000
+      const expiresAt = new Date(Date.now() + expiresInMs)
       
       // Store tokens
       tokens.value = {
@@ -45,7 +76,8 @@ export const useAuth = () => {
         refresh_token: data.refreshToken,
         expires_in: data.expiresIn,
         user_id: data.userId,
-        token_type: data.tokenType || 'bearer'
+        token_type: data.tokenType || 'bearer',
+        expires_at: expiresAt.toISOString()
       }
       
       // Store tokens in localStorage for persistence (client-side only)
@@ -58,6 +90,9 @@ export const useAuth = () => {
       
       // Fetch user details before returning
       await fetchUserProfile()
+      
+      // Set login action flag to trigger toast notification
+      loginAction.value = true
       
       return { success: true, data }
     } catch (error) {
@@ -74,9 +109,14 @@ export const useAuth = () => {
     authLoading.value = true
     authError.value = null
     userLoaded.value = false
+    loginAction.value = false // Reset login action flag
 
     try {
       const data = await authService.signup(email, password, firstName, lastName)
+      
+      // Calculate expiration time and store it
+      const expiresInMs = data.expiresIn * 1000
+      const expiresAt = new Date(Date.now() + expiresInMs)
       
       // Store tokens
       tokens.value = {
@@ -84,7 +124,8 @@ export const useAuth = () => {
         refresh_token: data.refreshToken,
         expires_in: data.expiresIn,
         user_id: data.userId,
-        token_type: data.tokenType || 'bearer'
+        token_type: data.tokenType || 'bearer',
+        expires_at: expiresAt.toISOString()
       }
       
       // Store tokens in localStorage for persistence (client-side only)
@@ -97,6 +138,9 @@ export const useAuth = () => {
       
       // Fetch user details before returning
       await fetchUserProfile()
+      
+      // Set login action flag to trigger toast notification
+      loginAction.value = true
       
       return { success: true, data }
     } catch (error) {
@@ -113,6 +157,9 @@ export const useAuth = () => {
     if (!tokens.value) return null
 
     try {
+      // Skip fetching if already logged out
+      if (!isAuthenticated.value) return null
+      
       const userData = await authService.getCurrentUser()
       user.value = userData
       userLoaded.value = true
@@ -124,8 +171,9 @@ export const useAuth = () => {
   }
 
   // Logout function
-  const logout = async () => {
+  const logout = async (showNotification = true) => {
     authLoading.value = true
+    logoutAction.value = false // Reset logout action flag
 
     try {
       if (tokens.value?.refresh_token) {
@@ -140,9 +188,16 @@ export const useAuth = () => {
       tokens.value = null
       isAuthenticated.value = false
       userLoaded.value = false
+      
       if (process.client) {
         localStorage.removeItem('auth_tokens')
       }
+      
+      // Set logout action flag if notification should be shown
+      if (showNotification) {
+        logoutAction.value = true
+      }
+      
       authLoading.value = false
     }
   }
@@ -151,17 +206,37 @@ export const useAuth = () => {
   const initAuth = async () => {
     // Only access localStorage on the client side
     if (process.client) {
+      setupTokenRefresh()
+      
       const storedTokens = localStorage.getItem('auth_tokens')
       
       if (storedTokens) {
         try {
+          authLoading.value = true
           tokens.value = JSON.parse(storedTokens)
+          
+          // Check if token is expired
+          if (tokens.value?.expires_at && new Date(tokens.value.expires_at) < new Date()) {
+            // Token is expired, try to refresh
+            const refreshed = await refreshToken()
+            if (!refreshed) {
+              // Refresh failed, logout silently
+              await logout(false)
+              authLoading.value = false
+              return
+            }
+          }
+          
           isAuthenticated.value = true
           await fetchUserProfile()
+          authLoading.value = false
         } catch (error) {
           console.error('Error initializing auth:', error)
-          logout() // Clear invalid auth state
+          await logout(false) // Clear invalid auth state, silently
+          authLoading.value = false
         }
+      } else {
+        authLoading.value = false
       }
     }
   }
@@ -173,13 +248,18 @@ export const useAuth = () => {
     try {
       const data = await authService.refreshToken(tokens.value.refresh_token)
       
+      // Calculate expiration time
+      const expiresInMs = data.expiresIn * 1000
+      const expiresAt = new Date(Date.now() + expiresInMs)
+      
       // Update tokens
       tokens.value = {
         access_token: data.accessToken,
         refresh_token: data.refreshToken,
         expires_in: data.expiresIn,
         user_id: data.userId,
-        token_type: data.tokenType || 'bearer'
+        token_type: data.tokenType || 'bearer',
+        expires_at: expiresAt.toISOString()
       }
       
       // Update localStorage (client-side only)
@@ -190,7 +270,7 @@ export const useAuth = () => {
       return true
     } catch (error) {
       console.error('Token refresh error:', error)
-      logout() // Clear auth state on refresh failure
+      logout(false) // Clear auth state on refresh failure, silently
       return false
     }
   }
@@ -202,6 +282,8 @@ export const useAuth = () => {
     authError,
     tokens,
     userLoaded,
+    loginAction,
+    logoutAction,
     login,
     signup,
     logout,
