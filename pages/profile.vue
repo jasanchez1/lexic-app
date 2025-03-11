@@ -44,7 +44,7 @@ definePageMeta({
             </div>
             <div>
               <h2 class="text-xl font-semibold">
-                {{ user.first_name }} {{ user.last_name }}
+                {{ user.firstName }} {{ user.lastName }}
               </h2>
               <p class="text-primary-100">{{ user.email }}</p>
             </div>
@@ -63,11 +63,11 @@ definePageMeta({
               <!-- Removed "Active" status -->
               <div>
                 <p class="text-sm text-gray-500">Nombre</p>
-                <p class="font-medium">{{ user.first_name || 'No especificado' }}</p>
+                <p class="font-medium">{{ user.firstName || 'No especificado' }}</p>
               </div>
               <div>
                 <p class="text-sm text-gray-500">Apellido</p>
-                <p class="font-medium">{{ user.last_name || 'No especificado' }}</p>
+                <p class="font-medium">{{ user.lastName || 'No especificado' }}</p>
               </div>
               <div>
                 <p class="text-sm text-gray-500">Verificación</p>
@@ -116,7 +116,7 @@ const showAuthModal = ref(false)
 const userInitials = computed(() => {
   if (!user.value) return '?'
   
-  const firstName = user.value.first_name || ''
+  const firstName = user.value.firstName || ''
   const lastName = user.value.last_name || ''
   
   const firstInitial = firstName.charAt(0).toUpperCase()

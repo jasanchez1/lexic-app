@@ -45,7 +45,7 @@ watch(isAuthenticated, (newValue, oldValue) => {
   if (newValue !== oldValue) {
     if (newValue) {
       toastType.value = 'success'
-      toastMessage.value = `Bienvenido, ${user.value?.first_name || 'Usuario'}`
+      toastMessage.value = `Bienvenido, ${user.value?.firstName || 'Usuario'}`
       showToast.value = true
     } else if (oldValue) { // Only show logout message if previously logged in
       toastType.value = 'success'

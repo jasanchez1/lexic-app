@@ -105,7 +105,7 @@
                 >
                   {{ userInitials }}
                 </div>
-                <span class="mr-1">{{ user?.first_name || 'Usuario' }}</span>
+                <span class="mr-1">{{ user?.firstName || 'Usuario' }}</span>
                 <ChevronDown
                   :class="{ 'rotate-180': isUserMenuOpen }"
                   class="w-4 h-4 transition-transform"
@@ -244,8 +244,8 @@ const userMenuRef = ref<HTMLElement | null>(null)
 const userInitials = computed(() => {
   if (!user.value) return '?'
 
-  const firstName = user.value.first_name || ''
-  const lastName = user.value.last_name || ''
+  const firstName = user.value.firstName || ''
+  const lastName = user.value.lastName || ''
 
   const firstInitial = firstName.charAt(0).toUpperCase()
   const lastInitial = lastName.charAt(0).toUpperCase()

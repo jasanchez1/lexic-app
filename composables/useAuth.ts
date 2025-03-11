@@ -5,12 +5,12 @@ import { useAuthService } from '~/services/api'
 export interface User {
   id: string
   email: string
-  first_name: string | null
-  last_name: string | null
-  is_active: boolean
+  firstName: string | null
+  lastName: string | null
+  isActive: boolean
   is_verified: boolean
-  created_at: string
-  updated_at: string
+  createdAt: string
+  updatedAt: string
 }
 
 // Auth state
@@ -39,11 +39,11 @@ export const useAuth = () => {
       
       // Store tokens
       tokens.value = {
-        access_token: data.access_token,
-        refresh_token: data.refresh_token,
-        expires_in: data.expires_in,
-        user_id: data.user_id,
-        token_type: data.token_type || 'bearer'
+        access_token: data.accessToken,
+        refresh_token: data.refreshToken,
+        expires_in: data.expiresIn,
+        user_id: data.userId,
+        token_type: data.tokenType || 'bearer'
       }
       
       // Store tokens in localStorage for persistence (client-side only)
@@ -77,11 +77,11 @@ export const useAuth = () => {
       
       // Store tokens
       tokens.value = {
-        access_token: data.access_token,
-        refresh_token: data.refresh_token,
-        expires_in: data.expires_in,
-        user_id: data.user_id,
-        token_type: data.token_type || 'bearer'
+        access_token: data.accessToken,
+        refresh_token: data.refreshToken,
+        expires_in: data.expiresIn,
+        user_id: data.userId,
+        token_type: data.tokenType || 'bearer'
       }
       
       // Store tokens in localStorage for persistence (client-side only)
@@ -170,11 +170,11 @@ export const useAuth = () => {
       
       // Update tokens
       tokens.value = {
-        access_token: data.access_token,
-        refresh_token: data.refresh_token,
-        expires_in: data.expires_in,
-        user_id: data.user_id,
-        token_type: data.token_type || 'bearer'
+        access_token: data.accessToken,
+        refresh_token: data.refreshToken,
+        expires_in: data.expiresIn,
+        user_id: data.userId,
+        token_type: data.tokenType || 'bearer'
       }
       
       // Update localStorage (client-side only)

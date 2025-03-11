@@ -47,7 +47,7 @@ export const createApiService = <T, CreateT = any, UpdateT = any>(resourcePath: 
      * @returns The created resource
      */
     create: async (data: CreateT) => {
-      return await api.post(`${resourcePath}/`, data) as T
+      return await api.post(`${resourcePath}`, data) as T
     },
     
     /**
