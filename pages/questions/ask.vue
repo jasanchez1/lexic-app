@@ -9,7 +9,7 @@
         <div class="flex gap-3">
           <button 
             @click="confirmLeave"
-            class="flex-1 bg-gray-800 text-white p-3 rounded-md font-medium hover:bg-gray-900"
+            class="flex-1 bg-gray-100 text-gray-700 p-3 rounded-md font-medium hover:bg-gray-200"
           >
             Sí, salir
           </button>
