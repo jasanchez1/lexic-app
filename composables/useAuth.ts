@@ -18,6 +18,7 @@ const user = ref<User | null>(null)
 const isAuthenticated = ref(false)
 const authLoading = ref(false)
 const authError = ref<string | null>(null)
+const userLoaded = ref(false)
 const tokens = ref<{
   access_token: string
   refresh_token: string
@@ -33,6 +34,7 @@ export const useAuth = () => {
   const login = async (email: string, password: string) => {
     authLoading.value = true
     authError.value = null
+    userLoaded.value = false
 
     try {
       const data = await authService.login(email, password)
@@ -54,7 +56,7 @@ export const useAuth = () => {
       // Set authenticated state
       isAuthenticated.value = true
       
-      // Fetch user details
+      // Fetch user details before returning
       await fetchUserProfile()
       
       return { success: true, data }
@@ -71,6 +73,7 @@ export const useAuth = () => {
   const signup = async (email: string, password: string, firstName: string, lastName: string) => {
     authLoading.value = true
     authError.value = null
+    userLoaded.value = false
 
     try {
       const data = await authService.signup(email, password, firstName, lastName)
@@ -92,7 +95,7 @@ export const useAuth = () => {
       // Set authenticated state
       isAuthenticated.value = true
       
-      // Fetch user details
+      // Fetch user details before returning
       await fetchUserProfile()
       
       return { success: true, data }
@@ -112,6 +115,7 @@ export const useAuth = () => {
     try {
       const userData = await authService.getCurrentUser()
       user.value = userData
+      userLoaded.value = true
       return userData
     } catch (error) {
       console.error('Error fetching user profile:', error)
@@ -135,6 +139,7 @@ export const useAuth = () => {
       user.value = null
       tokens.value = null
       isAuthenticated.value = false
+      userLoaded.value = false
       if (process.client) {
         localStorage.removeItem('auth_tokens')
       }
@@ -196,6 +201,7 @@ export const useAuth = () => {
     authLoading,
     authError,
     tokens,
+    userLoaded,
     login,
     signup,
     logout,

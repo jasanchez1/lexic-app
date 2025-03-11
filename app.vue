@@ -32,7 +32,7 @@
 import { ref, watch, computed } from 'vue'
 import { useAuth } from '~/composables/useAuth'
 
-const { isAuthenticated, user, authError } = useAuth()
+const { isAuthenticated, user, authError, userLoaded } = useAuth()
 
 // Toast notification state
 const showToast = ref(false)
@@ -45,19 +45,25 @@ const userDisplayName = computed(() => {
   return user.value.firstName || 'Usuario'
 })
 
-// Show toast notification when auth state changes
-watch(isAuthenticated, (newValue, oldValue) => {
-  // Only show toast if value actually changed
-  if (newValue !== oldValue) {
-    if (newValue) {
-      toastType.value = 'success'
-      toastMessage.value = `Bienvenido, ${userDisplayName.value}`
-      showToast.value = true
-    } else if (oldValue) { // Only show logout message if previously logged in
-      toastType.value = 'success'
-      toastMessage.value = 'Has cerrado sesión correctamente'
-      showToast.value = true
-    }
+// Watch for authentication + user data loaded
+watch([isAuthenticated, userLoaded], ([isAuth, isUserLoaded], [oldIsAuth, oldIsUserLoaded]) => {
+  // Only show welcome toast when both auth status changes AND user data is loaded
+  if (isAuth && isUserLoaded && (!oldIsAuth || !oldIsUserLoaded)) {
+    toastType.value = 'success'
+    toastMessage.value = `Bienvenido, ${userDisplayName.value}`
+    showToast.value = true
+    
+    // Hide toast after 3 seconds
+    setTimeout(() => {
+      showToast.value = false
+    }, 3000)
+  }
+  
+  // Handle logout: Only show logout message if previously logged in
+  if (!isAuth && oldIsAuth) {
+    toastType.value = 'success'
+    toastMessage.value = 'Has cerrado sesión correctamente'
+    showToast.value = true
     
     // Hide toast after 3 seconds
     setTimeout(() => {
