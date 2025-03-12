@@ -1,5 +1,3 @@
-// Update components/lawyer/Card.vue to require authentication for messages
-
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Phone } from 'lucide-vue-next'
@@ -35,7 +33,7 @@ const handleOpenMessage = () => {
     showAuthModal.value = true
     return
   }
-  
+
   showMessageModal.value = true
   trackMessageEvent(props.lawyer, 'opened')
 }
@@ -79,7 +77,45 @@ const handleLoginSuccess = () => {
     <div class="flex justify-between">
       <!-- Left side with lawyer info - no changes -->
       <div class="flex">
-        <!-- ... existing code ... -->
+        <div class="w-32 h-32 flex-shrink-0">
+          <img
+            :src="lawyer.imageURL"
+            :alt="lawyer.name"
+            class="rounded-lg w-full h-full object-cover"
+          />
+        </div>
+        <div class="ml-6">
+          <NuxtLink v-if="viewProfile" :to="`/lawyers/${lawyer.id}`" @click="trackClick('name')">
+            <h3 class="text-xl font-bold text-gray-900 hover:text-primary-600 transition-colors">
+              {{ lawyer.name }}
+            </h3>
+          </NuxtLink>
+          <h3 v-else class="text-xl font-bold text-gray-900">
+            {{ lawyer.name }}
+          </h3>
+          <CommonStarRating
+            :score="lawyer.reviewScore"
+            :review-count="lawyer.reviewCount"
+            :show-score="true"
+            :use-icons="true"
+            :reviews-url="`/lawyers/${lawyer.id}?tab=reviews`"
+          />
+          <div class="text-sm text-gray-600">{{ lawyer.title }}</div>
+          <div class="mt-4">
+            <div class="text-sm">
+              <span class="font-medium">
+                Experiencia: {{ calculateYearsOfExperience(lawyer.professionalStartDate) }}
+              </span>
+            </div>
+            <div v-if="lawyer.areas.length > 0" class="text-sm mt-1">
+              <span class="font-medium">Áreas practicas:</span>
+              {{ lawyer.areas.map((x: PracticeArea) => x.name).join(', ') }}
+            </div>
+            <p class="mt-2 text-sm text-gray-600 line-clamp-2">
+              {{ lawyer.bio }}
+            </p>
+          </div>
+        </div>
       </div>
 
       <!-- Right side with actions -->
@@ -130,12 +166,8 @@ const handleLoginSuccess = () => {
       :show="showMessageModal"
       @close="showMessageModal = false"
     />
-    
+
     <!-- Auth Modal -->
-    <AuthModal 
-      :show="showAuthModal" 
-      @close="showAuthModal = false" 
-      @login="handleLoginSuccess"
-    />
+    <AuthModal :show="showAuthModal" @close="showAuthModal = false" @login="handleLoginSuccess" />
   </div>
 </template>
