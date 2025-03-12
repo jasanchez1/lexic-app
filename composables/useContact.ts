@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { useFetch } from '~/utils/api'
 import type { Lawyer } from '~/types/lawyer'
+import { useMessagingService } from '~/services/api'
 
 export const useContact = () => {
   const api = useFetch()
@@ -23,20 +24,20 @@ export const useContact = () => {
   const sendMessage = async (lawyer: Lawyer) => {
     try {
       // Use the actual API endpoint
-      await api.post(`/lawyers/${lawyer.id}/messages`, {
+      await useMessagingService().send(lawyer.id, {
         name: messageForm.value.name,
         email: messageForm.value.email,
         phone: messageForm.value.phone,
         message: messageForm.value.message
       })
-      
+
       resetForm()
       return { success: true }
     } catch (error) {
       console.error('Error sending message:', error)
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Error al enviar el mensaje' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Error al enviar el mensaje'
       }
     }
   }
