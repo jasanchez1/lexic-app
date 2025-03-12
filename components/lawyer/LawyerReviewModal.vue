@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, watch } from 'vue'
 import {
   Star,
   X as XIcon,
@@ -7,8 +7,9 @@ import {
   CheckCircle as CheckCircleIcon,
   AlertCircle as AlertCircleIcon
 } from 'lucide-vue-next'
+import { useAuth } from '~/composables/useAuth'
 import type { Lawyer } from '~/types/lawyer'
-import auth from '~/middleware/auth';
+import AuthModal from '~/components/auth/Modal.vue'
 
 const props = defineProps<{
   show: boolean
@@ -39,10 +40,18 @@ const form = reactive({
   isHired: null as boolean | null,
   authorName: '',
   authorEmail: '',
-  isAnonymous: false,
-  author: {
-    name: '',
-    email: ''
+  isAnonymous: false
+})
+
+// Auth state
+const { isAuthenticated, user } = useAuth()
+const showAuthModal = ref(false)
+
+// When user data changes, update form
+watch(user, newUser => {
+  if (newUser) {
+    form.authorName = newUser.firstName + ' ' + (newUser.lastName || '')
+    form.authorEmail = newUser.email
   }
 })
 
@@ -94,6 +103,12 @@ const validateForm = () => {
 }
 
 const handleSubmit = async () => {
+  // First check if user is authenticated
+  if (!isAuthenticated.value) {
+    showAuthModal.value = true
+    return
+  }
+
   if (!validateForm()) return
 
   isSubmitting.value = true
@@ -101,10 +116,6 @@ const handleSubmit = async () => {
   try {
     // Here you would typically make an API call
     // For now, we'll just emit the review data
-    form.author = {
-      name: form.authorName,
-      email: form.authorEmail,
-    }
     emit('submit', {
       ...form,
       date: new Date().toISOString(),
@@ -118,6 +129,16 @@ const handleSubmit = async () => {
     // Handle error
   } finally {
     isSubmitting.value = false
+  }
+}
+
+// Handle login success
+const handleLoginSuccess = () => {
+  showAuthModal.value = false
+  // Fill in user info if available
+  if (user.value) {
+    form.authorName = user.value.firstName + ' ' + (user.value.lastName || '')
+    form.authorEmail = user.value.email
   }
 }
 </script>
@@ -325,6 +346,9 @@ const handleSubmit = async () => {
         </div>
       </form>
     </div>
+
+    <!-- Auth Modal -->
+    <AuthModal :show="showAuthModal" @close="showAuthModal = false" @login="handleLoginSuccess" />
   </div>
 </template>
 

@@ -5,6 +5,7 @@ import { useNavigation } from '~/composables/useNavigation'
 import { useReviews } from '~/composables/useReviews'
 import { useLawyerTabs } from '~/composables/useLawyerTabs'
 import { useLawyerExperience } from '~/composables/useLawyerExperience'
+import { useAuth } from '~/composables/useAuth'
 import { CheckCircle } from 'lucide-vue-next'
 import { formatDate } from '~/utils/date'
 import type { LawyerReview } from '~/types/review'
@@ -19,7 +20,10 @@ const {
   fetchReviews
 } = useReviews()
 const { tabs, activeTab, setActiveTab } = useLawyerTabs()
+const { isAuthenticated } = useAuth() // Add this line
 const showReviewModal = ref(false)
+const showAuthModal = ref(false) // Add this for auth modal
+
 const { submitReview } = useReviews()
 
 const {
@@ -38,6 +42,20 @@ watch(activeTab, async newTab => {
     await fetchExperience(profile.value.id)
   }
 })
+
+const openReviewModal = () => {
+  if (!isAuthenticated.value) {
+    showAuthModal.value = true
+  } else {
+    showReviewModal.value = true
+  }
+}
+
+const handleLoginSuccess = () => {
+  showAuthModal.value = false
+  // Now show the review modal
+  showReviewModal.value = true
+}
 
 // Handle review submission
 const handleReviewSubmit = async (review: LawyerReview) => {
@@ -227,10 +245,15 @@ onMounted(async () => {
             <h2 class="text-xl font-bold">Reseñas de Clientes</h2>
             <button
               class="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors"
-              @click="showReviewModal = true"
+              @click="openReviewModal"
             >
               Escribir Reseña
             </button>
+            <AuthModal
+              :show="showAuthModal"
+              @close="showAuthModal = false"
+              @login="handleLoginSuccess"
+            />
 
             <LawyerReviewModal
               v-if="profile"

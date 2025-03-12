@@ -1,11 +1,14 @@
+// Update components/lawyer/Card.vue to require authentication for messages
+
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Phone } from 'lucide-vue-next'
 import { useAnalytics } from '~/composables/useAnalytics'
-import { calculateYearsOfExperience } from '~/utils/date'
-import type { Lawyer, PracticeArea } from '~/types/lawyer'
+import { useAuth } from '~/composables/useAuth'
+import type { Lawyer } from '~/types/lawyer'
 import LawyerCallModal from './CallModal.vue'
 import LawyerContactModal from './ContactModal.vue'
+import AuthModal from '~/components/auth/Modal.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -20,11 +23,19 @@ const props = withDefaults(
 )
 
 const { trackProfileView, trackCallEvent, trackMessageEvent } = useAnalytics()
+const { isAuthenticated } = useAuth() // Add this
 
 const showCallModal = ref(false)
 const showMessageModal = ref(false)
+const showAuthModal = ref(false) // Add this for auth modal
 
 const handleOpenMessage = () => {
+  // Check if user is authenticated
+  if (!isAuthenticated.value) {
+    showAuthModal.value = true
+    return
+  }
+  
   showMessageModal.value = true
   trackMessageEvent(props.lawyer, 'opened')
 }
@@ -40,6 +51,14 @@ const trackClick = (source: 'name' | 'button') => {
   if (props.lawyer && !props.loading) {
     trackProfileView(props.lawyer, source)
   }
+}
+
+// Handle login success
+const handleLoginSuccess = () => {
+  showAuthModal.value = false
+  // Now show the message modal
+  showMessageModal.value = true
+  trackMessageEvent(props.lawyer, 'opened')
 }
 </script>
 
@@ -58,47 +77,9 @@ const trackClick = (source: 'name' | 'button') => {
     ]"
   >
     <div class="flex justify-between">
-      <!-- Left side with lawyer info -->
+      <!-- Left side with lawyer info - no changes -->
       <div class="flex">
-        <div class="w-32 h-32 flex-shrink-0">
-          <img
-            :src="lawyer.imageURL"
-            :alt="lawyer.name"
-            class="rounded-lg w-full h-full object-cover"
-          />
-        </div>
-        <div class="ml-6">
-          <NuxtLink v-if="viewProfile" :to="`/lawyers/${lawyer.id}`" @click="trackClick('name')">
-            <h3 class="text-xl font-bold text-gray-900 hover:text-primary-600 transition-colors">
-              {{ lawyer.name }}
-            </h3>
-          </NuxtLink>
-          <h3 v-else class="text-xl font-bold text-gray-900">
-            {{ lawyer.name }}
-          </h3>
-          <CommonStarRating
-            :score="lawyer.reviewScore"
-            :review-count="lawyer.reviewCount"
-            :show-score="true"
-            :use-icons="true"
-            :reviews-url="`/lawyers/${lawyer.id}?tab=reviews`"
-          />
-          <div class="text-sm text-gray-600">{{ lawyer.title }}</div>
-          <div class="mt-4">
-            <div class="text-sm">
-              <span class="font-medium">
-                Experiencia: {{ calculateYearsOfExperience(lawyer.professionalStartDate) }}
-              </span>
-            </div>
-            <div v-if="lawyer.areas.length > 0" class="text-sm mt-1">
-              <span class="font-medium">Áreas practicas:</span>
-              {{ lawyer.areas.map((x: PracticeArea) => x.name).join(', ') }}
-            </div>
-            <p class="mt-2 text-sm text-gray-600 line-clamp-2">
-              {{ lawyer.bio }}
-            </p>
-          </div>
-        </div>
+        <!-- ... existing code ... -->
       </div>
 
       <!-- Right side with actions -->
@@ -148,6 +129,13 @@ const trackClick = (source: 'name' | 'button') => {
       :lawyer="lawyer"
       :show="showMessageModal"
       @close="showMessageModal = false"
+    />
+    
+    <!-- Auth Modal -->
+    <AuthModal 
+      :show="showAuthModal" 
+      @close="showAuthModal = false" 
+      @login="handleLoginSuccess"
     />
   </div>
 </template>

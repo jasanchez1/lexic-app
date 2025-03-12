@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { useFetch } from '~/utils/api'
 import type { LawyerReview, ReviewStats } from '~/types/review'
+import { useReviewsService } from '~/services/api'
 
 export const useReviews = () => {
   const api = useFetch()
@@ -15,7 +16,7 @@ export const useReviews = () => {
 
     try {
       // Use the actual API endpoint
-      const response = await api.get(`/lawyers/${lawyerId}/reviews`)
+      const response = await useReviewsService().getForLawyer(lawyerId)
       
       reviews.value = response.reviews || []
       stats.value = response.stats || null
@@ -35,12 +36,16 @@ export const useReviews = () => {
   const submitReview = async (lawyerId: string, reviewData: any) => {
     try {
       // Use the actual API endpoint
-      const response = await api.post(`/lawyers/${lawyerId}/reviews`, reviewData)
+      reviewData.author = {
+        name: reviewData.authorName,
+        email: reviewData.authorEmail
+      }
+      const response = await useReviewsService().create(lawyerId, reviewData)
       
       // Refresh reviews after submission
       await fetchReviews(lawyerId)
       
-      return { success: true, reviewId: response.review_id }
+      return { success: true, reviewId: response.id }
     } catch (error) {
       console.error('Error submitting review:', error)
       return { 

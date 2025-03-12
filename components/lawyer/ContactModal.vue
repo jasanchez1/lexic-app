@@ -1,8 +1,10 @@
-<!-- components/lawyer/LawyerContactModal.vue -->
 <script setup lang="ts">
+import { ref, watch } from 'vue'
 import { useContact } from '~/composables/useContact'
 import { useAnalytics } from '~/composables/useAnalytics'
+import { useAuth } from '~/composables/useAuth'
 import type { Lawyer } from '~/types/lawyer'
+import AuthModal from '~/components/auth/Modal.vue'
 
 const props = defineProps<{
   lawyer: Lawyer
@@ -16,12 +18,40 @@ const emit = defineEmits<{
 
 const { messageForm, sendMessage, resetForm } = useContact()
 const { trackMessageEvent } = useAnalytics()
+const { isAuthenticated, user } = useAuth()
+
+// Add state for auth modal
+const showAuthModal = ref(false)
+
+// Update the message form with user information when logged in
+watch(user, (newUser) => {
+  if (newUser) {
+    messageForm.name = newUser.firstName + ' ' + (newUser.lastName || '')
+    messageForm.email = newUser.email
+  }
+})
 
 const handleSend = async () => {
+  // Check if user is authenticated
+  if (!isAuthenticated.value) {
+    showAuthModal.value = true
+    return
+  }
+
   await sendMessage(props.lawyer)
   trackMessageEvent(props.lawyer, 'sent')
   resetForm()
   emit('close')
+}
+
+// Handle successful login
+const handleLoginSuccess = () => {
+  showAuthModal.value = false
+  // Fill in user info if available
+  if (user.value) {
+    messageForm.name = user.value.firstName + ' ' + (user.value.lastName || '')
+    messageForm.email = user.value.email
+  }
 }
 </script>
 
@@ -104,5 +134,12 @@ const handleSend = async () => {
         </button>
       </div>
     </div>
+    
+    <!-- Auth Modal -->
+    <AuthModal 
+      :show="showAuthModal" 
+      @close="showAuthModal = false" 
+      @login="handleLoginSuccess"
+    />
   </div>
 </template>
