@@ -16,11 +16,11 @@ export const useLawyerProfile = () => {
       name: apiLawyer.name,
       title: apiLawyer.title || '',
       email: apiLawyer.email,
-      reviewScore: apiLawyer.review_score || 0,
-      reviewCount: apiLawyer.review_count || 0,
+      reviewScore: apiLawyer.reviewScore || 0,
+      reviewCount: apiLawyer.reviewCount || 0,
       // Convert string date to Date object
-      professionalStartDate: apiLawyer.professional_start_date 
-        ? new Date(apiLawyer.professional_start_date) 
+      professionalStartDate: apiLawyer.professionalStartDate 
+        ? new Date(apiLawyer.professionalStartDate) 
         : new Date(),
       // Map API areas format to our format
       areas: Array.isArray(apiLawyer.areas) 
@@ -28,11 +28,11 @@ export const useLawyerProfile = () => {
             id: area.id,
             name: area.name,
             slug: area.slug,
-            experienceScore: area.experience_score || 50
+            experienceScore: area.experienceScore || 50
           }))
         : [],
       bio: apiLawyer.bio || '',
-      imageURL: apiLawyer.image_url || 'https://via.placeholder.com/150',
+      imageURL: apiLawyer.imageUrl || 'https://via.placeholder.com/150',
       phone: apiLawyer.phone || '',
       city: apiLawyer.city || 'Santiago',
       // Optional fields

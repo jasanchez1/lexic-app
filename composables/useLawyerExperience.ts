@@ -1,7 +1,7 @@
-// composables/useLawyerExperience.ts
 import { ref } from 'vue'
 import { useFetch } from '~/utils/api'
 import type { Education, WorkExperience, Achievement, LawyerStats } from '~/types/experience'
+import { useExperienceService } from '~/services/api'
 
 export const useLawyerExperience = () => {
   const api = useFetch()
@@ -17,61 +17,14 @@ export const useLawyerExperience = () => {
     error.value = null
 
     try {
-      // Note: Assuming there will be an experience endpoint in the future
-      // For now, we'll use mocked data
-      // When the API endpoint becomes available, uncomment the next line
-      // const response = await api.get(`/lawyers/${lawyerId}/experience`)
-      
-      // Mock data
-      education.value = [
-        {
-          institution: 'Universidad de Chile',
-          degree: 'Licenciado en Ciencias Jurídicas y Sociales',
-          year: 2021,
-          honors: 'Distinción Máxima'
-        },
-        {
-          institution: 'Universidad Católica',
-          degree: 'Magíster en Derecho de los Negocios',
-          year: 2022
-        }
-      ]
+      // Use the actual API endpoint
+      const response = await useExperienceService().getForLawyer(lawyerId)
 
-      workExperience.value = [
-        {
-          role: 'Socio Principal',
-          company: 'Libbey Law Offices',
-          startDate: '2023-01',
-          description: 'Especializado en derecho civil y comercial'
-        },
-        {
-          role: 'Asociado Senior',
-          company: 'Carey y Cía',
-          startDate: '2021-03',
-          endDate: '2022-12',
-          description: 'Práctica en litigios comerciales y arbitrajes'
-        }
-      ]
-
-      achievements.value = [
-        {
-          title: 'Premio Colegio de Abogados - Mejor Tesis',
-          year: 2021,
-          issuer: 'Colegio de Abogados de Chile'
-        },
-        {
-          title: 'Reconocimiento Excelencia Académica',
-          year: 2020,
-          issuer: 'Universidad de Chile'
-        }
-      ]
-
-      stats.value = {
-        casesWon: 45,
-        totalCases: 52,
-        yearsExperience: 2,
-        specializedAreas: 3
-      }
+      // Map the response to our data structure
+      education.value = response.education || []
+      workExperience.value = response.workExperience || []
+      achievements.value = response.achievements || []
+      stats.value = response.stats || null
       
       return {
         education: education.value,

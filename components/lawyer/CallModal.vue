@@ -17,8 +17,13 @@ const { initiateCall } = useContact()
 const { trackCallEvent } = useAnalytics()
 
 const handleCall = () => {
-  initiateCall(props.lawyer.phone)
+  // First track the call - this is now synchronous
   trackCallEvent(props.lawyer, true)
+  
+  // Then initiate the call
+  initiateCall(props.lawyer.phone)
+  
+  // Close the modal
   emit('close')
 }
 </script>

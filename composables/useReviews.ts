@@ -14,60 +14,13 @@ export const useReviews = () => {
     error.value = null
 
     try {
-      // Note: Assuming there will be a reviews endpoint in the future
-      // For now, we'll use mocked data
-      // When the API endpoint becomes available, uncomment the next line
-      // const response = await api.get(`/lawyers/${lawyerId}/reviews`)
+      // Use the actual API endpoint
+      const response = await api.get(`/lawyers/${lawyerId}/reviews`)
       
-      // Mock API response
-      const mockReviews: LawyerReview[] = [
-        {
-          id: '1',
-          rating: 5,
-          title: 'Increible. Recomendado 100%',
-          content:
-            'Ha sido mi asesor de confianza durante cuatro años, brindando asistencia invaluable en diversos asuntos durante mi litigio comercial exitoso. Su experiencia, dedicación y enfoque personalizado me hicieron sentir confiado y bien respaldado durante mi caso increíblemente complejo...',
-          author: 'Ana M.',
-          date: '2024-01-18',
-          isHired: true
-        },
-        {
-          id: '2',
-          rating: 5,
-          title: 'El mejor abogado que pude encontrar',
-          content:
-            'Un abogado increíble, talentoso, atento e inteligente. Tuve un caso de litigio contra socios comerciales y fue el mejor abogado que pude encontrar. Tiene un gran conocimiento y experiencia en su campo...',
-          author: 'Jose F.',
-          date: '2023-12-03',
-          isHired: true
-        },
-        {
-          id: '3',
-          title: 'Muy profesional',
-          rating: 5,
-          content: 'Excelente trato y resultados.',
-          author: 'Carlos R.',
-          date: '2023-12-03',
-          isHired: false
-        }
-      ]
-
-      const mockStats: ReviewStats = {
-        average: 4.3,
-        total: 6,
-        distribution: {
-          5: 83,
-          4: 0,
-          3: 0,
-          2: 0,
-          1: 17
-        }
-      }
+      reviews.value = response.reviews || []
+      stats.value = response.stats || null
       
-      reviews.value = mockReviews
-      stats.value = mockStats
-      
-      return { reviews: mockReviews, stats: mockStats }
+      return { reviews: reviews.value, stats: stats.value }
     } catch (e) {
       console.error('Error fetching reviews:', e)
       error.value = e instanceof Error ? e.message : 'Error al cargar las reseñas'
@@ -81,17 +34,13 @@ export const useReviews = () => {
 
   const submitReview = async (lawyerId: string, reviewData: any) => {
     try {
-      // Note: Assuming there will be a reviews endpoint in the future
-      // For now, we'll just log the review data
-      console.log('Submitting review for lawyer', lawyerId, reviewData)
-      
-      // When the API endpoint becomes available, uncomment the next line
-      // await api.post(`/lawyers/${lawyerId}/reviews`, reviewData)
+      // Use the actual API endpoint
+      const response = await api.post(`/lawyers/${lawyerId}/reviews`, reviewData)
       
       // Refresh reviews after submission
       await fetchReviews(lawyerId)
       
-      return { success: true }
+      return { success: true, reviewId: response.review_id }
     } catch (error) {
       console.error('Error submitting review:', error)
       return { 

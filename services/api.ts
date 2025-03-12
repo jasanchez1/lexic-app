@@ -511,3 +511,138 @@ export const useAuthService = () => {
     }
   }
 }
+
+export const useReviewsService = () => {
+  const api = useFetch()
+  
+  return {
+    // Get reviews for a lawyer
+    getForLawyer: async (lawyerId: string) => {
+      const response = await api.get(`/lawyers/${lawyerId}/reviews`)
+      return {
+        reviews: response.reviews.map((review: any) => mapApiResponseToModel(review)),
+        stats: mapApiResponseToModel(response.stats)
+      }
+    },
+    
+    // Create a review
+    create: async (lawyerId: string, data: any) => {
+      const apiData = mapModelToApiRequest(data)
+      return mapApiResponseToModel(await api.post(`/lawyers/${lawyerId}/reviews`, apiData))
+    },
+    
+    // Update a review
+    update: async (lawyerId: string, reviewId: string, data: any) => {
+      const apiData = mapModelToApiRequest(data)
+      return mapApiResponseToModel(await api.patch(`/lawyers/${lawyerId}/reviews/${reviewId}`, apiData))
+    },
+    
+    // Delete a review
+    delete: async (lawyerId: string, reviewId: string) => {
+      return await api.delete(`/lawyers/${lawyerId}/reviews/${reviewId}`)
+    }
+  }
+}
+
+// For experience
+export const useExperienceService = () => {
+  const api = useFetch()
+  
+  return {
+    // Get experience for a lawyer
+    getForLawyer: async (lawyerId: string) => {
+      return mapApiResponseToModel(await api.get(`/lawyers/${lawyerId}/experience`))
+    },
+    
+    // Education methods
+    addEducation: async (lawyerId: string, data: any) => {
+      const apiData = mapModelToApiRequest(data)
+      return mapApiResponseToModel(await api.post(`/lawyers/${lawyerId}/education`, apiData))
+    },
+    
+    updateEducation: async (lawyerId: string, educationId: string, data: any) => {
+      const apiData = mapModelToApiRequest(data)
+      return mapApiResponseToModel(await mapApiResponseToModel(api.patch(`/lawyers/${lawyerId}/education/${educationId}`, apiData)))
+    },
+    
+    deleteEducation: async (lawyerId: string, educationId: string) => {
+      return await api.delete(`/lawyers/${lawyerId}/education/${educationId}`)
+    },
+    
+    // Work experience methods
+    addWorkExperience: async (lawyerId: string, data: any) => {
+      const apiData = mapModelToApiRequest(data)
+      return mapApiResponseToModel(await api.post(`/lawyers/${lawyerId}/work-experience`, apiData))
+    },
+    
+    updateWorkExperience: async (lawyerId: string, experienceId: string, data: any) => {
+      const apiData = mapModelToApiRequest(data)
+      return mapApiResponseToModel(await api.patch(`/lawyers/${lawyerId}/work-experience/${experienceId}`, apiData))
+    },
+    
+    deleteWorkExperience: async (lawyerId: string, experienceId: string) => {
+      return await api.delete(`/lawyers/${lawyerId}/work-experience/${experienceId}`)
+    },
+    
+    // Achievement methods
+    addAchievement: async (lawyerId: string, data: any) => {
+      const apiData = mapModelToApiRequest(data)
+      return mapApiResponseToModel(await api.post(`/lawyers/${lawyerId}/achievements`, apiData))
+    },
+    
+    updateAchievement: async (lawyerId: string, achievementId: string, data: any) => {
+      const apiData = mapModelToApiRequest(data)
+      return mapApiResponseToModel(await api.patch(`/lawyers/${lawyerId}/achievements/${achievementId}`, apiData))
+    },
+    
+    deleteAchievement: async (lawyerId: string, achievementId: string) => {
+      return await api.delete(`/lawyers/${lawyerId}/achievements/${achievementId}`)
+    }
+  }
+}
+
+// For messaging
+export const useMessagingService = () => {
+  const api = useFetch()
+  
+  return {
+    // Send a message to a lawyer
+    send: async (lawyerId: string, data: any) => {
+      const apiData = mapModelToApiRequest(data)
+      return mapApiResponseToModel(await api.post(`/lawyers/${lawyerId}/messages`, apiData))
+    }
+  }
+}
+
+// For analytics
+export const useAnalyticsService = () => {
+  const api = useFetch()
+  
+  return {
+    // Track a call to a lawyer
+    trackCall: async (lawyerId: string, data: { completed: boolean, timestamp: string }) => {
+      const apiData = mapModelToApiRequest(data)
+      return mapApiResponseToModel(await api.post(`/analytics/lawyers/${lawyerId}/call`, apiData))
+    },
+    
+    // Track a profile view
+    trackProfileView: async (lawyerId: string, source: string) => {
+      //  We should call the API here once is created
+      // return await api.post(`/analytics/profile-views`, {
+      //   lawyer_id: lawyerId,
+      //   source,
+      //   timestamp: new Date().toISOString()
+      // })
+    },
+    
+    // Track a message event
+    trackMessageEvent: async (lawyerId: string, status: string) => {
+      //  We should call the API here once is created
+      // return await api.post(`/analytics/message-events`, {
+      //   lawyer_id: lawyerId,
+      //   status,
+      //   timestamp: new Date().toISOString()
+      // })
+    }
+  }
+}

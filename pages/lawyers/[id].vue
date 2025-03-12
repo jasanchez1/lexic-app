@@ -7,6 +7,7 @@ import { useLawyerTabs } from '~/composables/useLawyerTabs'
 import { useLawyerExperience } from '~/composables/useLawyerExperience'
 import { CheckCircle } from 'lucide-vue-next'
 import { formatDate } from '~/utils/date'
+import type { LawyerReview } from '~/types/review'
 
 const { setCurrentLawyer } = useNavigation()
 const { profile, isLoading, error, fetchProfile } = useLawyerProfile()
@@ -39,7 +40,7 @@ watch(activeTab, async newTab => {
 })
 
 // Handle review submission
-const handleReviewSubmit = async (review: any) => {
+const handleReviewSubmit = async (review: LawyerReview) => {
   if (!profile.value) return
 
   const result = await submitReview(profile.value.id, review)
@@ -310,7 +311,7 @@ onMounted(async () => {
 
                 <!-- Review Footer -->
                 <div class="flex items-center justify-between text-sm">
-                  <div class="text-gray-500">Por {{ review.author }}</div>
+                  <div class="text-gray-500">Por {{ review.author.name }}</div>
                   <div v-if="review.isHired" class="flex items-center text-green-600">
                     <CheckCircle class="w-4 h-4 mr-1" />
                     Cliente Verificado
@@ -345,7 +346,10 @@ onMounted(async () => {
           <div v-else class="space-y-8">
             <!-- Stats -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div v-if="experienceStats?.casesWon" class="bg-primary-50 p-4 rounded-lg text-center">
+              <div
+                v-if="experienceStats?.casesWon"
+                class="bg-primary-50 p-4 rounded-lg text-center"
+              >
                 <div class="text-2xl font-bold text-primary-600">
                   {{ experienceStats.casesWon }}
                 </div>
@@ -354,7 +358,7 @@ onMounted(async () => {
               </div>
               <div class="bg-primary-50 p-4 rounded-lg text-center">
                 <div class="text-2xl font-bold text-primary-600">
-                  {{ experienceStats?.yearsExperience || calculateYearsOfExperience(profile.professionalStartDate) }}
+                  {{ calculateYearsOfExperience(profile.professionalStartDate) }}
                 </div>
                 <div class="text-sm text-gray-600">Años de Experiencia</div>
               </div>
@@ -397,8 +401,8 @@ onMounted(async () => {
                   <div class="font-medium">{{ work.role }}</div>
                   <div class="text-gray-600">{{ work.company }}</div>
                   <div class="text-sm text-gray-500 mt-1">
-                    {{ formatDate(work.startDate) }} -
-                    {{ work.endDate ? formatDate(work.endDate) : 'Presente' }}
+                    {{ work.startDate }} -
+                    {{ work.endDate == 'Present' ? 'Presente' : work.endDate }}
                   </div>
                   <p v-if="work.description" class="mt-2 text-gray-600">{{ work.description }}</p>
                 </div>
@@ -425,7 +429,15 @@ onMounted(async () => {
             </div>
 
             <!-- No Experience Data Placeholder -->
-            <div v-if="!education.length && !workExperience.length && !achievements.length && !profile.education?.length" class="text-center py-12 bg-gray-50 rounded-lg">
+            <div
+              v-if="
+                !education.length &&
+                !workExperience.length &&
+                !achievements.length &&
+                !profile.education?.length
+              "
+              class="text-center py-12 bg-gray-50 rounded-lg"
+            >
               <p class="text-gray-500">No hay información de experiencia disponible</p>
             </div>
           </div>

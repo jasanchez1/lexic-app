@@ -8,6 +8,7 @@ import {
   AlertCircle as AlertCircleIcon
 } from 'lucide-vue-next'
 import type { Lawyer } from '~/types/lawyer'
+import auth from '~/middleware/auth';
 
 const props = defineProps<{
   show: boolean
@@ -38,7 +39,11 @@ const form = reactive({
   isHired: null as boolean | null,
   authorName: '',
   authorEmail: '',
-  isAnonymous: false
+  isAnonymous: false,
+  author: {
+    name: '',
+    email: ''
+  }
 })
 
 const validateForm = () => {
@@ -96,6 +101,10 @@ const handleSubmit = async () => {
   try {
     // Here you would typically make an API call
     // For now, we'll just emit the review data
+    form.author = {
+      name: form.authorName,
+      email: form.authorEmail,
+    }
     emit('submit', {
       ...form,
       date: new Date().toISOString(),

@@ -89,7 +89,7 @@ watchEffect(() => {
           <template v-else>
             {{ totalLawyers }} {{ totalLawyers === 1 ? 'Abogado' : 'Abogados' }}
             <template v-if="route.query.area">
-              <span class="text-gray-700">especialistas en </span> 
+              <span class="text-gray-700">especialistas en </span>
               <span class="text-primary-600">{{ route.query.area }}</span>
             </template>
             <template v-if="route.query.city">
@@ -102,9 +102,9 @@ watchEffect(() => {
             </template>
           </template>
         </h2>
-        <CommonSortSelect 
+        <CommonSortSelect
           :initial-value="route.query.sort?.toString() || 'best_match'"
-          @sort="handleSortChange" 
+          @sort="handleSortChange"
         />
       </div>
 
@@ -117,7 +117,10 @@ watchEffect(() => {
         <LawyerCard v-for="i in 3" :key="`skeleton-${i}`" :loading="true" :lawyer="{} as Lawyer" />
       </div>
 
-      <div v-else-if="lawyers.length === 0" class="py-12 text-center bg-white rounded-lg shadow-sm border p-6">
+      <div
+        v-else-if="lawyers.length === 0"
+        class="py-12 text-center bg-white rounded-lg shadow-sm border p-6"
+      >
         <p class="text-gray-600 mb-4">No se encontraron abogados con los filtros seleccionados.</p>
         <button
           @click="() => router.push('/lawyers')"
@@ -129,24 +132,28 @@ watchEffect(() => {
 
       <div v-else>
         <LawyerCard v-for="lawyer in lawyers" :key="lawyer.id" :lawyer="lawyer" />
-        
+
         <!-- Pagination -->
         <div v-if="totalPages > 1" class="mt-6 flex justify-center">
           <div class="flex items-center space-x-1">
             <button
               class="px-3 py-1 rounded-md border"
-              :class="page === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100'"
+              :class="
+                page === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100'
+              "
               :disabled="page === 1"
               @click="goToPage(page - 1)"
             >
               Anterior
             </button>
-            
+
             <div v-for="p in totalPages" :key="p" class="hidden md:block">
               <button
                 v-if="p === 1 || p === totalPages || (p >= page - 1 && p <= page + 1)"
                 class="px-3 py-1 rounded-md"
-                :class="p === page ? 'bg-primary-600 text-white' : 'text-gray-700 hover:bg-gray-100'"
+                :class="
+                  p === page ? 'bg-primary-600 text-white' : 'text-gray-700 hover:bg-gray-100'
+                "
                 @click="goToPage(p)"
               >
                 {{ p }}
@@ -158,14 +165,16 @@ watchEffect(() => {
                 ...
               </span>
             </div>
-            
-            <div class="md:hidden text-sm text-gray-500">
-              Página {{ page }} de {{ totalPages }}
-            </div>
-            
+
+            <div class="md:hidden text-sm text-gray-500">Página {{ page }} de {{ totalPages }}</div>
+
             <button
               class="px-3 py-1 rounded-md border"
-              :class="page === totalPages ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100'"
+              :class="
+                page === totalPages
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : 'text-gray-700 hover:bg-gray-100'
+              "
               :disabled="page === totalPages"
               @click="goToPage(page + 1)"
             >

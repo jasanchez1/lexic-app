@@ -1,9 +1,14 @@
+export interface Author {
+  name: string
+  email: string | null
+}
+
 export interface LawyerReview {
   id: string
   rating: number
   title?: string
   content: string
-  author: string
+  author: Author
   date: string
   isHired: boolean
 }
