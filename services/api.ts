@@ -7,6 +7,7 @@ import type { City } from '~/types/city'
 import type { Question, Answer, Reply } from '~/types/question'
 import type { LegalTopic } from '~/types/legalTopics'
 import { mapApiResponseToModel, mapModelToApiRequest } from '~/utils/caseConverters'
+import { useAuth } from '~/composables/useAuth'
 
 // Define input/output types for each service
 interface LawyerCreate {
@@ -103,12 +104,6 @@ interface AnswerCreate {
 
 interface AnswerUpdate {
   content?: string
-}
-
-interface AnswerHelpfulResponse {
-  success: boolean
-  is_helpful: boolean
-  helpfulCount: number
 }
 
 // Reply interfaces
@@ -527,19 +522,24 @@ export const useReviewsService = () => {
     
     // Create a review
     create: async (lawyerId: string, data: any) => {
-      const apiData = mapModelToApiRequest(data)
+      // Make sure user_id is included from the auth user if not provided
+      const { user } = useAuth();
+      const apiData = mapModelToApiRequest({
+        ...data,
+        user_id: data.user_id || user.value?.id
+      })
       return mapApiResponseToModel(await api.post(`/lawyers/${lawyerId}/reviews`, apiData))
     },
     
     // Update a review
-    update: async (lawyerId: string, reviewId: string, data: any) => {
+    update: async (reviewId: string, data: any) => {
       const apiData = mapModelToApiRequest(data)
-      return mapApiResponseToModel(await api.patch(`/lawyers/${lawyerId}/reviews/${reviewId}`, apiData))
+      return mapApiResponseToModel(await api.patch(`/reviews/${reviewId}`, apiData))
     },
     
     // Delete a review
-    delete: async (lawyerId: string, reviewId: string) => {
-      return await api.delete(`/lawyers/${lawyerId}/reviews/${reviewId}`)
+    delete: async (reviewId: string) => {
+      return await api.delete(`/reviews/${reviewId}`)
     }
   }
 }

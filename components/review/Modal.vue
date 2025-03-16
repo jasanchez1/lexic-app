@@ -1,155 +1,10 @@
-<script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
-import {
-  Star,
-  X as XIcon,
-  Info as InfoIcon,
-  CheckCircle as CheckCircleIcon,
-  AlertCircle as AlertCircleIcon
-} from 'lucide-vue-next'
-import { useAuth } from '~/composables/useAuth'
-import type { Lawyer } from '~/types/lawyer'
-import AuthModal from '~/components/auth/Modal.vue'
-
-const props = defineProps<{
-  show: boolean
-  lawyer: Lawyer
-}>()
-
-const emit = defineEmits<{
-  // eslint-disable-next-line no-unused-vars
-  (e: 'close'): void
-  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-explicit-any
-  (e: 'submit', review: any): void
-}>()
-
-const isSubmitting = ref(false)
-const errors = reactive({
-  rating: '',
-  title: '',
-  content: '',
-  isHired: '',
-  authorName: '',
-  authorEmail: ''
-})
-
-const form = reactive({
-  rating: 0,
-  title: '',
-  content: '',
-  isHired: null as boolean | null,
-  authorName: '',
-  authorEmail: '',
-  isAnonymous: false
-})
-
-// Auth state
-const { isAuthenticated, user } = useAuth()
-const showAuthModal = ref(false)
-
-// When user data changes, update form
-watch(user, newUser => {
-  if (newUser) {
-    form.authorName = newUser.firstName + ' ' + (newUser.lastName || '')
-    form.authorEmail = newUser.email
-  }
-})
-
-const validateForm = () => {
-  let isValid = true
-
-  // Reset errors
-  Object.keys(errors).forEach(key => (errors[key as keyof typeof errors] = ''))
-
-  if (!form.rating) {
-    errors.rating = 'Por favor seleccione una calificación'
-    isValid = false
-  }
-
-  if (!form.title.trim()) {
-    errors.title = 'Por favor ingrese un título'
-    isValid = false
-  }
-
-  if (form.content.trim().length < 20) {
-    errors.content = 'La reseña debe tener al menos 20 caracteres'
-    isValid = false
-  }
-
-  if (!form.isAnonymous && !form.authorName.trim()) {
-    errors.authorName = 'Por favor ingrese su nombre'
-    isValid = false
-  }
-
-  if (form.isHired === null) {
-    errors.isHired = 'Por favor seleccione una opción'
-    isValid = false
-  }
-
-  if (!form.authorName.trim()) {
-    errors.authorName = 'Por favor ingrese su nombre'
-    isValid = false
-  }
-
-  if (!form.authorEmail.trim()) {
-    errors.authorEmail = 'Por favor ingrese su email'
-    isValid = false
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.authorEmail)) {
-    errors.authorEmail = 'Por favor ingrese un email válido'
-    isValid = false
-  }
-
-  return isValid
-}
-
-const handleSubmit = async () => {
-  // First check if user is authenticated
-  if (!isAuthenticated.value) {
-    showAuthModal.value = true
-    return
-  }
-
-  if (!validateForm()) return
-
-  isSubmitting.value = true
-
-  try {
-    // Here you would typically make an API call
-    // For now, we'll just emit the review data
-    emit('submit', {
-      ...form,
-      date: new Date().toISOString(),
-      lawyerId: props.lawyer.id
-    })
-
-    // Close modal
-    emit('close')
-  } catch (error) {
-    console.error('Error submitting review:', error)
-    // Handle error
-  } finally {
-    isSubmitting.value = false
-  }
-}
-
-// Handle login success
-const handleLoginSuccess = () => {
-  showAuthModal.value = false
-  // Fill in user info if available
-  if (user.value) {
-    form.authorName = user.value.firstName + ' ' + (user.value.lastName || '')
-    form.authorEmail = user.value.email
-  }
-}
-</script>
-
 <template>
   <div v-if="show" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
     <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
       <!-- Header -->
       <div class="p-6 border-b flex justify-between items-start">
         <div>
-          <h2 class="text-xl font-bold">Reseña para {{ lawyer.name }}</h2>
+          <h2 class="text-xl font-bold">{{ isEditing ? 'Editar reseña' : 'Reseña para ' + lawyer.name }}</h2>
           <p class="text-sm text-gray-600">{{ lawyer.title }}</p>
         </div>
         <button class="text-gray-400 hover:text-gray-600" @click="$emit('close')">
@@ -157,8 +12,8 @@ const handleLoginSuccess = () => {
         </button>
       </div>
 
-      <!-- Guidelines Panel -->
-      <div class="bg-blue-50 m-6 p-4 rounded-lg">
+      <!-- Guidelines Panel - only show on new review creation -->
+      <div v-if="!isEditing" class="bg-blue-50 m-6 p-4 rounded-lg">
         <h3 class="font-medium mb-2">Pautas para reseñas</h3>
         <ul class="space-y-2 text-sm text-gray-600">
           <li class="flex gap-2">
@@ -243,8 +98,8 @@ const handleLoginSuccess = () => {
           </p>
         </div>
 
-        <!-- Hired Status -->
-        <div>
+        <!-- Hired Status - only show when creating new review -->
+        <div v-if="!isEditing">
           <label class="block text-sm font-medium text-gray-700 mb-2 required">
             ¿Contrató al abogado?
           </label>
@@ -275,8 +130,8 @@ const handleLoginSuccess = () => {
           </p>
         </div>
 
-        <!-- Author Info -->
-        <div class="space-y-4">
+        <!-- Author Info - only show when creating new review -->
+        <div v-if="!isEditing" class="space-y-4">
           <div v-if="!form.isAnonymous">
             <label for="authorName" class="block text-sm font-medium text-gray-700 mb-2 required">
               Su nombre
@@ -341,16 +196,193 @@ const handleLoginSuccess = () => {
             :disabled="isSubmitting"
             class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50"
           >
-            {{ isSubmitting ? 'Enviando...' : 'Publicar Reseña' }}
+            {{ isSubmitting ? 'Enviando...' : isEditing ? 'Actualizar Reseña' : 'Publicar Reseña' }}
           </button>
         </div>
       </form>
     </div>
-
-    <!-- Auth Modal -->
-    <AuthModal :show="showAuthModal" @close="showAuthModal = false" @login="handleLoginSuccess" />
   </div>
 </template>
+
+<script setup lang="ts">
+import { ref, reactive, watch, onMounted } from 'vue'
+import {
+  Star,
+  X as XIcon,
+  Info as InfoIcon,
+  CheckCircle as CheckCircleIcon,
+  AlertCircle as AlertCircleIcon
+} from 'lucide-vue-next'
+import { useAuth } from '~/composables/useAuth'
+import type { Lawyer } from '~/types/lawyer'
+import type { LawyerReview } from '~/types/review'
+
+const props = defineProps<{
+  show: boolean
+  lawyer: Lawyer
+  reviewToEdit?: LawyerReview // New prop for editing an existing review
+}>()
+
+const emit = defineEmits<{
+  (e: 'close'): void
+  (e: 'submit', review: any): void
+  (e: 'update', reviewId: string, review: any): void
+}>()
+
+const isSubmitting = ref(false)
+const errors = reactive({
+  rating: '',
+  title: '',
+  content: '',
+  isHired: '',
+  authorName: '',
+  authorEmail: ''
+})
+
+// Default form state
+const defaultForm = {
+  rating: 0,
+  title: '',
+  content: '',
+  isHired: null as boolean | null,
+  authorName: '',
+  authorEmail: '',
+  isAnonymous: false
+}
+
+const form = reactive({ ...defaultForm })
+
+// Computed property to determine if we're in edit mode
+const isEditing = computed(() => !!props.reviewToEdit)
+
+// Auth state
+const { isAuthenticated, user } = useAuth()
+
+// When user data changes, update form
+watch(user, newUser => {
+  if (newUser && !isEditing.value) {
+    form.authorName = newUser.firstName + ' ' + (newUser.lastName || '')
+    form.authorEmail = newUser.email
+  }
+})
+
+// When reviewToEdit changes, populate the form
+watch(() => props.reviewToEdit, (newReview) => {
+  if (newReview) {
+    form.rating = newReview.rating
+    form.title = newReview.title || ''
+    form.content = newReview.content
+    form.isHired = newReview.isHired
+    form.isAnonymous = newReview.author?.name === 'Anónimo'
+  } else {
+    // Reset form when not editing
+    Object.assign(form, defaultForm)
+    
+    // Populate with user data if available
+    if (user.value) {
+      form.authorName = user.value.firstName + ' ' + (user.value.lastName || '')
+      form.authorEmail = user.value.email
+    }
+  }
+}, { immediate: true })
+
+const validateForm = () => {
+  let isValid = true
+
+  // Reset errors
+  Object.keys(errors).forEach(key => (errors[key as keyof typeof errors] = ''))
+
+  if (!form.rating) {
+    errors.rating = 'Por favor seleccione una calificación'
+    isValid = false
+  }
+
+  if (!form.title.trim()) {
+    errors.title = 'Por favor ingrese un título'
+    isValid = false
+  }
+
+  if (form.content.trim().length < 20) {
+    errors.content = 'La reseña debe tener al menos 20 caracteres'
+    isValid = false
+  }
+
+  // Only validate these fields when creating a new review
+  if (!isEditing.value) {
+    if (!form.isAnonymous && !form.authorName.trim()) {
+      errors.authorName = 'Por favor ingrese su nombre'
+      isValid = false
+    }
+
+    if (form.isHired === null) {
+      errors.isHired = 'Por favor seleccione una opción'
+      isValid = false
+    }
+
+    if (!form.authorName.trim()) {
+      errors.authorName = 'Por favor ingrese su nombre'
+      isValid = false
+    }
+
+    if (!form.authorEmail.trim()) {
+      errors.authorEmail = 'Por favor ingrese su email'
+      isValid = false
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.authorEmail)) {
+      errors.authorEmail = 'Por favor ingrese un email válido'
+      isValid = false
+    }
+  }
+
+  return isValid
+}
+
+const handleSubmit = async () => {
+  // First check if user is authenticated
+  if (!isAuthenticated.value) {
+    emit('close')
+    return
+  }
+
+  if (!validateForm()) return
+
+  isSubmitting.value = true
+
+  try {
+    if (isEditing.value && props.reviewToEdit) {
+      // Update existing review
+      emit('update', props.reviewToEdit.id, {
+        rating: form.rating,
+        title: form.title,
+        content: form.content
+      })
+    } else {
+      // Create new review
+      emit('submit', {
+        ...form,
+        date: new Date().toISOString(),
+        lawyerId: props.lawyer.id,
+        authorName: form.isAnonymous ? 'Anónimo' : form.authorName
+      })
+    }
+
+    // Close modal
+    emit('close')
+  } catch (error) {
+    console.error('Error submitting review:', error)
+    // Handle error
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
+// Initialize form when mounted
+onMounted(() => {
+  if (user.value && !isEditing.value) {
+    form.authorName = user.value.firstName + ' ' + (user.value.lastName || '')
+    form.authorEmail = user.value.email
+  }
+})
+</script>
 
 <style scoped>
 .required:after {

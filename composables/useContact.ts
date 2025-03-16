@@ -2,9 +2,13 @@ import { ref } from 'vue'
 import { useFetch } from '~/utils/api'
 import type { Lawyer } from '~/types/lawyer'
 import { useMessagingService } from '~/services/api'
+import { useAuth } from '~/composables/useAuth'
 
 export const useContact = () => {
   const api = useFetch()
+  const { user } = useAuth() // Get current user info
+  const messagingService = useMessagingService()
+  
   const messageForm = ref({
     name: '',
     email: '',
@@ -23,13 +27,16 @@ export const useContact = () => {
 
   const sendMessage = async (lawyer: Lawyer) => {
     try {
-      // Use the actual API endpoint
-      await useMessagingService().send(lawyer.id, {
+      // Add user_id to the message data if user is authenticated
+      const messageData = {
         name: messageForm.value.name,
         email: messageForm.value.email,
         phone: messageForm.value.phone,
-        message: messageForm.value.message
-      })
+        message: messageForm.value.message,
+        user_id: user.value?.id // Add user ID if available
+      }
+      
+      await messagingService.send(lawyer.id, messageData)
 
       resetForm()
       return { success: true }

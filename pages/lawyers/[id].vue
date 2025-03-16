@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, watch } from 'vue'
+import { onMounted, onUnmounted, watch, ref } from 'vue'
 import { useLawyerProfile } from '~/composables/useLawyerProfile'
 import { useNavigation } from '~/composables/useNavigation'
 import { useReviews } from '~/composables/useReviews'
@@ -8,6 +8,7 @@ import { useLawyerExperience } from '~/composables/useLawyerExperience'
 import { useAuth } from '~/composables/useAuth'
 import { CheckCircle } from 'lucide-vue-next'
 import { formatDate } from '~/utils/date'
+import ReviewActions from '~/components/review/Actions.vue'
 import type { LawyerReview } from '~/types/review'
 
 const { setCurrentLawyer } = useNavigation()
@@ -17,14 +18,17 @@ const {
   stats: reviewStats,
   isLoading: reviewsLoading,
   error: reviewsError,
-  fetchReviews
+  fetchReviews,
+  submitReview,
+  updateReview,
+  deleteReview,
+  canEditReview // Use the new helper method
 } = useReviews()
 const { tabs, activeTab, setActiveTab } = useLawyerTabs()
-const { isAuthenticated } = useAuth() // Add this line
+const { isAuthenticated } = useAuth()
 const showReviewModal = ref(false)
-const showAuthModal = ref(false) // Add this for auth modal
-
-const { submitReview } = useReviews()
+const showAuthModal = ref(false)
+const reviewToEdit = ref<LawyerReview | undefined>(undefined) // For editing reviews
 
 const {
   education,
@@ -44,6 +48,7 @@ watch(activeTab, async newTab => {
 })
 
 const openReviewModal = () => {
+  reviewToEdit.value = undefined // Reset edit state
   if (!isAuthenticated.value) {
     showAuthModal.value = true
   } else {
@@ -67,6 +72,31 @@ const handleReviewSubmit = async (review: LawyerReview) => {
     showReviewModal.value = false
     // Optionally scroll to reviews section
     document.getElementById('reviews-section')?.scrollIntoView({ behavior: 'smooth' })
+  } else {
+    // Handle error
+    console.error(result.error)
+  }
+}
+
+// New method to handle closing the review modal
+const handleCloseReviewModal = () => {
+  showReviewModal.value = false
+  reviewToEdit.value = undefined // Clear edit state
+}
+
+// New method to handle editing a review
+const editReview = (review: LawyerReview) => {
+  reviewToEdit.value = review
+  showReviewModal.value = true
+}
+
+// New method to handle updating a review
+const handleReviewUpdate = async (reviewId: string, reviewData: any) => {
+  const result = await updateReview(reviewId, reviewData)
+  
+  if (result.success) {
+    showReviewModal.value = false
+    reviewToEdit.value = undefined
   } else {
     // Handle error
     console.error(result.error)
@@ -255,12 +285,14 @@ onMounted(async () => {
               @login="handleLoginSuccess"
             />
 
-            <LawyerReviewModal
+            <ReviewModal
               v-if="profile"
               :show="showReviewModal"
               :lawyer="profile"
-              @close="showReviewModal = false"
+              :review-to-edit="reviewToEdit"
+              @close="handleCloseReviewModal"
               @submit="handleReviewSubmit"
+              @update="handleReviewUpdate"
             />
           </div>
 
@@ -324,8 +356,16 @@ onMounted(async () => {
                       :reviews-url="`/lawyers/${profile.id}?tab=reviews`"
                     />
                   </div>
-                  <div class="text-sm text-gray-500">
-                    {{ formatDate(review.date) }}
+                  <div class="flex items-center space-x-4">
+                    <div class="text-sm text-gray-500">
+                      {{ formatDate(review.date) }}
+                    </div>
+                    <!-- Review Actions (edit/delete) - only show for user's own reviews -->
+                    <ReviewActions
+                      :can-edit="canEditReview(review.id)"
+                      @edit="editReview(review)"
+                      @delete="deleteReview(review.id)"
+                    />
                   </div>
                 </div>
 
@@ -347,7 +387,7 @@ onMounted(async () => {
                 <p class="text-gray-500">No hay reseñas disponibles</p>
                 <button
                   class="mt-2 text-primary-600 hover:text-primary-700 font-medium"
-                  @click="showReviewModal = true"
+                  @click="openReviewModal"
                 >
                   Sé el primero en escribir una reseña
                 </button>
