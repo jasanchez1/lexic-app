@@ -84,22 +84,41 @@ const handleCloseReviewModal = () => {
   reviewToEdit.value = undefined // Clear edit state
 }
 
-// New method to handle editing a review
 const editReview = (review: LawyerReview) => {
   reviewToEdit.value = review
   showReviewModal.value = true
 }
 
-// New method to handle updating a review
 const handleReviewUpdate = async (reviewId: string, reviewData: any) => {
-  const result = await updateReview(reviewId, reviewData)
-  
+  if (!profile.value) return
+
+  const result = await updateReview(profile.value.id, reviewId, reviewData)
+
   if (result.success) {
+    // Close the modal
     showReviewModal.value = false
     reviewToEdit.value = undefined
+
+    // No need to reload the page - the state is already updated in the composable
   } else {
-    // Handle error
+    // Show error to user
+    // You could add a toast notification here
     console.error(result.error)
+  }
+}
+
+const handleReviewDelete = async (reviewId: string) => {
+  if (!profile.value) return
+
+  try {
+    const result = await deleteReview(profile.value.id, reviewId)
+
+    if (result.success) {
+      // Refresh reviews from server to ensure UI is up to date
+      await fetchReviews(profile.value.id)
+    }
+  } catch (error) {
+    console.error('Error handling review deletion:', error)
   }
 }
 
@@ -362,9 +381,9 @@ onMounted(async () => {
                     </div>
                     <!-- Review Actions (edit/delete) - only show for user's own reviews -->
                     <ReviewActions
-                      :can-edit="canEditReview(review.id)"
+                      :can-edit="canEditReview(review.id) ? true : false"
                       @edit="editReview(review)"
-                      @delete="deleteReview(review.id)"
+                      @delete="handleReviewDelete(review.id)"
                     />
                   </div>
                 </div>
@@ -374,7 +393,10 @@ onMounted(async () => {
 
                 <!-- Review Footer -->
                 <div class="flex items-center justify-between text-sm">
-                  <div class="text-gray-500">Por {{ review.author.name }}</div>
+                  <div class="text-gray-500">
+                    <template v-if="review.isAnonymous"> Anónimo </template>
+                    <template v-else> Por {{ review.author.name }} </template>
+                  </div>
                   <div v-if="review.isHired" class="flex items-center text-green-600">
                     <CheckCircle class="w-4 h-4 mr-1" />
                     Cliente Verificado

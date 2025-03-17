@@ -4,7 +4,9 @@
       <!-- Header -->
       <div class="p-6 border-b flex justify-between items-start">
         <div>
-          <h2 class="text-xl font-bold">{{ isEditing ? 'Editar reseña' : 'Reseña para ' + lawyer.name }}</h2>
+          <h2 class="text-xl font-bold">
+            {{ isEditing ? 'Editar reseña' : 'Reseña para ' + lawyer.name }}
+          </h2>
           <p class="text-sm text-gray-600">{{ lawyer.title }}</p>
         </div>
         <button class="text-gray-400 hover:text-gray-600" @click="$emit('close')">
@@ -267,24 +269,28 @@ watch(user, newUser => {
 })
 
 // When reviewToEdit changes, populate the form
-watch(() => props.reviewToEdit, (newReview) => {
-  if (newReview) {
-    form.rating = newReview.rating
-    form.title = newReview.title || ''
-    form.content = newReview.content
-    form.isHired = newReview.isHired
-    form.isAnonymous = newReview.author?.name === 'Anónimo'
-  } else {
-    // Reset form when not editing
-    Object.assign(form, defaultForm)
-    
-    // Populate with user data if available
-    if (user.value) {
-      form.authorName = user.value.firstName + ' ' + (user.value.lastName || '')
-      form.authorEmail = user.value.email
+watch(
+  () => props.reviewToEdit,
+  newReview => {
+    if (newReview) {
+      form.rating = newReview.rating
+      form.title = newReview.title || ''
+      form.content = newReview.content
+      form.isHired = newReview.isHired
+      form.isAnonymous = newReview.author?.name === 'Anónimo'
+    } else {
+      // Reset form when not editing
+      Object.assign(form, defaultForm)
+
+      // Populate with user data if available
+      if (user.value) {
+        form.authorName = user.value.firstName + ' ' + (user.value.lastName || '')
+        form.authorEmail = user.value.email
+      }
     }
-  }
-}, { immediate: true })
+  },
+  { immediate: true }
+)
 
 const validateForm = () => {
   let isValid = true
@@ -349,11 +355,14 @@ const handleSubmit = async () => {
 
   try {
     if (isEditing.value && props.reviewToEdit) {
-      // Update existing review
+      // When updating, only send the fields that are actually changed
+      // This preserves original values for fields we don't touch
       emit('update', props.reviewToEdit.id, {
         rating: form.rating,
         title: form.title,
         content: form.content
+        // Don't include is_anonymous or is_hired if we don't edit them
+        // They will remain as they were in the original review
       })
     } else {
       // Create new review

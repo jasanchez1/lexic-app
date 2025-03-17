@@ -2,6 +2,7 @@ import { ref } from 'vue'
 import { useFetch } from '~/utils/api'
 import type { LawyerReview, ReviewStats } from '~/types/review'
 import { useReviewsService } from '~/services/api'
+import { mapApiResponseToModel } from '~/utils/caseConverters'
 
 export const useReviews = () => {
   const api = useFetch()
@@ -71,22 +72,31 @@ export const useReviews = () => {
     }
   }
 
-  // New method to update review
-  const updateReview = async (reviewId: string, reviewData: any) => {
+  // Update method to update review
+  const updateReview = async (lawyerId: string, reviewId: string, reviewData: any) => {
     try {
       if (!canEditReview(reviewId)) {
         return { success: false, error: 'No tienes permiso para editar esta reseña' }
       }
 
-      const response = await reviewsService.update(reviewId, reviewData)
+      const response = await reviewsService.update(lawyerId, reviewId, reviewData)
+      const updatedReview = mapApiResponseToModel(response)
 
-      // Update the review in the local state
+      // Update the review in the local state immediately
       const index = reviews.value.findIndex(r => r.id === reviewId)
       if (index !== -1) {
-        reviews.value[index] = mapApiResponseToModel(response)
+        // Merge the existing review with the updated data to preserve data not included in the update
+        reviews.value[index] = {
+          ...reviews.value[index],
+          ...updatedReview,
+          // Ensure these fields are always updated
+          rating: reviewData.rating,
+          title: reviewData.title,
+          content: reviewData.content
+        }
       }
 
-      return { success: true, reviewId: response.id }
+      return { success: true, review: updatedReview }
     } catch (error) {
       console.error('Error updating review:', error)
       return {
@@ -96,38 +106,37 @@ export const useReviews = () => {
     }
   }
 
-  // New method to delete review
-  const deleteReview = async (reviewId: string) => {
-    try {
-      if (!canEditReview(reviewId)) {
-        return { success: false, error: 'No tienes permiso para eliminar esta reseña' }
-      }
+const deleteReview = async (lawyerId: string, reviewId: string) => {
+  try {
+    if (!canEditReview(reviewId)) {
+      return { success: false, error: 'No tienes permiso para eliminar esta reseña' }
+    }
 
-      await reviewsService.delete(reviewId)
-
-      // Remove the review from the local state
-      reviews.value = reviews.value.filter(r => r.id !== reviewId)
-
-      return { success: true }
-    } catch (error) {
-      console.error('Error deleting review:', error)
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Error al eliminar la reseña'
-      }
+    await reviewsService.delete(lawyerId, reviewId)
+    
+    // Update local state after successful deletion
+    reviews.value = reviews.value.filter(r => r.id !== reviewId)
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Error deleting review:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Error al eliminar la reseña'
     }
   }
+}
 
   return {
     reviews,
-    userReviews, // New computed property
+    userReviews,
     stats,
     isLoading,
     error,
     fetchReviews,
     submitReview,
-    updateReview, // New method
-    deleteReview, // New method
-    canEditReview // Helper method
+    updateReview,
+    deleteReview,
+    canEditReview
   }
 }

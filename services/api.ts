@@ -531,15 +531,13 @@ export const useReviewsService = () => {
       return mapApiResponseToModel(await api.post(`/lawyers/${lawyerId}/reviews`, apiData))
     },
     
-    // Update a review
-    update: async (reviewId: string, data: any) => {
+    update: async (lawyerId: string, reviewId: string, data: any) => {
       const apiData = mapModelToApiRequest(data)
-      return mapApiResponseToModel(await api.patch(`/reviews/${reviewId}`, apiData))
+      return mapApiResponseToModel(await api.patch(`/lawyers/${lawyerId}/reviews/${reviewId}`, apiData))
     },
     
-    // Delete a review
-    delete: async (reviewId: string) => {
-      return await api.delete(`/reviews/${reviewId}`)
+    delete: async (lawyerId: string, reviewId: string) => {
+      return await api.delete(`/lawyers/${lawyerId}/reviews/${reviewId}`)
     }
   }
 }
