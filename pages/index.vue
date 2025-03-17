@@ -15,52 +15,55 @@
       <div class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
         <!-- Find a Lawyer Card -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-          <div class="mb-6">
-            <h2 class="text-2xl font-semibold text-gray-900 mb-2">Buscar un Abogado</h2>
-            <p class="text-gray-600">Encuentra el abogado especializado ideal para tu caso</p>
-          </div>
+  <div class="mb-6">
+    <h2 class="text-2xl font-semibold text-gray-900 mb-2">Buscar un Abogado</h2>
+    <p class="text-gray-600">Encuentra el abogado especializado ideal para tu caso</p>
+  </div>
 
-          <div class="space-y-4">
-            <div class="relative">
-              <Search class="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
-              <input
-                v-model="searchQuery"
-                type="text"
-                placeholder="Área legal o nombre del abogado"
-                class="w-full pl-10 pr-4 py-3.5 border border-gray-200 rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
-                @keyup.enter="handleSearch"
-              />
-            </div>
+  <div class="space-y-4">
+    <div class="relative">
+      <Search class="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
+      <input
+        v-model="searchQuery"
+        type="text"
+        placeholder="Área legal o nombre del abogado"
+        class="w-full pl-10 pr-4 py-3.5 border border-gray-200 rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+        @keyup.enter="handleSearch"
+      />
+    </div>
 
-            <!-- Popular searches instead of location -->
-            <div class="pt-2">
-              <p class="text-sm text-gray-500 mb-2">Búsquedas populares:</p>
-              <div class="flex flex-wrap gap-2">
-                <button
-                  v-for="area in popularSearches"
-                  :key="area"
-                  class="text-sm px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
-                  @click="
-                    (() => {
-                      searchQuery = area
-                      handleSearch()
-                    })()
-                  "
-                >
-                  {{ area }}
-                </button>
-              </div>
-            </div>
+    <!-- Popular searches -->
+    <div class="pt-2">
+      <div class="flex justify-between items-center mb-2">
+        <p class="text-sm text-gray-500">Búsquedas populares:</p>
+        <NuxtLink
+          to="/lawyers"
+          class="text-sm text-primary-600 hover:text-primary-800 font-medium"
+        >
+          Ver todos los abogados →
+        </NuxtLink>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button
+          v-for="area in popularSearches"
+          :key="area"
+          class="text-sm px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+          @click="() => { searchQuery = area; handleSearch(); }"
+        >
+          {{ area }}
+        </button>
+      </div>
+    </div>
 
-            <button
-              class="w-full bg-primary-600 hover:bg-primary-700 text-white py-3.5 px-6 rounded-lg font-medium transition-colors duration-200"
-              @click="handleSearch"
-            >
-              Buscar Abogados
-            </button>
-          </div>
-        </div>
-
+    <!-- Search button -->
+    <button
+      class="w-full bg-primary-600 hover:bg-primary-700 text-white py-3.5 px-6 rounded-lg font-medium transition-colors duration-200"
+      @click="handleSearch"
+    >
+      Buscar
+    </button>
+  </div>
+</div>
         <!-- Ask a Question Card -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
           <div class="mb-6">
@@ -124,7 +127,8 @@
             <Shield class="w-8 h-8 text-primary-600 mb-4" />
             <h3 class="font-semibold text-gray-900 mb-2">Abogados Verificados</h3>
             <p class="text-gray-600 text-sm">
-              Todos nuestros abogados están verificados y cuentan con su titulo otorgado por el ministerio de justicia
+              Todos nuestros abogados están verificados y cuentan con su titulo otorgado por el
+              ministerio de justicia
             </p>
           </div>
           <div class="flex flex-col items-center">

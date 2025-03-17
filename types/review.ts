@@ -18,6 +18,7 @@ export interface LawyerReview {
   title?: string;
   content: string;
   author: Author;
+  isAnonymous: boolean;
   userId: string; 
   date: string;
   isHired: boolean;

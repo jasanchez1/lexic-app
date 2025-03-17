@@ -5,54 +5,65 @@
       @click="isOpen = !isOpen"
     >
       Preguntas Abiertas
-      <ChevronDown :class="{ 'rotate-180': isOpen }" class="w-4 h-4 transition-transform" />
+      <ChevronDown :class="{ 'rotate-180': isOpen }" class="ml-1 w-4 h-4 transition-transform" />
     </button>
 
-    <!-- Dropdown Menu -->
-    <div v-if="isOpen" class="absolute left-0 z-50 mt-2 w-[800px] bg-white rounded-md shadow-lg">
-      <div class="p-6">
-        <!-- Topics Grid -->
-        <div class="grid grid-cols-3 gap-x-8 gap-y-6">
-          <div v-for="topic in topics" :key="topic.id" class="group">
-            <NuxtLink
-              :to="`/questions/topics/${topic.slug}`"
-              class="block font-medium text-gray-900 group-hover:text-primary-600"
-            >
+    <!-- Dropdown Menu - styled like areas menu -->
+    <div
+      v-if="isOpen"
+      class="absolute left-0 z-50 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-100"
+    >
+      <div v-if="isLoading" class="p-4 text-center">
+        <div class="animate-spin w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full mx-auto mb-2"></div>
+        <p class="text-sm text-gray-500">Cargando temas...</p>
+      </div>
+      
+      <div v-else-if="error" class="p-4">
+        <p class="text-sm text-red-500">{{ error }}</p>
+      </div>
+      
+      <div v-else class="p-4">
+        <div v-if="topics.length === 0" class="text-center py-2">
+          <p class="text-sm text-gray-500">No hay temas disponibles</p>
+        </div>
+        
+        <template v-else>
+          <div
+            v-for="topic in topicsWithSubtopics.slice(0, 4)"
+            :key="topic.id"
+            class="mb-4"
+          >
+            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
               {{ topic.name }}
-            </NuxtLink>
-            <p class="mt-1 text-sm text-gray-500 line-clamp-2">
-              {{ topic.description }}
-            </p>
-
-            <!-- Subtopics -->
-            <div v-if="topic.subtopics?.length" class="mt-2 space-y-1">
+            </h3>
+            <div class="space-y-1">
               <NuxtLink
-                v-for="subtopic in topic.subtopics.slice(0, 2)"
+                :to="`/questions/topics/${topic.slug}`"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 rounded-md transition-colors duration-200"
+                @click="isOpen = false"
+              >
+                Ver todo {{ topic.name }}
+              </NuxtLink>
+              <NuxtLink
+                v-for="subtopic in (topic.subtopics || []).slice(0, 2)"
                 :key="subtopic.id"
                 :to="`/questions/topics/${subtopic.slug}`"
-                class="block text-sm text-gray-600 hover:text-primary-600"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 rounded-md transition-colors duration-200"
+                @click="isOpen = false"
               >
-                • {{ subtopic.name }}
+                {{ subtopic.name }}
               </NuxtLink>
             </div>
           </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="mt-6 pt-6 border-t grid grid-cols-2 gap-4">
+        </template>
+        
+        <div class="border-t mt-4 pt-4">
           <NuxtLink
             to="/questions/topics"
-            class="text-sm text-primary-600 hover:text-primary-800 inline-flex items-center"
+            class="text-sm text-primary-600 hover:text-primary-800 font-medium transition-colors duration-200"
+            @click="isOpen = false"
           >
-            Ver todos los temas
-            <ChevronRight class="w-4 h-4 ml-1" />
-          </NuxtLink>
-          <NuxtLink
-            to="/questions/ask"
-            class="text-sm text-primary-600 hover:text-primary-800 inline-flex items-center"
-          >
-            Hacer una pregunta
-            <ChevronRight class="w-4 h-4 ml-1" />
+            Ver todos los temas →
           </NuxtLink>
         </div>
       </div>
@@ -61,14 +72,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { ChevronDown, ChevronRight } from 'lucide-vue-next'
+import { ref, computed, onMounted } from 'vue'
+import { ChevronDown } from 'lucide-vue-next'
 import { onClickOutside } from '@vueuse/core'
 import { useLegalTopics } from '~/composables/useLegalTopics'
 
-const dropdownRef = ref<globalThis.HTMLElement | null>(null)
+const dropdownRef = ref<HTMLElement | null>(null)
 const isOpen = ref(false)
-const { topics, fetchTopics } = useLegalTopics()
+const { topics, isLoading, error, fetchTopics } = useLegalTopics()
+
+// Filter to only show topics with subtopics
+const topicsWithSubtopics = computed(() => {
+  return topics.value.filter(topic => 
+    topic.subtopics && topic.subtopics.length > 0
+  )
+})
 
 onClickOutside(dropdownRef, () => {
   isOpen.value = false

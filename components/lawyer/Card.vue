@@ -61,9 +61,36 @@ const handleLoginSuccess = () => {
 </script>
 
 <template>
-  <!-- Skeleton loader - no changes here -->
+  <!-- Skeleton loader -->
   <div v-if="loading" class="bg-white rounded-lg shadow-sm p-6 mb-4 animate-pulse">
-    <!-- Skeleton markup... (unchanged) -->
+    <div class="flex flex-col md:flex-row md:justify-between">
+      <!-- Left side skeleton -->
+      <div class="flex flex-col sm:flex-row mb-6 md:mb-0">
+        <!-- Profile image skeleton -->
+        <div class="w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 mx-auto sm:mx-0 mb-4 sm:mb-0 bg-gray-200 rounded-lg"></div>
+        
+        <!-- Details skeleton -->
+        <div class="sm:ml-6 text-center sm:text-left">
+          <div class="h-6 bg-gray-200 rounded w-48 mx-auto sm:mx-0 mb-3"></div>
+          <div class="h-4 bg-gray-200 rounded w-36 mx-auto sm:mx-0 mb-3"></div>
+          <div class="h-4 bg-gray-200 rounded w-24 mx-auto sm:mx-0 mb-4"></div>
+          <div class="space-y-2 mt-4">
+            <div class="h-3 bg-gray-200 rounded w-full max-w-xs mx-auto sm:mx-0"></div>
+            <div class="h-3 bg-gray-200 rounded w-full max-w-xs mx-auto sm:mx-0"></div>
+            <div class="h-3 bg-gray-200 rounded w-3/4 max-w-xs mx-auto sm:mx-0"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right side skeleton -->
+      <div class="flex flex-col gap-4 self-center mx-auto md:mx-0 mt-4 md:mt-0 w-full sm:w-auto">
+        <div class="h-12 bg-gray-200 rounded-md w-full sm:w-48"></div>
+        <div class="grid grid-cols-2 w-full sm:w-48 gap-2">
+          <div class="h-10 bg-gray-200 rounded-md"></div>
+          <div class="h-10 bg-gray-200 rounded-md"></div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Actual content -->
@@ -74,17 +101,21 @@ const handleLoginSuccess = () => {
       props.viewProfile ? 'hover:shadow-md transition-shadow' : ''
     ]"
   >
-    <div class="flex justify-between">
-      <!-- Left side with lawyer info - no changes -->
-      <div class="flex">
-        <div class="w-32 h-32 flex-shrink-0">
+    <!-- Responsive layout using flex column on mobile and row on larger screens -->
+    <div class="flex flex-col md:flex-row md:justify-between">
+      <!-- Left side with lawyer info -->
+      <div class="flex flex-col sm:flex-row mb-6 md:mb-0">
+        <!-- Profile image - smaller on mobile -->
+        <div class="w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 mx-auto sm:mx-0 mb-4 sm:mb-0">
           <img
             :src="lawyer.imageURL"
             :alt="lawyer.name"
             class="rounded-lg w-full h-full object-cover"
           />
         </div>
-        <div class="ml-6">
+        
+        <!-- Lawyer details -->
+        <div class="sm:ml-6 text-center sm:text-left">
           <NuxtLink v-if="viewProfile" :to="`/lawyers/${lawyer.id}`" @click="trackClick('name')">
             <h3 class="text-xl font-bold text-gray-900 hover:text-primary-600 transition-colors">
               {{ lawyer.name }}
@@ -109,7 +140,7 @@ const handleLoginSuccess = () => {
             </div>
             <div v-if="lawyer.areas.length > 0" class="text-sm mt-1">
               <span class="font-medium">Áreas practicas:</span>
-              {{ lawyer.areas.map((x: PracticeArea) => x.name).join(', ') }}
+              {{ lawyer.areas.map((x) => x.name).join(', ') }}
             </div>
             <p class="mt-2 text-sm text-gray-600 line-clamp-2">
               {{ lawyer.bio }}
@@ -118,11 +149,11 @@ const handleLoginSuccess = () => {
         </div>
       </div>
 
-      <!-- Right side with actions -->
-      <div class="flex flex-col gap-4 self-center">
+      <!-- Right side with actions - column layout on all screen sizes -->
+      <div class="flex flex-col gap-4 self-center mx-auto md:mx-0 mt-4 md:mt-0 w-full sm:w-auto">
         <!-- Call button -->
         <button
-          class="w-full bg-primary-600 text-white px-6 py-3 rounded-md hover:bg-primary-700 transition-colors"
+          class="w-full sm:w-48 bg-primary-600 text-white px-4 py-3 rounded-md hover:bg-primary-700 transition-colors"
           @click="handleCallClick(lawyer)"
         >
           <span class="flex items-center justify-center gap-2">
@@ -132,7 +163,7 @@ const handleLoginSuccess = () => {
         </button>
 
         <!-- Action buttons -->
-        <div v-if="viewProfile" class="grid grid-cols-2 gap-2">
+        <div v-if="viewProfile" class="grid grid-cols-2 w-full sm:w-48 gap-2">
           <NuxtLink
             :to="`/lawyers/${lawyer.id}`"
             class="flex items-center justify-center px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
@@ -147,9 +178,9 @@ const handleLoginSuccess = () => {
             Mensaje
           </button>
         </div>
-        <div v-else class="grid grid-cols">
+        <div v-else class="w-full sm:w-48">
           <button
-            class="flex items-center justify-center px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+            class="w-full flex items-center justify-center px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
             @click="handleOpenMessage"
           >
             Mensaje
