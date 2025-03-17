@@ -19,7 +19,7 @@ export default defineNuxtConfig({
     
     // Public keys that are exposed to the client
     public: {
-      apiUrl: process.env.NUXT_PUBLIC_API_URL || 'https://ec2-15-229-42-136.sa-east-1.compute.amazonaws.com'
+      apiUrl: process.env.NUXT_PUBLIC_API_URL || 'https://api.lexic.cl'
     }
   },
   // Add plugin to initialize auth on app start
