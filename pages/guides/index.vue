@@ -26,21 +26,21 @@
             <h3 class="font-medium">Sucesiones</h3>
           </div>
           
-          <div class="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow text-center opacity-50">
+          <div class="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow text-center">
             <div class="mx-auto w-16 h-16 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center mb-4">
               <Users class="w-8 h-8" />
             </div>
             <h3 class="font-medium">Familia</h3>
           </div>
           
-          <div class="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow text-center opacity-50">
+          <div class="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow text-center">
             <div class="mx-auto w-16 h-16 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center mb-4">
               <Briefcase class="w-8 h-8" />
             </div>
             <h3 class="font-medium">Laboral</h3>
           </div>
           
-          <div class="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow text-center opacity-50">
+          <div class="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow text-center">
             <div class="mx-auto w-16 h-16 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center mb-4">
               <Building class="w-8 h-8" />
             </div>
@@ -69,32 +69,39 @@
           </div>
         </NuxtLink>
         
-        <!-- Placeholder for future guides -->
-        <div class="bg-white rounded-lg shadow-sm border p-6 opacity-50">
-          <span class="inline-block px-2 py-1 bg-primary-50 text-primary-700 text-xs font-medium rounded mb-4">Familia</span>
-          <h3 class="text-lg font-semibold text-gray-900 mb-3">
-            Guía sobre Divorcios en Chile
+        <NuxtLink
+          to="/guides/alzamiento-hipotecas-chile"
+          class="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow group"
+        >
+          <span class="inline-block px-2 py-1 bg-primary-50 text-primary-700 text-xs font-medium rounded mb-4">Inmobiliario</span>
+          <h3 class="text-lg font-semibold text-gray-900 group-hover:text-primary-600 mb-3">
+            Guía Legal sobre el Alzamiento de Hipotecas en Chile
           </h3>
           <p class="text-gray-600 mb-4">
-            Próximamente: Una guía detallada sobre los procedimientos de divorcio en Chile, causales, requisitos y consideraciones importantes.
+            Aprende sobre el proceso de alzamiento de hipotecas, tus derechos según la Ley N° 20.855 y las obligaciones de las entidades financieras.
           </p>
-          <div class="flex items-center text-sm text-gray-400">
-            <span>Próximamente</span>
+          <div class="flex items-center text-sm text-primary-600">
+            <span>Ver guía completa</span>
+            <ChevronRight class="w-4 h-4 ml-1" />
           </div>
-        </div>
+        </NuxtLink>
         
-        <div class="bg-white rounded-lg shadow-sm border p-6 opacity-50">
-          <span class="inline-block px-2 py-1 bg-primary-50 text-primary-700 text-xs font-medium rounded mb-4">Laboral</span>
-          <h3 class="text-lg font-semibold text-gray-900 mb-3">
-            Derechos Laborales: Lo que debes saber
+        <NuxtLink
+          to="/guides/cambio-nombre-apellido-chile"
+          class="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow group"
+        >
+          <span class="inline-block px-2 py-1 bg-primary-50 text-primary-700 text-xs font-medium rounded mb-4">Civil</span>
+          <h3 class="text-lg font-semibold text-gray-900 group-hover:text-primary-600 mb-3">
+            Cambio de Nombre y Apellido en Chile
           </h3>
           <p class="text-gray-600 mb-4">
-            Próximamente: Guía completa sobre tus derechos como trabajador en Chile, incluye información sobre contratos, despidos y beneficios.
+            Guía completa sobre los procedimientos, requisitos y plazos para realizar cambios legales de nombre o apellido en Chile.
           </p>
-          <div class="flex items-center text-sm text-gray-400">
-            <span>Próximamente</span>
+          <div class="flex items-center text-sm text-primary-600">
+            <span>Ver guía completa</span>
+            <ChevronRight class="w-4 h-4 ml-1" />
           </div>
-        </div>
+        </NuxtLink>
       </div>
       
       <!-- Popular Questions -->
@@ -108,13 +115,13 @@
             </div>
             
             <div class="py-4">
-              <h3 class="font-medium text-lg mb-2">¿Dónde se realiza el trámite de posesión efectiva?</h3>
-              <p class="text-gray-600">La posesión efectiva intestada se realiza en el Registro Civil, mientras que la testamentaria debe tramitarse ante un notario público.</p>
+              <h3 class="font-medium text-lg mb-2">¿Es obligación del banco realizar el alzamiento de hipoteca?</h3>
+              <p class="text-gray-600">Sí, según la Ley N° 20.855, es responsabilidad de las entidades financieras realizar los trámites de alzamiento una vez que el deudor ha pagado completamente su deuda.</p>
             </div>
             
             <div class="py-4">
-              <h3 class="font-medium text-lg mb-2">¿Es necesario contratar un abogado para la posesión efectiva?</h3>
-              <p class="text-gray-600">No es obligatorio, pero se recomienda en casos complejos, como cuando hay bienes de alto valor, disputas entre herederos o bienes en el extranjero.</p>
+              <h3 class="font-medium text-lg mb-2">¿Es necesario contratar un abogado para cambiar mi nombre?</h3>
+              <p class="text-gray-600">No es obligatorio, pero es altamente recomendable para aumentar las probabilidades de éxito de tu solicitud, especialmente en casos complejos.</p>
             </div>
           </div>
         </div>
@@ -134,4 +141,10 @@
 
 <script setup lang="ts">
 import { FileText, Users, Briefcase, Building, ChevronRight } from 'lucide-vue-next'
+
+// Definition of page meta data
+definePageMeta({
+  title: 'Guías Legales - Recursos Jurídicos Gratuitos',
+  description: 'Accede a guías legales completas y detalladas sobre posesión efectiva, alzamiento de hipotecas, cambio de nombre y otros temas jurídicos relevantes en Chile.'
+})
 </script>

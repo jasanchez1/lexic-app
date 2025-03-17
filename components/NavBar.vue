@@ -282,7 +282,11 @@
 
             <!-- Mobile areas submenu -->
             <div v-if="mobileSubmenu === 'areas'" class="mt-2 pl-4 space-y-2">
-              <div v-for="category in Object.keys(categoriesData).slice(0, 3)" :key="category" class="py-2">
+              <div
+                v-for="category in Object.keys(categoriesData).slice(0, 3)"
+                :key="category"
+                class="py-2"
+              >
                 <div class="font-medium text-gray-800">{{ categoriesData[category]?.name }}</div>
                 <div class="pl-3 space-y-2 mt-1">
                   <NuxtLink
@@ -335,7 +339,7 @@
                   </NuxtLink>
                 </div>
               </div>
-              
+
               <!-- Highlighted 'Hacer una pregunta' link -->
               <NuxtLink
                 to="/questions/ask"
@@ -344,7 +348,7 @@
               >
                 Hacer una pregunta
               </NuxtLink>
-              
+
               <NuxtLink
                 to="/questions/topics"
                 class="block py-2 text-sm text-primary-600 hover:text-primary-800 font-medium"
@@ -376,6 +380,20 @@
                 @click="isMobileMenuOpen = false"
               >
                 Posesión Efectiva
+              </NuxtLink>
+              <NuxtLink
+                to="/guides/alzamiento-hipotecas-chile"
+                class="block py-2 text-sm text-gray-600 hover:text-primary-600"
+                @click="isMobileMenuOpen = false"
+              >
+                Alzamiento de Hipotecas
+              </NuxtLink>
+              <NuxtLink
+                to="/guides/cambio-nombre-apellido-chile"
+                class="block py-2 text-sm text-gray-600 hover:text-primary-600"
+                @click="isMobileMenuOpen = false"
+              >
+                Cambio de Nombre y Apellido
               </NuxtLink>
               <NuxtLink
                 to="/guides"
@@ -477,7 +495,7 @@ const {
 } = useLawyerAreas()
 
 const { topics, isLoading: isTopicsLoading, error: topicsError, fetchTopics } = useLegalTopics()
-const { user, isAuthenticated, logout, authLoading } = useAuth()
+const { user, isAuthenticated, logout } = useAuth()
 
 // State to track full initialization
 const isFullyInitialized = ref(false)
@@ -525,9 +543,7 @@ const currentTopic = computed(() => {
 
 // Filter to only show topics with subtopics
 const topicsWithSubtopics = computed(() => {
-  return topics.value.filter(topic => 
-    topic.subtopics && topic.subtopics.length > 0
-  )
+  return topics.value.filter(topic => topic.subtopics && topic.subtopics.length > 0)
 })
 
 const bestArea = computed(() =>
@@ -582,12 +598,12 @@ const handleLogout = async () => {
 // Toggle mobile menu
 const toggleMobileMenu = () => {
   isMobileMenuOpen.value = !isMobileMenuOpen.value
-  
+
   // When closing the menu, also close any open submenu
   if (!isMobileMenuOpen.value) {
     mobileSubmenu.value = null
   }
-  
+
   // Prevent body scrolling when menu is open
   if (isMobileMenuOpen.value) {
     document.body.style.overflow = 'hidden'
@@ -608,34 +624,37 @@ const toggleMobileSubmenu = (menu: string) => {
 // Initialize auth state on page load
 onMounted(async () => {
   const { initAuth } = useAuth()
-  
+
   // Set a minimum loading time of 300ms to avoid flickering
   const loadingStart = Date.now()
-  
+
   // Initialize auth state
   await initAuth()
-  
+
   // Calculate how much time has passed
   const timeElapsed = Date.now() - loadingStart
-  
+
   // If less than 300ms has passed, wait the remaining time
   if (timeElapsed < 300) {
     await new Promise(resolve => setTimeout(resolve, 300 - timeElapsed))
   }
-  
+
   // Mark initialization as complete
   isFullyInitialized.value = true
-  
+
   // Fetch topics for the legal topics dropdown
   fetchTopics()
 })
 
 // Close mobile menu when route changes
-watch(() => route.fullPath, () => {
-  isMobileMenuOpen.value = false
-  mobileSubmenu.value = null
-  document.body.style.overflow = ''
-})
+watch(
+  () => route.fullPath,
+  () => {
+    isMobileMenuOpen.value = false
+    mobileSubmenu.value = null
+    document.body.style.overflow = ''
+  }
+)
 
 // Clean up when component is unmounted
 onUnmounted(() => {
