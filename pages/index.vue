@@ -1,4 +1,3 @@
-# index.vue
 <template>
   <div class="bg-gray-50">
     <!-- Hero Section -->
@@ -152,6 +151,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Search, Check, Shield, Clock, UserCheck } from 'lucide-vue-next'
+import { useRouter } from 'vue-router'
 
 const router = useRouter()
 

@@ -111,20 +111,57 @@ interface ReplyCreate {
   content: string
 }
 
+export interface Guide {
+  id: string
+  title: string
+  slug: string
+  description: string
+  created_at: string
+  updated_at: string
+  published: boolean
+}
+
+export interface GuideSection {
+  id: string
+  section_id: string
+  title: string
+  content: string
+  display_order: number
+  always_open: boolean
+}
+
+export interface GuideDetail extends Guide {
+  sections: GuideSection[]
+  related_guides: {
+    id: string
+    title: string
+    slug: string
+    description: string
+  }[]
+}
+
+export interface GuidesListResponse {
+  guides: Guide[]
+  total: number
+  page: number
+  pages: number
+}
+
+
 // Cities service
 export const useCitiesService = () => {
   const api = useFetch()
   const baseService = createApiService<City>('/cities')
-  
+
   return {
     ...baseService,
-    
+
     // Override list to handle case conversion
     list: async (params?: Record<string, any>) => {
-      const response = await baseService.list(params) as City[]
+      const response = (await baseService.list(params)) as City[]
       return response.map(city => mapApiResponseToModel<City>(city))
     },
-    
+
     // Override get to handle case conversion
     get: async (id: string) => {
       const response = await baseService.get(id)
@@ -140,13 +177,13 @@ export const useTopicsService = () => {
 
   return {
     ...baseService,
-    
+
     // Override list to handle case conversion
     list: async (params?: Record<string, any>) => {
-      const response = await baseService.list(params) as LegalTopic[]
+      const response = (await baseService.list(params)) as LegalTopic[]
       return response.map(topic => mapApiResponseToModel<LegalTopic>(topic))
     },
-    
+
     // Override get to handle case conversion
     get: async (id: string) => {
       const response = await baseService.get(id)
@@ -168,14 +205,14 @@ export const useQuestionsService = () => {
 
   return {
     ...baseService,
-    
+
     // Override create to handle case conversion
     create: async (data: any) => {
       const apiData = mapModelToApiRequest(data)
       const response = await baseService.create(apiData)
       return mapApiResponseToModel<Question>(response)
     },
-    
+
     // Override update to handle case conversion
     update: async (id: string, data: any) => {
       const apiData = mapModelToApiRequest(data)
@@ -200,7 +237,9 @@ export const useQuestionsService = () => {
         })
       }
 
-      const response = await api.get(`/questions?${searchParams.toString()}`) as QuestionsListResponse
+      const response = (await api.get(
+        `/questions?${searchParams.toString()}`
+      )) as QuestionsListResponse
       return {
         ...response,
         questions: response.questions.map(q => mapApiResponseToModel<Question>(q))
@@ -216,7 +255,7 @@ export const useAnswersService = () => {
   return {
     // Get answers for a question
     getForQuestion: async (questionId: string) => {
-      const response = await api.get(`/questions/${questionId}/answers`) as Answer[]
+      const response = (await api.get(`/questions/${questionId}/answers`)) as Answer[]
       return response.map(answer => mapApiResponseToModel<Answer>(answer))
     },
 
@@ -247,12 +286,13 @@ export const useAnswersService = () => {
 
     // Toggle helpful
     toggleHelpful: async (answerId: string) => {
-      const response = await api.post(`/answers/${answerId}/helpful`, {}) as any
+      const response = (await api.post(`/answers/${answerId}/helpful`, {})) as any
       // Handle both snake_case and camelCase response formats
       return {
         success: response.success,
         isHelpful: response.is_helpful !== undefined ? response.is_helpful : response.isHelpful,
-        helpfulCount: response.helpful_count !== undefined ? response.helpful_count : response.helpfulCount
+        helpfulCount:
+          response.helpful_count !== undefined ? response.helpful_count : response.helpfulCount
       }
     }
   }
@@ -265,7 +305,7 @@ export const useRepliesService = () => {
   return {
     // Get replies for an answer
     getForAnswer: async (answerId: string) => {
-      const response = await api.get(`/answers/${answerId}/replies`) as Reply[]
+      const response = (await api.get(`/answers/${answerId}/replies`)) as Reply[]
       return response.map(reply => mapApiResponseToModel<Reply>(reply))
     },
 
@@ -290,20 +330,20 @@ export const useLawyersService = () => {
 
   return {
     ...baseService,
-    
+
     // Override get to handle case conversion
     get: async (id: string) => {
       const response = await baseService.get(id)
       return mapApiResponseToModel<Lawyer>(response)
     },
-    
+
     // Override create to handle case conversion
     create: async (data: any) => {
       const apiData = mapModelToApiRequest(data)
       const response = await baseService.create(apiData)
       return mapApiResponseToModel<Lawyer>(response)
     },
-    
+
     // Override update to handle case conversion
     update: async (id: string, data: any) => {
       const apiData = mapModelToApiRequest(data)
@@ -324,7 +364,7 @@ export const useLawyersService = () => {
         queryString = `?${searchParams.toString()}`
       }
 
-      const response = await api.get(`/lawyers${queryString}`) as LawyerListResponse
+      const response = (await api.get(`/lawyers${queryString}`)) as LawyerListResponse
       return {
         ...response,
         lawyers: response.lawyers.map(lawyer => mapApiResponseToModel<Lawyer>(lawyer))
@@ -348,7 +388,7 @@ export const useLawyersService = () => {
         }
       })
 
-      const response = await api.get(`/lawyers?${searchParams.toString()}`) as LawyerListResponse
+      const response = (await api.get(`/lawyers?${searchParams.toString()}`)) as LawyerListResponse
       return {
         ...response,
         lawyers: response.lawyers.map(lawyer => mapApiResponseToModel<Lawyer>(lawyer))
@@ -366,13 +406,13 @@ export const useAreasService = () => {
 
   return {
     ...baseService,
-    
+
     // Override list to handle case conversion
     list: async (params?: Record<string, any>) => {
-      const response = await baseService.list(params) as PracticeArea[]
+      const response = (await baseService.list(params)) as PracticeArea[]
       return response.map(area => mapApiResponseToModel<PracticeArea>(area))
     },
-    
+
     // Override get to handle case conversion
     get: async (id: string) => {
       const response = await baseService.get(id)
@@ -381,29 +421,29 @@ export const useAreasService = () => {
 
     // Get areas with lawyer counts
     getWithCounts: async () => {
-      const response = await api.get('/areas/with-counts') as PracticeArea[]
+      const response = (await api.get('/areas/with-counts')) as PracticeArea[]
       return response.map(area => {
         // Convert snake_case to camelCase, including lawyer_count -> lawyerCount
         const modelArea = mapApiResponseToModel<PracticeArea>(area)
-        
+
         // Handle the potential naming differences
         if ('lawyer_count' in area) {
           modelArea.lawyerCount = area.lawyer_count as number
         }
-        
+
         return modelArea
       })
     },
 
     // Get areas by category
     getByCategory: async (categoryId: string) => {
-      const response = await api.get(`/categories/${categoryId}/areas`) as PracticeArea[]
+      const response = (await api.get(`/categories/${categoryId}/areas`)) as PracticeArea[]
       return response.map(area => mapApiResponseToModel<PracticeArea>(area))
     },
 
     // Get areas by category slug
     getByCategorySlug: async (slug: string) => {
-      const response = await api.get(`/categories/slug/${slug}/areas`) as PracticeArea[]
+      const response = (await api.get(`/categories/slug/${slug}/areas`)) as PracticeArea[]
       return response.map(area => mapApiResponseToModel<PracticeArea>(area))
     },
 
@@ -416,13 +456,13 @@ export const useAreasService = () => {
     // Get areas grouped by category - FIXED to preserve original structure
     getGroupedByCategory: async () => {
       // Get the original response without automatic conversion
-      const response = await api.get('/areas/by-category') as {
+      const response = (await api.get('/areas/by-category')) as {
         id: string
         name: string
         slug: string
         areas: PracticeArea[]
       }[]
-      
+
       // Return the unmodified response to preserve the grouping structure
       // Let the components handle the property access
       return response
@@ -442,13 +482,13 @@ export const useCategoriesService = () => {
 
   return {
     ...baseService,
-    
+
     // Override list to handle case conversion
     list: async (params?: Record<string, any>) => {
-      const response = await baseService.list(params) as PracticeAreaCategory[]
+      const response = (await baseService.list(params)) as PracticeAreaCategory[]
       return response.map(category => mapApiResponseToModel<PracticeAreaCategory>(category))
     },
-    
+
     // Override get to handle case conversion
     get: async (id: string) => {
       const response = await baseService.get(id)
@@ -509,7 +549,7 @@ export const useAuthService = () => {
 
 export const useReviewsService = () => {
   const api = useFetch()
-  
+
   return {
     // Get reviews for a lawyer
     getForLawyer: async (lawyerId: string) => {
@@ -519,23 +559,25 @@ export const useReviewsService = () => {
         stats: mapApiResponseToModel(response.stats)
       }
     },
-    
+
     // Create a review
     create: async (lawyerId: string, data: any) => {
       // Make sure user_id is included from the auth user if not provided
-      const { user } = useAuth();
+      const { user } = useAuth()
       const apiData = mapModelToApiRequest({
         ...data,
         user_id: data.user_id || user.value?.id
       })
       return mapApiResponseToModel(await api.post(`/lawyers/${lawyerId}/reviews`, apiData))
     },
-    
+
     update: async (lawyerId: string, reviewId: string, data: any) => {
       const apiData = mapModelToApiRequest(data)
-      return mapApiResponseToModel(await api.patch(`/lawyers/${lawyerId}/reviews/${reviewId}`, apiData))
+      return mapApiResponseToModel(
+        await api.patch(`/lawyers/${lawyerId}/reviews/${reviewId}`, apiData)
+      )
     },
-    
+
     delete: async (lawyerId: string, reviewId: string) => {
       return await api.delete(`/lawyers/${lawyerId}/reviews/${reviewId}`)
     }
@@ -545,54 +587,62 @@ export const useReviewsService = () => {
 // For experience
 export const useExperienceService = () => {
   const api = useFetch()
-  
+
   return {
     // Get experience for a lawyer
     getForLawyer: async (lawyerId: string) => {
       return mapApiResponseToModel(await api.get(`/lawyers/${lawyerId}/experience`))
     },
-    
+
     // Education methods
     addEducation: async (lawyerId: string, data: any) => {
       const apiData = mapModelToApiRequest(data)
       return mapApiResponseToModel(await api.post(`/lawyers/${lawyerId}/education`, apiData))
     },
-    
+
     updateEducation: async (lawyerId: string, educationId: string, data: any) => {
       const apiData = mapModelToApiRequest(data)
-      return mapApiResponseToModel(await mapApiResponseToModel(api.patch(`/lawyers/${lawyerId}/education/${educationId}`, apiData)))
+      return mapApiResponseToModel(
+        await mapApiResponseToModel(
+          api.patch(`/lawyers/${lawyerId}/education/${educationId}`, apiData)
+        )
+      )
     },
-    
+
     deleteEducation: async (lawyerId: string, educationId: string) => {
       return await api.delete(`/lawyers/${lawyerId}/education/${educationId}`)
     },
-    
+
     // Work experience methods
     addWorkExperience: async (lawyerId: string, data: any) => {
       const apiData = mapModelToApiRequest(data)
       return mapApiResponseToModel(await api.post(`/lawyers/${lawyerId}/work-experience`, apiData))
     },
-    
+
     updateWorkExperience: async (lawyerId: string, experienceId: string, data: any) => {
       const apiData = mapModelToApiRequest(data)
-      return mapApiResponseToModel(await api.patch(`/lawyers/${lawyerId}/work-experience/${experienceId}`, apiData))
+      return mapApiResponseToModel(
+        await api.patch(`/lawyers/${lawyerId}/work-experience/${experienceId}`, apiData)
+      )
     },
-    
+
     deleteWorkExperience: async (lawyerId: string, experienceId: string) => {
       return await api.delete(`/lawyers/${lawyerId}/work-experience/${experienceId}`)
     },
-    
+
     // Achievement methods
     addAchievement: async (lawyerId: string, data: any) => {
       const apiData = mapModelToApiRequest(data)
       return mapApiResponseToModel(await api.post(`/lawyers/${lawyerId}/achievements`, apiData))
     },
-    
+
     updateAchievement: async (lawyerId: string, achievementId: string, data: any) => {
       const apiData = mapModelToApiRequest(data)
-      return mapApiResponseToModel(await api.patch(`/lawyers/${lawyerId}/achievements/${achievementId}`, apiData))
+      return mapApiResponseToModel(
+        await api.patch(`/lawyers/${lawyerId}/achievements/${achievementId}`, apiData)
+      )
     },
-    
+
     deleteAchievement: async (lawyerId: string, achievementId: string) => {
       return await api.delete(`/lawyers/${lawyerId}/achievements/${achievementId}`)
     }
@@ -602,7 +652,7 @@ export const useExperienceService = () => {
 // For messaging
 export const useMessagingService = () => {
   const api = useFetch()
-  
+
   return {
     // Send a message to a lawyer
     send: async (lawyerId: string, data: any) => {
@@ -615,32 +665,97 @@ export const useMessagingService = () => {
 // For analytics
 export const useAnalyticsService = () => {
   const api = useFetch()
-  
+
   return {
-    // Track a call to a lawyer
-    trackCall: async (lawyerId: string, data: { completed: boolean, timestamp: string }) => {
-      const apiData = mapModelToApiRequest(data)
-      return mapApiResponseToModel(await api.post(`/analytics/lawyers/${lawyerId}/call`, apiData))
-    },
-    
     // Track a profile view
     trackProfileView: async (lawyerId: string, source: string) => {
-      //  We should call the API here once is created
-      // return await api.post(`/analytics/profile-views`, {
-      //   lawyer_id: lawyerId,
-      //   source,
-      //   timestamp: new Date().toISOString()
-      // })
+      return await api.post('/analytics/profile-view', {
+        lawyer_id: lawyerId,
+        source,
+        timestamp: new Date().toISOString()
+      })
     },
-    
+
+    // Track a call to a lawyer
+    trackCall: async (lawyerId: string, data: { completed: boolean; timestamp: string }) => {
+      return await api.post('/analytics/call', {
+        lawyer_id: lawyerId,
+        completed: data.completed,
+        timestamp: data.timestamp
+      })
+    },
+
     // Track a message event
     trackMessageEvent: async (lawyerId: string, status: string) => {
-      //  We should call the API here once is created
-      // return await api.post(`/analytics/message-events`, {
-      //   lawyer_id: lawyerId,
-      //   status,
-      //   timestamp: new Date().toISOString()
-      // })
+      return await api.post('/analytics/message-event', {
+        lawyer_id: lawyerId,
+        status,
+        timestamp: new Date().toISOString()
+      })
+    },
+
+    // Track a question view
+    trackQuestionView: async (questionId: string) => {
+      return await api.post('/analytics/question-view', {
+        question_id: questionId,
+        timestamp: new Date().toISOString()
+      })
+    },
+
+    // Track a guide view
+    trackGuideView: async (guideId: string) => {
+      return await api.post('/analytics/guide-view', {
+        guide_id: guideId,
+        timestamp: new Date().toISOString()
+      })
+    },
+
+    // Track a listing click
+    trackListingClick: async (
+      lawyerId: string,
+      data: {
+        search_query?: string
+        area_slug?: string
+        city_slug?: string
+        position?: number
+        timestamp: string
+      }
+    ) => {
+      return await api.post('/analytics/listing-click', {
+        lawyer_id: lawyerId,
+        search_query: data.search_query || '',
+        area_slug: data.area_slug || '',
+        city_slug: data.city_slug || '',
+        position: data.position || null,
+        timestamp: data.timestamp
+      })
+    }
+  }
+}
+
+export const useGuidesService = () => {
+  const api = useFetch()
+  
+  return {
+    // List all published guides
+    list: async (params?: { page?: number, limit?: number }) => {
+      const queryParams = new URLSearchParams()
+      
+      if (params?.page) {
+        queryParams.append('page', params.page.toString())
+      }
+      
+      if (params?.limit) {
+        queryParams.append('limit', params.limit.toString())
+      }
+      
+      const queryString = queryParams.toString() ? `?${queryParams.toString()}` : ''
+      return await api.get(`/guides${queryString}`) as GuidesListResponse
+    },
+    
+    // Get guide by slug
+    getBySlug: async (slug: string) => {
+      return await api.get(`/guides/slug/${slug}`) as GuideDetail
     }
   }
 }

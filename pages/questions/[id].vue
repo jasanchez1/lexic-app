@@ -125,6 +125,10 @@ import { useAuth } from '~/composables/useAuth'
 import { formatDate } from '~/utils/date'
 import type { Question } from '~/types/question'
 import type { LegalTopic } from '~/types/legalTopics'
+import { useAnalytics } from '~/composables/useAnalytics'
+
+const { trackQuestionView } = useAnalytics()
+
 
 const route = useRoute()
 const { fetchQuestion, isLoading: questionLoading, error: questionError } = useQuestions()
@@ -182,6 +186,8 @@ onMounted(async () => {
   if (result) {
     question.value = result
     await fetchAnswers(result.id)
+    
+    trackQuestionView(result.id)
   }
 })
 </script>

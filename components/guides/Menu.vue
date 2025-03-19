@@ -1,3 +1,5 @@
+// components/guides/Menu.vue - Update the template section
+
 <template>
   <div ref="dropdownRef" class="relative">
     <button
@@ -13,30 +15,28 @@
       v-if="isOpen"
       class="absolute left-0 z-50 mt-2 w-80 bg-white rounded-md shadow-lg border border-gray-100"
     >
-      <div class="p-4">
+      <div v-if="isLoading" class="p-4 text-center">
+        <div
+          class="inline-block w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mb-2"
+        ></div>
+        <p class="text-sm text-gray-500">Cargando guías...</p>
+      </div>
+
+      <div v-else-if="error" class="p-4">
+        <p class="text-sm text-red-500">{{ error }}</p>
+      </div>
+
+      <div v-else class="p-4">
         <div class="space-y-2">
           <NuxtLink
-            to="/guides/posesion-efectiva-chile"
+            v-for="guide in guides"
+            :key="guide.id"
+            :to="`/guides/${guide.slug}`"
             class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 rounded-md transition-colors duration-200"
             @click="isOpen = false"
           >
-            Posesión Efectiva en Chile
+            {{ guide.title }}
           </NuxtLink>
-          <NuxtLink
-            to="/guides/alzamiento-hipotecas-chile"
-            class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 rounded-md transition-colors duration-200"
-            @click="isOpen = false"
-          >
-            Alzamiento de Hipotecas en Chile
-          </NuxtLink>
-          <NuxtLink
-            to="/guides/cambio-nombre-apellido-chile"
-            class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 rounded-md transition-colors duration-200"
-            @click="isOpen = false"
-          >
-            Cambio de Nombre y Apellido en Chile
-          </NuxtLink>
-          <!-- Add more guides here as needed -->
         </div>
 
         <div class="border-t mt-4 pt-4">
@@ -55,14 +55,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ChevronDown, ChevronRight } from 'lucide-vue-next'
 import { onClickOutside } from '@vueuse/core'
+import { useGuides } from '~/composables/useGuides'
 
 const dropdownRef = ref<globalThis.HTMLElement | null>(null)
 const isOpen = ref(false)
+const { guides, isLoading, error, fetchGuides } = useGuides()
 
 onClickOutside(dropdownRef, () => {
   isOpen.value = false
+})
+
+onMounted(async () => {
+  if (guides.value.length === 0) {
+    await fetchGuides()
+  }
 })
 </script>

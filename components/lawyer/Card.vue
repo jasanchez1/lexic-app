@@ -20,12 +20,29 @@ const props = withDefaults(
   }
 )
 
-const { trackProfileView, trackCallEvent, trackMessageEvent } = useAnalytics()
-const { isAuthenticated } = useAuth() // Add this
+const { trackProfileView, trackCallEvent, trackMessageEvent, trackListingClick } = useAnalytics()
+const { isAuthenticated } = useAuth()
 
 const showCallModal = ref(false)
 const showMessageModal = ref(false)
-const showAuthModal = ref(false) // Add this for auth modal
+const showAuthModal = ref(false) 
+
+const trackClick = (source: 'name' | 'button') => {
+  // This is now a synchronous function that will not interfere with navigation
+  if (props.lawyer && !props.loading) {
+    // Track profile view
+    trackProfileView(props.lawyer, source)
+    
+    // Add listing click tracking with search context
+    const route = useRoute()
+    trackListingClick(props.lawyer.id, {
+      search_query: route.query.q as string || '',
+      area_slug: route.query.area as string || '',
+      city_slug: route.query.city as string || '',
+      // You'd need to pass position info as a prop if needed
+    })
+  }
+}
 
 const handleOpenMessage = () => {
   // Check if user is authenticated
@@ -43,13 +60,6 @@ const handleCallClick = (lawyer: Lawyer) => {
   trackCallEvent(lawyer, false)
 }
 
-// Profile view tracking helpers
-const trackClick = (source: 'name' | 'button') => {
-  // This is now a synchronous function that will not interfere with navigation
-  if (props.lawyer && !props.loading) {
-    trackProfileView(props.lawyer, source)
-  }
-}
 
 // Handle login success
 const handleLoginSuccess = () => {
