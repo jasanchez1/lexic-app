@@ -343,12 +343,6 @@ const validateForm = () => {
 }
 
 const handleSubmit = async () => {
-  // First check if user is authenticated
-  if (!isAuthenticated.value) {
-    emit('close')
-    return
-  }
-
   if (!validateForm()) return
 
   isSubmitting.value = true

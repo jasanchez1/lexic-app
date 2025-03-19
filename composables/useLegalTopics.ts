@@ -13,7 +13,6 @@ export const useLegalTopics = () => {
     error.value = null
 
     try {
-      // Replace the mocked delay and assignment with actual API call
       const response = await topicsService.list()
       topics.value = response
     } catch (e) {

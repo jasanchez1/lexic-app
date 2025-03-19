@@ -5,7 +5,6 @@ export const useAnswerActions = () => {
 
   const toggleHelpful = async (answerId: string) => {
     try {
-      // Replace mock with real API call
       const response = await answersService.toggleHelpful(answerId)
       return {
         success: response.success,

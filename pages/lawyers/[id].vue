@@ -25,9 +25,7 @@ const {
   canEditReview // Use the new helper method
 } = useReviews()
 const { tabs, activeTab, setActiveTab } = useLawyerTabs()
-const { isAuthenticated } = useAuth()
 const showReviewModal = ref(false)
-const showAuthModal = ref(false)
 const reviewToEdit = ref<LawyerReview | undefined>(undefined) // For editing reviews
 
 const {
@@ -49,16 +47,6 @@ watch(activeTab, async newTab => {
 
 const openReviewModal = () => {
   reviewToEdit.value = undefined // Reset edit state
-  if (!isAuthenticated.value) {
-    showAuthModal.value = true
-  } else {
-    showReviewModal.value = true
-  }
-}
-
-const handleLoginSuccess = () => {
-  showAuthModal.value = false
-  // Now show the review modal
   showReviewModal.value = true
 }
 
@@ -298,12 +286,6 @@ onMounted(async () => {
             >
               Escribir Reseña
             </button>
-            <AuthModal
-              :show="showAuthModal"
-              @close="showAuthModal = false"
-              @login="handleLoginSuccess"
-            />
-
             <ReviewModal
               v-if="profile"
               :show="showReviewModal"
