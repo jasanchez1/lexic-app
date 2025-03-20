@@ -73,13 +73,7 @@
               class="prose prose-slate prose-ul:list-disc prose-ul:pl-5 max-w-none"
               v-html="section.content"
             ></div>
-            
-            <!-- Add Legal Advice CTA if this is a bottom section and appears to be the help/advice section -->
-            <LegalAdviceCTA 
-              v-if="isHelpSection(section)"
-              :area-text="getLegalAreaText(currentGuide?.slug)"
-              :area-slug="getLegalAreaSlug(currentGuide?.slug)" 
-            />
+
           </div>
         </div>
       </div>
@@ -109,7 +103,6 @@
 import { ref, computed, onMounted } from 'vue'
 import { ChevronDown } from 'lucide-vue-next'
 import { useGuides } from '~/composables/useGuides'
-import LegalAdviceCTA from './LegalAdviceCTA.vue'
 
 const props = defineProps<{
   slug: string
@@ -147,46 +140,6 @@ const scrollToSection = (sectionId: string) => {
     if (section && !section.always_open && !openSections.value.includes(section.id)) {
       openSections.value.push(section.id)
     }
-  }
-}
-
-// Helper to check if this is a help/advice section (usually at the bottom of the guide)
-const isHelpSection = (section: any): boolean => {
-  // Check if section ID or title contains help/ayuda keywords
-  const helpKeywords = ['ayuda', 'help', 'asesor', 'consult', 'abogado']
-  const sectionIdLower = section.section_id?.toLowerCase() || ''
-  const titleLower = section.title?.toLowerCase() || ''
-  
-  return helpKeywords.some(keyword => 
-    sectionIdLower.includes(keyword) || titleLower.includes(keyword)
-  )
-}
-
-// Helper to get the appropriate legal area text based on guide slug
-const getLegalAreaText = (slug?: string): string => {
-  switch (slug) {
-    case 'posesion-efectiva-chile':
-      return 'derecho sucesorio'
-    case 'alzamiento-hipotecas-chile':
-      return 'derecho inmobiliario'
-    case 'cambio-nombre-apellido-chile':
-      return 'derecho civil'
-    default:
-      return 'derecho civil'
-  }
-}
-
-// Helper to get the appropriate legal area slug for the link
-const getLegalAreaSlug = (slug?: string): string => {
-  switch (slug) {
-    case 'posesion-efectiva-chile':
-      return 'sucesiones'
-    case 'alzamiento-hipotecas-chile':
-      return 'inmobiliario'
-    case 'cambio-nombre-apellido-chile':
-      return 'civil'
-    default:
-      return 'civil'
   }
 }
 
