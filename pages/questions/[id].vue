@@ -30,8 +30,8 @@
 
               <div class="flex items-center justify-between text-sm text-gray-500 border-t pt-4">
                 <div class="flex items-center gap-4">
-                  <span>{{ question.author.name }}</span>
-                  <span>{{ question.author.location }}</span>
+                  <span v-if="question.author">{{ question.author.name }}</span>
+                  <span v-if="question.author">{{ question.author.location }}</span>
                   <span>{{ formatDate(question.date) }}</span>
                 </div>
                 <div class="flex items-center gap-4">

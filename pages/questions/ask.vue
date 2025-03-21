@@ -63,30 +63,6 @@
 
     <!-- Form Content -->
     <div class="max-w-3xl mx-auto px-4 py-8">
-      <!-- Auth Check Overlay -->
-      <div v-if="showAuthOverlay" class="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
-          <h2 class="text-xl font-bold mb-4 text-gray-900">Inicia sesión para continuar</h2>
-          <p class="text-gray-600 mb-6">Para publicar una pregunta y recibir respuestas de expertos legales, necesitas iniciar sesión.</p>
-
-          <div class="space-y-4">
-            <button 
-              @click="openLoginModal()"
-              class="w-full bg-primary-600 text-white p-3 rounded-md font-medium hover:bg-primary-700"
-            >
-              Iniciar Sesión / Crear Cuenta
-            </button>
-            
-            <button 
-              @click="showAuthOverlay = false"
-              class="w-full border border-gray-300 p-3 rounded-md font-medium text-gray-700 hover:bg-gray-50"
-            >
-              Volver
-            </button>
-          </div>
-        </div>
-      </div>
-
       <!-- Ask Step -->
       <template v-if="currentStep === 'ask'">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">Preguntas y respuestas gratuitas</h1>
@@ -400,14 +376,6 @@
         </div>
       </template>
     </div>
-
-    <!-- Auth Modal -->
-    <AuthModal 
-      :show="showAuthModal" 
-      :initial-mode="'login'"
-      @close="showAuthModal = false" 
-      @login="handleLoginSuccess" 
-    />
   </div>
 </template>
 
@@ -418,8 +386,6 @@ import { Check } from 'lucide-vue-next'
 import { useQuestionForm } from '~/composables/useQuestionForm'
 import { useLegalTopics } from '~/composables/useLegalTopics'
 import { useCities } from '~/composables/useCities'
-import { useAuth } from '~/composables/useAuth'
-import AuthModal from '~/components/auth/Modal.vue'
 import type { LegalTopic } from '~/types/legalTopics'
 import type { City } from '~/types/city'
 
@@ -427,11 +393,6 @@ const router = useRouter()
 const { formData, currentStep, isSubmitting, error, isDirty, wasSubmitted, moveToReview, moveToEdit, submitQuestion, resetForm, markAsDirty } = useQuestionForm()
 const { topics, isLoading: topicsLoading, error: topicsError, fetchTopics } = useLegalTopics()
 const { cities, isLoading: citiesLoading, error: citiesError, fetchCities } = useCities()
-const { isAuthenticated, user } = useAuth()
-
-// Auth related
-const showAuthModal = ref(false)
-const showAuthOverlay = ref(false)
 
 // Track form submission attempt
 const formSubmitted = ref(false)
@@ -597,30 +558,6 @@ const formatHireIntent = (intent: string | null) => {
   }
 }
 
-// Open login modal directly
-const openLoginModal = () => {
-  showAuthModal.value = true
-  showAuthOverlay.value = false
-}
-
-// Handle login success
-const handleLoginSuccess = () => {
-  showAuthModal.value = false
-  
-  // If user is now authenticated, proceed to review
-  if (isAuthenticated.value) {
-    // Update selected topics if not already selected
-    if (selectedTopics.value.length === 0 && formData.value.topicIds.length > 0) {
-      formData.value.topicIds.forEach(id => {
-        const topic = findTopicById(id)
-        if (topic) selectedTopics.value.push(topic)
-      })
-    }
-    
-    moveToReview()
-  }
-}
-
 // Helper to find a topic by ID
 const findTopicById = (id: string): LegalTopic | null => {
   // Check main topics
@@ -648,21 +585,12 @@ const handleReview = () => {
   formData.value.topicIds = selectedTopics.value.map(t => t.id)
   markAsDirty()
   
-  // Check if authenticated
-  if (!isAuthenticated.value) {
-    showAuthOverlay.value = true
-  } else {
-    moveToReview()
-  }
+  // Move directly to review without auth check
+  moveToReview()
 }
 
 // Handle form submission
 const handleSubmit = async () => {
-  if (!isAuthenticated.value) {
-    showAuthOverlay.value = true
-    return
-  }
-  
   const result = await submitQuestion()
   
   if (result.success && result.question) {
@@ -670,14 +598,6 @@ const handleSubmit = async () => {
     router.push(`/questions/${result.question.id}`)
   }
 }
-
-// Watch authentication state
-watch(isAuthenticated, (newValue) => {
-  if (newValue && showAuthOverlay.value) {
-    showAuthOverlay.value = false
-    moveToReview()
-  }
-})
 
 // Reset form when entering the page
 onMounted(() => {
