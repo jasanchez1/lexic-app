@@ -1,6 +1,10 @@
+// composables/useReplies.ts
 import { ref } from 'vue'
 import { useRepliesService } from '~/services/api'
 import type { Reply } from '~/types/question'
+
+// Remove mockReplies
+// const mockReplies: Record<string, Reply[]> = {...} <-- Remove this
 
 export const useReplies = () => {
   const repliesService = useRepliesService()
@@ -13,6 +17,7 @@ export const useReplies = () => {
     error.value = null
 
     try {
+      // Replace mock with API call
       const response = await repliesService.getForAnswer(answerId)
       replies.value = response
       return replies.value

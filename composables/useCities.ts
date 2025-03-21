@@ -13,6 +13,7 @@ export const useCities = () => {
     error.value = null
 
     try {
+      // Use the cities API endpoint instead of hardcoded mock data
       const response = await citiesService.list()
       cities.value = response
       

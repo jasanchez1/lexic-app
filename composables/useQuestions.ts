@@ -16,6 +16,7 @@ export const useQuestions = () => {
     error.value = null
 
     try {
+      // Replace the mock code with actual API call
       const response = await questionsService.listQuestions({
         topic: topicId,
         page,
@@ -44,6 +45,7 @@ export const useQuestions = () => {
     error.value = null
 
     try {
+      // Replace mock with API call
       const question = await questionsService.get(id)
       return question
     } catch (e) {

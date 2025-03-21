@@ -14,6 +14,7 @@ export const useAnswers = () => {
     error.value = null
 
     try {
+      // Replace mock with API call
       const response = await answersService.getForQuestion(questionId)
       answers.value = response
       return answers.value
