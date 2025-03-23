@@ -28,33 +28,33 @@
                 v-if="isAreasMenuOpen"
                 class="absolute left-0 z-50 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-100"
               >
-                <div v-if="isAreasLoading" class="p-4 text-center">
+                <div v-if="navIsLoading" class="p-4 text-center">
                   <div
                     class="animate-spin w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full mx-auto mb-2"
                   ></div>
                   <p class="text-sm text-gray-500">Cargando áreas...</p>
                 </div>
 
-                <div v-else-if="areasError" class="p-4">
-                  <p class="text-sm text-red-500">{{ areasError }}</p>
+                <div v-else-if="navError" class="p-4">
+                  <p class="text-sm text-red-500">{{ navError }}</p>
                 </div>
 
                 <div v-else class="p-4">
-                  <div v-if="Object.keys(groupedAreas).length === 0" class="text-center py-2">
+                  <div
+                    v-if="!navigationMenu?.areas || navigationMenu.areas.length === 0"
+                    class="text-center py-2"
+                  >
                     <p class="text-sm text-gray-500">No hay áreas disponibles</p>
                   </div>
 
                   <template v-else>
-                    <div v-for="categoryId in mainCategoryIds" :key="categoryId" class="mb-4">
-                      <h3
-                        v-if="categoriesData[categoryId]"
-                        class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2"
-                      >
-                        {{ categoriesData[categoryId].name }}
+                    <div v-for="category in navigationMenu.areas" :key="category.id" class="mb-4">
+                      <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                        {{ category.name }}
                       </h3>
                       <div class="space-y-1">
                         <NuxtLink
-                          v-for="area in groupedAreas[categoryId]?.slice(0, 3) || []"
+                          v-for="area in category.featured_areas"
                           :key="area.id"
                           :to="`/lawyers?area=${area.slug}`"
                           class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 rounded-md transition-colors duration-200"
@@ -97,25 +97,28 @@
                 v-if="isLegalTopicsOpen"
                 class="absolute left-0 z-50 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-100"
               >
-                <div v-if="isTopicsLoading" class="p-4 text-center">
+                <div v-if="navIsLoading" class="p-4 text-center">
                   <div
                     class="animate-spin w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full mx-auto mb-2"
                   ></div>
                   <p class="text-sm text-gray-500">Cargando temas...</p>
                 </div>
 
-                <div v-else-if="topicsError" class="p-4">
-                  <p class="text-sm text-red-500">{{ topicsError }}</p>
+                <div v-else-if="navError" class="p-4">
+                  <p class="text-sm text-red-500">{{ navError }}</p>
                 </div>
 
                 <div v-else class="p-4">
-                  <div v-if="topics.length === 0" class="text-center py-2">
+                  <div
+                    v-if="!navigationMenu?.topics || navigationMenu.topics.length === 0"
+                    class="text-center py-2"
+                  >
                     <p class="text-sm text-gray-500">No hay temas disponibles</p>
                   </div>
 
                   <template v-else>
                     <div
-                      v-for="topic in topicsWithSubtopics.slice(0, 4)"
+                      v-for="topic in navigationMenu.topics.slice(0, 4)"
                       :key="topic.id"
                       class="mb-4"
                     >
@@ -131,7 +134,7 @@
                           Ver todo {{ topic.name }}
                         </NuxtLink>
                         <NuxtLink
-                          v-for="subtopic in (topic.subtopics || []).slice(0, 2)"
+                          v-for="subtopic in topic.featured_subtopics"
                           :key="subtopic.id"
                           :to="`/questions/topics/${subtopic.slug}`"
                           class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 rounded-md transition-colors duration-200"
@@ -156,7 +159,7 @@
               </div>
             </div>
 
-            <!-- Guides Menu -->
+            <!-- Guides Menu - Now using the GuidesMenu component -->
             <GuidesMenu />
           </div>
 
@@ -283,14 +286,14 @@
             <!-- Mobile areas submenu -->
             <div v-if="mobileSubmenu === 'areas'" class="mt-2 pl-4 space-y-2">
               <div
-                v-for="category in Object.keys(categoriesData).slice(0, 3)"
-                :key="category"
+                v-for="category in navigationMenu?.areas.slice(0, 3) || []"
+                :key="category.id"
                 class="py-2"
               >
-                <div class="font-medium text-gray-800">{{ categoriesData[category]?.name }}</div>
+                <div class="font-medium text-gray-800">{{ category.name }}</div>
                 <div class="pl-3 space-y-2 mt-1">
                   <NuxtLink
-                    v-for="area in (groupedAreas[category] || []).slice(0, 3)"
+                    v-for="area in category.featured_areas"
                     :key="area.id"
                     :to="`/lawyers?area=${area.slug}`"
                     class="block py-1 text-sm text-gray-600 hover:text-primary-600"
@@ -325,11 +328,18 @@
 
             <!-- Mobile topics submenu -->
             <div v-if="mobileSubmenu === 'topics'" class="mt-2 pl-4 space-y-3">
-              <div v-for="topic in topicsWithSubtopics.slice(0, 3)" :key="topic.id" class="pb-2">
+              <div
+                v-for="topic in navigationMenu?.topics.slice(0, 3) || []"
+                :key="topic.id"
+                class="pb-2"
+              >
                 <div class="py-1 font-medium text-gray-800">{{ topic.name }}</div>
-                <div v-if="topic.subtopics && topic.subtopics.length > 0" class="pl-3 space-y-2">
+                <div
+                  v-if="topic.featured_subtopics && topic.featured_subtopics.length > 0"
+                  class="pl-3 space-y-2"
+                >
                   <NuxtLink
-                    v-for="subtopic in topic.subtopics.slice(0, 2)"
+                    v-for="subtopic in topic.featured_subtopics.slice(0, 2)"
                     :key="subtopic.id"
                     :to="`/questions/topics/${subtopic.slug}`"
                     class="block py-1 text-sm text-gray-600 hover:text-primary-600"
@@ -374,30 +384,28 @@
 
             <!-- Mobile guides submenu -->
             <div v-if="mobileSubmenu === 'guides'" class="mt-2 pl-4 space-y-2">
-              <NuxtLink
-                to="/guides/posesion-efectiva-chile"
-                class="block py-2 text-sm text-gray-600 hover:text-primary-600"
-                @click="isMobileMenuOpen = false"
+              <div
+                v-for="category in navigationMenu?.guides.slice(0, 3) || []"
+                :key="category.id"
+                class="py-2"
               >
-                Posesión Efectiva
-              </NuxtLink>
-              <NuxtLink
-                to="/guides/alzamiento-hipotecas-chile"
-                class="block py-2 text-sm text-gray-600 hover:text-primary-600"
-                @click="isMobileMenuOpen = false"
-              >
-                Alzamiento de Hipotecas
-              </NuxtLink>
-              <NuxtLink
-                to="/guides/cambio-nombre-apellido-chile"
-                class="block py-2 text-sm text-gray-600 hover:text-primary-600"
-                @click="isMobileMenuOpen = false"
-              >
-                Cambio de Nombre y Apellido
-              </NuxtLink>
+                <div class="font-medium text-gray-800">{{ category.name }}</div>
+                <div class="pl-3 space-y-2 mt-1">
+                  <NuxtLink
+                    v-for="guide in category.featured_guides.slice(0, 2)"
+                    :key="guide.id"
+                    :to="`/guides/${guide.slug}`"
+                    class="block py-1 text-sm text-gray-600 hover:text-primary-600"
+                    @click="isMobileMenuOpen = false"
+                  >
+                    {{ guide.title }}
+                  </NuxtLink>
+                </div>
+              </div>
+
               <NuxtLink
                 to="/guides"
-                class="block py-2 text-sm text-primary-600 hover:text-primary-800 font-medium"
+                class="block py-2 text-sm text-primary-600 hover:text-primary-800 font-medium mt-3"
                 @click="isMobileMenuOpen = false"
               >
                 Ver todas las guías →
@@ -482,7 +490,9 @@ import type { PracticeArea } from '~/types/lawyer'
 import { useNavigation } from '~/composables/useNavigation'
 import { useLegalTopics } from '~/composables/useLegalTopics'
 import { useAuth } from '~/composables/useAuth'
+import { useNavigationMenu } from '~/composables/useNavigationMenu'
 import AuthModal from '~/components/auth/Modal.vue'
+import GuidesMenu from '~/components/guides/Menu.vue'
 
 const route = useRoute()
 const { currentLawyer } = useNavigation()
@@ -494,7 +504,14 @@ const {
   error: areasError
 } = useLawyerAreas()
 
-const { topics, isLoading: isTopicsLoading, error: topicsError, fetchTopics } = useLegalTopics()
+// Use the new navigation menu
+const {
+  navigationMenu,
+  isLoading: navIsLoading,
+  error: navError,
+  fetchNavigationMenu
+} = useNavigationMenu()
+
 const { user, isAuthenticated, logout } = useAuth()
 
 // State to track full initialization
@@ -535,15 +552,25 @@ const currentArea = computed(() => {
 const currentTopic = computed(() => {
   if (!route.params.slug) return null
 
+  // First try to find in navigationMenu
+  if (navigationMenu.value && navigationMenu.value.topics) {
+    for (const topic of navigationMenu.value.topics) {
+      if (topic.slug === route.params.slug) {
+        return topic
+      }
+
+      if (topic.featured_subtopics) {
+        const subtopic = topic.featured_subtopics.find(st => st.slug === route.params.slug)
+        if (subtopic) return subtopic
+      }
+    }
+  }
+
+  // Fallback to topics
   return (
     topics.value.find(t => t.slug === route.params.slug) ||
     topics.value.flatMap(t => t.subtopics || []).find(st => st.slug === route.params.slug)
   )
-})
-
-// Filter to only show topics with subtopics
-const topicsWithSubtopics = computed(() => {
-  return topics.value.filter(topic => topic.subtopics && topic.subtopics.length > 0)
 })
 
 const bestArea = computed(() =>
@@ -561,24 +588,6 @@ onClickOutside(userMenuRef, () => {
 
 onClickOutside(legalTopicsRef, () => {
   isLegalTopicsOpen.value = false
-})
-
-// Get top categories by number of areas
-const mainCategoryIds = computed(() => {
-  // Get categories that have areas
-  const categoriesWithAreas = Object.keys(groupedAreas.value).filter(
-    categoryId => groupedAreas.value[categoryId]?.length > 0
-  )
-
-  // Sort by number of areas (descending)
-  categoriesWithAreas.sort((a, b) => {
-    const aCount = groupedAreas.value[a]?.length || 0
-    const bCount = groupedAreas.value[b]?.length || 0
-    return bCount - aCount
-  })
-
-  // Take top 4 categories
-  return categoriesWithAreas.slice(0, 4)
 })
 
 // Handle login success
@@ -621,7 +630,7 @@ const toggleMobileSubmenu = (menu: string) => {
   }
 }
 
-// Initialize auth state on page load
+// Initialize auth state and navigation menu on page load
 onMounted(async () => {
   const { initAuth } = useAuth()
 
@@ -642,8 +651,8 @@ onMounted(async () => {
   // Mark initialization as complete
   isFullyInitialized.value = true
 
-  // Fetch topics for the legal topics dropdown
-  fetchTopics()
+  // Fetch navigation menu for dropdowns
+  await fetchNavigationMenu()
 })
 
 // Close mobile menu when route changes

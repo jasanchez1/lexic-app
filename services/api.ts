@@ -733,12 +733,17 @@ export const useAnalyticsService = () => {
   }
 }
 
+
 export const useGuidesService = () => {
   const api = useFetch()
   
   return {
-    // List all published guides
-    list: async (params?: { page?: number, limit?: number }) => {
+    // List all published guides with optional category filter
+    list: async (params?: { 
+      page?: number, 
+      limit?: number, 
+      category_slug?: string 
+    }) => {
       const queryParams = new URLSearchParams()
       
       if (params?.page) {
@@ -747,6 +752,10 @@ export const useGuidesService = () => {
       
       if (params?.limit) {
         queryParams.append('limit', params.limit.toString())
+      }
+      
+      if (params?.category_slug) {
+        queryParams.append('category_slug', params.category_slug)
       }
       
       const queryString = queryParams.toString() ? `?${queryParams.toString()}` : ''

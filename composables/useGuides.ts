@@ -15,13 +15,18 @@ export const useGuides = () => {
   const totalPages = ref(0)
   const currentPage = ref(1)
   
-  // Fetch all guides
-  const fetchGuides = async (page: number = 1, limit: number = 10) => {
+  // Fetch all guides with optional category filter
+  const fetchGuides = async (page: number = 1, limit: number = 10, categorySlug?: string) => {
     isLoading.value = true
     error.value = null
     
     try {
-      const response = await guidesService.list({ page, limit })
+      const response = await guidesService.list({ 
+        page, 
+        limit, 
+        category_slug: categorySlug 
+      })
+      
       guides.value = response.guides
       totalGuides.value = response.total
       totalPages.value = response.pages
