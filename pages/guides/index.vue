@@ -128,7 +128,7 @@
             <span
               class="inline-block px-2 py-1 bg-primary-50 text-primary-700 text-xs font-medium rounded mb-4"
             >
-              {{ guide.category_name || getCategoryForGuide(guide.slug) }}
+              {{ guide.category.name }}
             </span>
             <h3 class="text-lg font-semibold text-gray-900 group-hover:text-primary-600 mb-3">
               {{ guide.title }}
@@ -238,31 +238,6 @@ const selectedCategory = ref<string>('')
 const getCategoryNameBySlug = (slug: string): string => {
   const category = categories.value.find(cat => cat.slug === slug)
   return category ? category.name : 'Categoría'
-}
-
-// Helper to categorize guides (fallback for guides without category)
-const getCategoryForGuide = (slug: string): string => {
-  // First try to find in category data
-  for (const category of categories.value) {
-    if (category.slug && category.guide_count > 0) {
-      // The API doesn't give us direct mapping, so this is our best guess
-      if (slug.includes(category.slug)) {
-        return category.name
-      }
-    }
-  }
-  
-  // Fallback to hardcoded values
-  switch (slug) {
-    case 'posesion-efectiva-chile':
-      return 'Sucesiones'
-    case 'alzamiento-hipotecas-chile':
-      return 'Inmobiliario'
-    case 'cambio-nombre-apellido-chile':
-      return 'Civil'
-    default:
-      return 'Legal'
-  }
 }
 
 // Set category and reset to page 1
