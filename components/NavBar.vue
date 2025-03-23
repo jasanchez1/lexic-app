@@ -127,13 +127,6 @@
                       </h3>
                       <div class="space-y-1">
                         <NuxtLink
-                          :to="`/questions/topics/${topic.slug}`"
-                          class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 rounded-md transition-colors duration-200"
-                          @click="isLegalTopicsOpen = false"
-                        >
-                          Ver todo {{ topic.name }}
-                        </NuxtLink>
-                        <NuxtLink
                           v-for="subtopic in topic.featured_subtopics"
                           :key="subtopic.id"
                           :to="`/questions/topics/${subtopic.slug}`"
