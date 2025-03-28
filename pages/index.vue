@@ -1,146 +1,193 @@
 <template>
-  <div class="bg-gray-50">
-    <!-- Hero Section -->
-    <div class="max-w-7xl mx-auto px-4 py-12 md:py-16">
-      <div class="text-center mb-12">
-        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-          Conecta con abogados en todo Chile
-        </h1>
-        <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-          Compara y elige la asesoria legal que mejor se adapta a tus necesidades
-        </p>
+  <div class="min-h-screen bg-gray-50">
+    <!-- Header Section -->
+    <div class="bg-primary-800 text-white">
+      <div class="max-w-7xl mx-auto px-4 py-6">
+        <h1 class="text-2xl font-bold">Mis Mensajes</h1>
+        <p class="text-primary-100">Conversaciones con abogados</p>
       </div>
-
-      <div class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-        <!-- Find a Lawyer Card -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-  <div class="mb-6">
-    <h2 class="text-2xl font-semibold text-gray-900 mb-2">Buscar un Abogado</h2>
-    <p class="text-gray-600">Encuentra el abogado especializado ideal para tu caso</p>
-  </div>
-
-  <div class="space-y-4">
-    <div class="relative">
-      <Search class="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
-      <input
-        v-model="searchQuery"
-        type="text"
-        placeholder="Área legal o nombre del abogado"
-        class="w-full pl-10 pr-4 py-3.5 border border-gray-200 rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
-        @keyup.enter="handleSearch"
-      />
     </div>
 
-    <!-- Popular searches -->
-    <div class="pt-2">
-      <div class="flex justify-between items-center mb-2">
-        <p class="text-sm text-gray-500">Búsquedas populares:</p>
-        <NuxtLink
-          to="/lawyers"
-          class="text-sm text-primary-600 hover:text-primary-800 font-medium"
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 py-8">
+      <div v-if="authLoading || isLoadingConversations" class="text-center py-12">
+        <CommonLoading message="Cargando conversaciones..." />
+      </div>
+
+      <div v-else-if="!isAuthenticated" class="bg-white rounded-lg shadow p-8 text-center">
+        <p class="text-gray-600 mb-4">Debes iniciar sesión para ver tus mensajes</p>
+        <button 
+          @click="showAuthModal = true"
+          class="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 transition-colors"
         >
-          Ver todos los abogados →
+          Iniciar Sesión
+        </button>
+        
+        <AuthModal 
+          :show="showAuthModal" 
+          @close="showAuthModal = false" 
+          @login="handleLogin" 
+        />
+      </div>
+
+      <div v-else-if="error" class="mb-6">
+        <CommonErrorMessage :message="error" />
+      </div>
+
+      <div v-else-if="conversations.length === 0" class="bg-white rounded-lg shadow p-8 text-center">
+        <h2 class="text-xl font-medium text-gray-900 mb-4">No tienes mensajes</h2>
+        <p class="text-gray-600 mb-6">Aún no has iniciado conversaciones con abogados</p>
+        <NuxtLink 
+          to="/lawyers" 
+          class="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 transition-colors"
+        >
+          Buscar Abogados
         </NuxtLink>
       </div>
-      <div class="flex flex-wrap gap-2">
-        <button
-          v-for="area in popularSearches"
-          :key="area"
-          class="text-sm px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
-          @click="() => { searchQuery = area; handleSearch(); }"
-        >
-          {{ area }}
-        </button>
-      </div>
-    </div>
 
-    <!-- Search button -->
-    <button
-      class="w-full bg-primary-600 hover:bg-primary-700 text-white py-3.5 px-6 rounded-lg font-medium transition-colors duration-200"
-      @click="handleSearch"
-    >
-      Buscar
-    </button>
-  </div>
-</div>
-        <!-- Ask a Question Card -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-          <div class="mb-6">
-            <h2 class="text-2xl font-semibold text-gray-900 mb-2">Consulta Legal Gratuita</h2>
-            <p class="text-gray-600">Obtén respuestas de abogados expertos a tus dudas legales</p>
+      <div v-else class="grid md:grid-cols-12 gap-6">
+        <!-- Conversations List (sidebar) -->
+        <div class="md:col-span-4 lg:col-span-3 bg-white rounded-lg shadow overflow-hidden">
+          <div class="p-4 border-b">
+            <h2 class="font-medium">Conversaciones</h2>
           </div>
-
-          <div class="space-y-4 text-gray-600 mb-6">
-            <div class="flex items-start space-x-3">
-              <div class="mt-1 bg-primary-100 p-1 rounded-full">
-                <Check class="w-4 h-4 text-primary-600" />
+          <div class="divide-y max-h-[70vh] overflow-y-auto">
+            <button
+              v-for="conversation in conversations"
+              :key="conversation.id"
+              class="w-full text-left p-4 hover:bg-gray-50 transition-colors"
+              :class="{ 'bg-primary-50': selectedConversation?.id === conversation.id }"
+              @click="selectConversation(conversation)"
+            >
+              <div class="flex items-center">
+                <div v-if="conversation.lawyer.imageURL" class="mr-3">
+                  <img
+                    :src="conversation.lawyer.imageURL"
+                    :alt="conversation.lawyer.name"
+                    class="h-10 w-10 rounded-full object-cover"
+                  />
+                </div>
+                <div v-else class="h-10 w-10 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center mr-3">
+                  {{ getInitials(conversation.lawyer.name) }}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex justify-between items-baseline">
+                    <p class="font-medium truncate">{{ conversation.lawyer.name }}</p>
+                    <span class="text-xs text-gray-500">{{ formatDate(conversation.lastMessageDate) }}</span>
+                  </div>
+                  <p class="text-sm text-gray-500 truncate">
+                    <span v-if="conversation.unreadCount" class="inline-block bg-primary-600 text-white text-xs rounded-full px-1.5 mr-1">
+                      {{ conversation.unreadCount }}
+                    </span>
+                    {{ conversation.lastMessage }}
+                  </p>
+                </div>
               </div>
-              <span>Respuestas de abogados verificados</span>
-            </div>
-            <div class="flex items-start space-x-3">
-              <div class="mt-1 bg-primary-100 p-1 rounded-full">
-                <Check class="w-4 h-4 text-primary-600" />
-              </div>
-              <span>Consulta completamente anónima</span>
-            </div>
-            <div class="flex items-start space-x-3">
-              <div class="mt-1 bg-primary-100 p-1 rounded-full">
-                <Check class="w-4 h-4 text-primary-600" />
-              </div>
-              <span>Sin compromiso ni costos</span>
-            </div>
-          </div>
-
-          <NuxtLink
-            to="/questions/ask"
-            class="block w-full bg-gray-100 hover:bg-gray-200 text-gray-900 py-3.5 px-6 rounded-lg font-medium text-center transition-colors duration-200"
-          >
-            Hacer una Pregunta
-          </NuxtLink>
-        </div>
-      </div>
-    </div>
-
-    <!-- Stats with Trust Indicators -->
-    <div class="border-t border-gray-200 bg-white">
-      <div class="max-w-7xl mx-auto px-4 py-12">
-        <!-- Stats Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center mb-12">
-          <div>
-            <p class="text-3xl font-bold text-gray-900">2,500+</p>
-            <p class="text-gray-600 mt-1">Abogados en la Red</p>
-          </div>
-          <div>
-            <p class="text-3xl font-bold text-gray-900">50,000+</p>
-            <p class="text-gray-600 mt-1">Consultas Resueltas</p>
-          </div>
-          <div>
-            <p class="text-3xl font-bold text-gray-900">4.8/5</p>
-            <p class="text-gray-600 mt-1">Satisfacción Promedio</p>
+            </button>
           </div>
         </div>
 
-        <!-- Trust Indicators -->
-        <div class="grid md:grid-cols-3 gap-8 text-center pt-8 border-t border-gray-100">
-          <div class="flex flex-col items-center">
-            <Shield class="w-8 h-8 text-primary-600 mb-4" />
-            <h3 class="font-semibold text-gray-900 mb-2">Abogados Verificados</h3>
-            <p class="text-gray-600 text-sm">
-              Todos nuestros abogados están verificados y cuentan con su titulo otorgado por el
-              ministerio de justicia
-            </p>
+        <!-- Conversation Detail -->
+        <div class="md:col-span-8 lg:col-span-9">
+          <div v-if="!selectedConversation" class="bg-white rounded-lg shadow p-8 text-center h-full flex flex-col items-center justify-center">
+            <div class="text-gray-400 mb-4">
+              <MessageCircle class="w-16 h-16 mx-auto" />
+            </div>
+            <h3 class="text-xl font-medium text-gray-900 mb-2">Selecciona una conversación</h3>
+            <p class="text-gray-600">Elige una conversación de la lista para ver los mensajes</p>
           </div>
-          <div class="flex flex-col items-center">
-            <Clock class="w-8 h-8 text-primary-600 mb-4" />
-            <h3 class="font-semibold text-gray-900 mb-2">Respuesta Rápida</h3>
-            <p class="text-gray-600 text-sm">Recibe respuestas de expertos en menos de 24 horas</p>
-          </div>
-          <div class="flex flex-col items-center">
-            <UserCheck class="w-8 h-8 text-primary-600 mb-4" />
-            <h3 class="font-semibold text-gray-900 mb-2">Servicio Personalizado</h3>
-            <p class="text-gray-600 text-sm">
-              Conectamos tu caso con el abogado especialista más adecuado
-            </p>
+
+          <div v-else class="bg-white rounded-lg shadow h-full flex flex-col">
+            <!-- Conversation Header -->
+            <div class="p-4 border-b flex items-center justify-between">
+              <div class="flex items-center">
+                <div v-if="selectedConversation.lawyer.imageURL" class="mr-3">
+                  <img
+                    :src="selectedConversation.lawyer.imageURL"
+                    :alt="selectedConversation.lawyer.name"
+                    class="h-10 w-10 rounded-full object-cover"
+                  />
+                </div>
+                <div v-else class="h-10 w-10 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center mr-3">
+                  {{ getInitials(selectedConversation.lawyer.name) }}
+                </div>
+                <div>
+                  <h3 class="font-medium">{{ selectedConversation.lawyer.name }}</h3>
+                  <p class="text-xs text-gray-500">{{ selectedConversation.lawyer.title }}</p>
+                </div>
+              </div>
+              <NuxtLink 
+                :to="`/lawyers/${selectedConversation.lawyer.id}`" 
+                class="text-primary-600 text-sm hover:text-primary-800"
+              >
+                Ver Perfil
+              </NuxtLink>
+            </div>
+
+            <!-- Messages List -->
+            <div 
+              ref="messagesContainer"
+              class="flex-1 p-4 overflow-y-auto flex flex-col gap-4"
+              style="max-height: 60vh;"
+            >
+              <div v-if="isLoadingMessages" class="text-center py-4">
+                <div class="inline-block w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+
+              <template v-else>
+                <div v-for="(message, index) in currentMessages" :key="message.id" class="flex flex-col">
+                  <!-- Date separator if needed -->
+                  <div 
+                    v-if="index === 0 || shouldShowDateSeparator(message, currentMessages[index - 1])" 
+                    class="text-center my-2"
+                  >
+                    <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                      {{ formatMessageDate(message.timestamp) }}
+                    </span>
+                  </div>
+
+                  <!-- Message bubble -->
+                  <div 
+                    class="max-w-[75%] rounded-lg p-3 mb-1"
+                    :class="[
+                      message.fromLawyer ? 
+                        'bg-white border border-gray-200 self-start' : 
+                        'bg-primary-100 self-end'
+                    ]"
+                  >
+                    {{ message.content }}
+                  </div>
+
+                  <!-- Timestamp -->
+                  <div 
+                    class="text-xs text-gray-500 mb-2"
+                    :class="[message.fromLawyer ? 'self-start' : 'self-end']"
+                  >
+                    {{ formatMessageTime(message.timestamp) }}
+                  </div>
+                </div>
+              </template>
+            </div>
+
+            <!-- Message Input -->
+            <div class="p-4 border-t">
+              <div class="flex gap-2">
+                <textarea
+                  v-model="newMessage"
+                  placeholder="Escribe un mensaje..."
+                  class="flex-1 resize-none rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500"
+                  rows="2"
+                  @keypress.enter.exact.prevent="sendMessage"
+                ></textarea>
+                <button
+                  @click="sendMessage"
+                  :disabled="!newMessage.trim()"
+                  class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed self-end"
+                >
+                  Enviar
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -149,20 +196,174 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Search, Check, Shield, Clock, UserCheck } from 'lucide-vue-next'
-import { useRouter } from 'vue-router'
+import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { MessageCircle } from 'lucide-vue-next'
+import { useAuth } from '~/composables/useAuth'
+import { useMessaging } from '~/composables/useMessaging'
+import { formatDate } from '~/utils/date'
 
-const router = useRouter()
+// Auth state
+const { isAuthenticated, authLoading } = useAuth()
+const showAuthModal = ref(false)
 
-const searchQuery = ref('')
-const locationQuery = ref('')
-const popularSearches = ['Derecho Laboral', 'Derecho Civil', 'Familia', 'Divorcio']
+// Messaging state
+const { 
+  conversations, 
+  currentMessages,
+  isLoadingConversations,
+  isLoadingMessages,
+  error,
+  fetchConversations,
+  fetchMessages,
+  sendNewMessage,
+  markConversationAsRead
+} = useMessaging()
 
-const handleSearch = () => {
-  if (!searchQuery.value.trim()) return
-  router.push(
-    `/lawyers?q=${encodeURIComponent(searchQuery.value)}${locationQuery.value ? `&location=${encodeURIComponent(locationQuery.value)}` : ''}`
-  )
+const selectedConversation = ref(null)
+const newMessage = ref('')
+const messagesContainer = ref(null)
+
+// Select a conversation
+const selectConversation = async (conversation) => {
+  selectedConversation.value = conversation
+  
+  // Clear new message when changing conversations
+  newMessage.value = ''
+  
+  // Fetch messages for the selected conversation
+  if (conversation) {
+    await fetchMessages(conversation.id)
+    
+    // Mark conversation as read
+    if (conversation.unreadCount) {
+      await markConversationAsRead(conversation.id)
+      // Update local state to reflect read status
+      conversation.unreadCount = 0
+    }
+    
+    // Scroll to bottom after messages load
+    await nextTick()
+    scrollToBottom()
+  }
 }
+
+// Send a new message
+const sendMessage = async () => {
+  if (!newMessage.value.trim() || !selectedConversation.value) return
+  
+  await sendNewMessage(selectedConversation.value.id, newMessage.value)
+  newMessage.value = ''
+  
+  // Scroll to bottom after sending
+  await nextTick()
+  scrollToBottom()
+}
+
+// Helper to scroll messages container to bottom
+const scrollToBottom = () => {
+  if (messagesContainer.value) {
+    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+  }
+}
+
+// Get initials from a name
+const getInitials = (name) => {
+  return name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .substr(0, 2)
+    .toUpperCase()
+}
+
+// Format message date for display
+const formatMessageDate = (timestamp) => {
+  const date = new Date(timestamp)
+  const today = new Date()
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+  
+  if (date.toDateString() === today.toDateString()) {
+    return 'Hoy'
+  } else if (date.toDateString() === yesterday.toDateString()) {
+    return 'Ayer'
+  } else {
+    return date.toLocaleDateString('es-ES', { 
+      day: 'numeric', 
+      month: 'long',
+      year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+    })
+  }
+}
+
+// Format message time for display
+const formatMessageTime = (timestamp) => {
+  const date = new Date(timestamp)
+  return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+}
+
+// Determine if we should show a date separator
+const shouldShowDateSeparator = (currentMessage, previousMessage) => {
+  const currentDate = new Date(currentMessage.timestamp).toDateString()
+  const previousDate = new Date(previousMessage.timestamp).toDateString()
+  return currentDate !== previousDate
+}
+
+// Handle login success
+const handleLogin = () => {
+  showAuthModal.value = false
+  // Refresh conversations after login
+  fetchConversations()
+}
+
+// Watch for messages and scroll to bottom when they change
+watch(currentMessages, () => {
+  nextTick(() => {
+    scrollToBottom()
+  })
+})
+
+// Handle opening conversation from URL parameter or notification
+const handleOpenConversation = (conversationId) => {
+  const conversation = conversations.value.find(c => c.id === conversationId)
+  if (conversation) {
+    selectConversation(conversation)
+  }
+}
+
+// Listen for the global event to open a conversation
+onMounted(async () => {
+  if (isAuthenticated.value) {
+    await fetchConversations()
+    
+    // Check URL parameter for conversation to open
+    const route = useRoute()
+    if (route.query.conversation) {
+      const conversationId = route.query.conversation
+      // Wait a bit for conversations to load
+      setTimeout(() => {
+        handleOpenConversation(conversationId)
+      }, 300)
+    }
+    // Select first conversation if there are any and no specific one is requested
+    else if (conversations.value.length > 0) {
+      selectConversation(conversations.value[0])
+    }
+    
+    // Listen for the global event
+    if (process.client) {
+      window.addEventListener('open-conversation', (event) => {
+        const { conversationId } = event.detail
+        handleOpenConversation(conversationId)
+      })
+    }
+  }
+})
+
+// Remove event listener on unmount
+onUnmounted(() => {
+  if (process.client) {
+    window.removeEventListener('open-conversation', () => {})
+  }
+})
 </script>

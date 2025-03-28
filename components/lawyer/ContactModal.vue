@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useContact } from '~/composables/useContact'
+import { useMessagingService } from '~/services/api'
 import { useAnalytics } from '~/composables/useAnalytics'
 import { useAuth } from '~/composables/useAuth'
+import { useRouter } from 'vue-router'
 import type { Lawyer } from '~/types/lawyer'
 import AuthModal from '~/components/auth/Modal.vue'
 
@@ -16,12 +18,17 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const { messageForm, sendMessage, resetForm } = useContact()
+const router = useRouter()
+const { messageForm, resetForm } = useContact()
 const { trackMessageEvent } = useAnalytics()
 const { isAuthenticated, user } = useAuth()
+const messagingService = useMessagingService()
 
 // Add state for auth modal
 const showAuthModal = ref(false)
+const isSubmitting = ref(false)
+const errorMessage = ref('')
+const successMessage = ref('')
 
 // Update the message form with user information when logged in
 watch(user, (newUser) => {
@@ -38,10 +45,41 @@ const handleSend = async () => {
     return
   }
 
-  await sendMessage(props.lawyer)
-  trackMessageEvent(props.lawyer, 'sent')
-  resetForm()
-  emit('close')
+  // Basic validation
+  if (!messageForm.message.trim()) {
+    errorMessage.value = 'Por favor ingrese un mensaje'
+    return
+  }
+
+  isSubmitting.value = true
+  errorMessage.value = ''
+  successMessage.value = ''
+  
+  try {
+    // Create new conversation with the lawyer
+    await messagingService.createConversation(props.lawyer.id, messageForm.message)
+    
+    // Track the message event
+    trackMessageEvent(props.lawyer, 'sent')
+    
+    // Show success message
+    successMessage.value = 'Mensaje enviado correctamente'
+    
+    // Reset the form
+    resetForm()
+    
+    // Close the modal after 2 seconds
+    setTimeout(() => {
+      emit('close')
+      // Navigate to messages page
+      router.push('/messages')
+    }, 2000)
+  } catch (error) {
+    console.error('Error sending message:', error)
+    errorMessage.value = error instanceof Error ? error.message : 'Error al enviar el mensaje'
+  } finally {
+    isSubmitting.value = false
+  }
 }
 
 // Handle successful login
@@ -81,56 +119,66 @@ const handleLoginSuccess = () => {
         </button>
       </div>
 
+      <!-- Alert messages -->
+      <div v-if="errorMessage" class="mb-4 p-3 bg-red-50 text-red-700 rounded-md">
+        {{ errorMessage }}
+      </div>
+      
+      <div v-if="successMessage" class="mb-4 p-3 bg-green-50 text-green-700 rounded-md">
+        {{ successMessage }}
+      </div>
+
       <div class="space-y-4">
-        <!-- Form fields -->
-        <div
-          v-for="field in [
-            { id: 'name', label: 'Nombre', type: 'text', required: true },
-            { id: 'email', label: 'Email', type: 'email', required: true },
-            { id: 'phone', label: 'Teléfono', type: 'tel', required: false }
-          ]"
-          :key="field.id"
-        >
-          <label :for="field.id" class="block text-sm font-medium text-gray-700 mb-1">
-            {{ field.label }} {{ field.required ? '*' : '(opcional)' }}
-          </label>
-          <input
-            :id="field.id"
-            v-model="messageForm[field.id as keyof typeof messageForm]"
-            :type="field.type"
-            :required="field.required"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-          />
+        <!-- Authentication note for non-logged in users -->
+        <div v-if="!isAuthenticated" class="bg-primary-50 p-3 rounded-md text-sm">
+          Inicia sesión para enviar un mensaje a este abogado
         </div>
 
-        <div>
-          <label for="message" class="block text-sm font-medium text-gray-700 mb-1">
-            Mensaje *
-          </label>
-          <textarea
-            id="message"
-            v-model="messageForm.message"
-            rows="4"
-            required
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-            placeholder="Escribe tu mensaje aquí..."
-          />
-        </div>
+        <!-- Form fields - only shown to authenticated users or if not showing auth note -->
+        <template v-if="isAuthenticated">
+          <div>
+            <label for="message" class="block text-sm font-medium text-gray-700 mb-1">
+              Mensaje *
+            </label>
+            <textarea
+              id="message"
+              v-model="messageForm.message"
+              rows="4"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              placeholder="Escribe tu mensaje aquí..."
+            />
+          </div>
+
+          <div class="text-sm text-gray-600">
+            <p>
+              Al enviar un mensaje, iniciará una conversación con este abogado que podrá continuar en la 
+              sección de mensajes de su perfil.
+            </p>
+          </div>
+        </template>
       </div>
 
       <div class="flex gap-3 mt-6">
-        <button
-          class="flex-1 bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          :disabled="!messageForm.name || !messageForm.email || !messageForm.message"
-          @click="handleSend"
-        >
-          Enviar mensaje
-        </button>
         <button
           class="flex-1 border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-50 transition-colors"
           @click="emit('close')"
         >
           Cancelar
+        </button>
+
+        <button
+          class="flex-1 bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          :disabled="!messageForm.message || isSubmitting"
+          @click="handleSend"
+        >
+          <span v-if="isSubmitting">
+            <span 
+              class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2 align-middle"
+            ></span>
+            Enviando...
+          </span>
+          <span v-else>Enviar mensaje</span>
         </button>
       </div>
     </div>

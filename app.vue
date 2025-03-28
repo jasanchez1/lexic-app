@@ -24,15 +24,24 @@
           <p class="font-medium">{{ toastMessage }}</p>
         </div>
       </div>
-    </div>
+    </div>    
+    <!-- Global Notification Manager -->
+    <CommonNotificationManager/>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, onMounted } from 'vue'
 import { useAuth } from '~/composables/useAuth'
+import { useMessageNotifications } from '~/composables/useMessageNotifications'
 
-const { isAuthenticated, user, authError, loginAction, logoutAction } = useAuth()
+const { user, authError, loginAction, logoutAction } = useAuth()
+
+// Initialize message notifications
+onMounted(() => {
+  // This will start checking for new messages
+  useMessageNotifications()
+})
 
 // Toast notification state
 const showToast = ref(false)
