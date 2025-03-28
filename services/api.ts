@@ -1167,7 +1167,7 @@ export const useAnalyticsService = () => {
 
     // Track a message event
     trackMessageEvent: async (lawyerId: string, status: string) => {
-      return await api.post('/analytics/message-event', {
+      return await api.post('/analytics/message-events', {
         lawyer_id: lawyerId,
         status,
         timestamp: new Date().toISOString()

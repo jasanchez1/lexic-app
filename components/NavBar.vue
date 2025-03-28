@@ -155,41 +155,13 @@
             <!-- Guides Menu - Now using the GuidesMenu component -->
             <GuidesMenu />
           </div>
+
           <div class="flex items-center">
-            <div class="flex items-center">
-              <!-- Add the notification bell only for authenticated users -->
-              <div v-if="isAuthenticated" class="mr-4">
-                <CommonNotificationBell />
-              </div>
-
-              <!-- Auth Section - Improved with smoother state transition -->
-              <div>
-                <template v-if="!isFullyInitialized">
-                  <!-- Show loading spinner during initialization -->
-                  <div class="flex items-center justify-center w-10 h-10">
-                    <div
-                      class="w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"
-                    ></div>
-                  </div>
-                </template>
-
-                <template v-else>
-                  <!-- Show login button if not authenticated -->
-                  <button
-                    v-if="!isAuthenticated"
-                    class="bg-accent hover:bg-accent-hover text-white px-4 md:px-6 py-2 rounded text-sm font-medium transition-colors duration-200"
-                    @click="showAuthModal = true"
-                  >
-                    Iniciar Sesión
-                  </button>
-
-                  <!-- Show user dropdown if authenticated -->
-                  <div v-else class="relative" ref="userMenuRef">
-                    <!-- User button and dropdown menu content remains the same -->
-                  </div>
-                </template>
-              </div>
+            <!-- Add the notification bell only for authenticated users -->
+            <div v-if="isAuthenticated" class="mr-4">
+              <CommonNotificationBell />
             </div>
+            
             <!-- Auth Section - Improved with smoother state transition -->
             <div>
               <template v-if="!isFullyInitialized">
@@ -210,7 +182,8 @@
                 >
                   Iniciar Sesión
                 </button>
-                <!-- User dropdown if authenticated -->
+
+                <!-- Show user dropdown if authenticated -->
                 <div v-else class="relative" ref="userMenuRef">
                   <button
                     class="flex items-center text-gray-700 hover:text-primary-600 transition-colors"
@@ -269,7 +242,7 @@
               </template>
             </div>
 
-            <!-- Mobile menu button - moved to the right -->
+            <!-- Mobile menu button -->
             <button
               @click="toggleMobileMenu"
               class="ml-4 md:hidden text-gray-500 hover:text-gray-700 focus:outline-none"

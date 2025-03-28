@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useContact } from '~/composables/useContact'
-import { useMessagingService } from '~/services/api'
 import { useAnalytics } from '~/composables/useAnalytics'
 import { useAuth } from '~/composables/useAuth'
 import { useRouter } from 'vue-router'
 import type { Lawyer } from '~/types/lawyer'
 import AuthModal from '~/components/auth/Modal.vue'
+import { useFetch } from '~/utils/api'
 
 const props = defineProps<{
   lawyer: Lawyer
@@ -22,7 +22,7 @@ const router = useRouter()
 const { messageForm, resetForm } = useContact()
 const { trackMessageEvent } = useAnalytics()
 const { isAuthenticated, user } = useAuth()
-const messagingService = useMessagingService()
+const api = useFetch()
 
 // Add state for auth modal
 const showAuthModal = ref(false)
@@ -31,12 +31,13 @@ const errorMessage = ref('')
 const successMessage = ref('')
 
 // Update the message form with user information when logged in
-watch(user, (newUser) => {
-  if (newUser) {
+watch([user, props.show], ([newUser]) => {
+  if (newUser && isAuthenticated.value) {
+    // Auto-fill user information when logged in
     messageForm.name = newUser.firstName + ' ' + (newUser.lastName || '')
     messageForm.email = newUser.email
   }
-})
+}, { immediate: true })
 
 const handleSend = async () => {
   // Check if user is authenticated
@@ -46,7 +47,7 @@ const handleSend = async () => {
   }
 
   // Basic validation
-  if (!messageForm.message.trim()) {
+  if (!messageForm.value?.message) {
     errorMessage.value = 'Por favor ingrese un mensaje'
     return
   }
@@ -55,9 +56,15 @@ const handleSend = async () => {
   errorMessage.value = ''
   successMessage.value = ''
   
+  // TODO move to api service instead
   try {
-    // Create new conversation with the lawyer
-    await messagingService.createConversation(props.lawyer.id, messageForm.message)
+    // Use the correct endpoint format with only the necessary data
+    await api.post(`/lawyers/${props.lawyer.id}/messages`, {
+      message: messageForm.value?.message.trim(),
+      user_id: user.value?.id,
+      name: user.value?.firstName + ' ' + (user.value?.lastName || ''),
+      email: user.value?.email,
+    })
     
     // Track the message event
     trackMessageEvent(props.lawyer, 'sent')
@@ -134,8 +141,21 @@ const handleLoginSuccess = () => {
           Inicia sesión para enviar un mensaje a este abogado
         </div>
 
-        <!-- Form fields - only shown to authenticated users or if not showing auth note -->
+        <!-- Form fields - simplified for authenticated users -->
         <template v-if="isAuthenticated">
+          <!-- Show user info as non-editable fields -->
+          <div class="bg-gray-50 p-4 rounded-md mb-4">
+            <div class="flex items-center mb-2">
+              <div class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 mr-2">
+                {{ user?.firstName?.charAt(0) || '' }}{{ user?.lastName?.charAt(0) || '' }}
+              </div>
+              <div>
+                <p class="font-medium">{{ user?.firstName }} {{ user?.lastName }}</p>
+                <p class="text-sm text-gray-500">{{ user?.email }}</p>
+              </div>
+            </div>
+          </div>
+
           <div>
             <label for="message" class="block text-sm font-medium text-gray-700 mb-1">
               Mensaje *
@@ -169,7 +189,7 @@ const handleLoginSuccess = () => {
 
         <button
           class="flex-1 bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          :disabled="!messageForm.message || isSubmitting"
+          :disabled="!messageForm.message || isSubmitting || !isAuthenticated"
           @click="handleSend"
         >
           <span v-if="isSubmitting">
