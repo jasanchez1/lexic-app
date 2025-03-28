@@ -6,7 +6,7 @@ import { useAuth } from '~/composables/useAuth'
 import { useRouter } from 'vue-router'
 import type { Lawyer } from '~/types/lawyer'
 import AuthModal from '~/components/auth/Modal.vue'
-import { useFetch } from '~/utils/api'
+import { useMessagingService } from '~/services/api'
 
 const props = defineProps<{
   lawyer: Lawyer
@@ -22,7 +22,7 @@ const router = useRouter()
 const { messageForm, resetForm } = useContact()
 const { trackMessageEvent } = useAnalytics()
 const { isAuthenticated, user } = useAuth()
-const api = useFetch()
+const messagingService = useMessagingService()
 
 // Add state for auth modal
 const showAuthModal = ref(false)
@@ -56,11 +56,10 @@ const handleSend = async () => {
   errorMessage.value = ''
   successMessage.value = ''
   
-  // TODO move to api service instead
   try {
-    // Use the correct endpoint format with only the necessary data
-    await api.post(`/lawyers/${props.lawyer.id}/messages`, {
-      message: messageForm.value?.message.trim(),
+    // Send the message using the messaging service
+    await messagingService.send(props.lawyer.id, {
+      content: messageForm.value?.message.trim(),
       user_id: user.value?.id,
       name: user.value?.firstName + ' ' + (user.value?.lastName || ''),
       email: user.value?.email,

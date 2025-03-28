@@ -24,12 +24,9 @@ export const useUnreadMessages = () => {
     error.value = null
     
     try {
-      // In a production environment, this would call the API
-      // For now, we'll use the mock data for development
-      const conversations = await messagingService.getConversations()
-      const totalUnread = conversations.reduce((total, conv) => total + (conv.unreadCount || 0), 0)
-      unreadCount.value = totalUnread
-      return totalUnread
+      const count = await messagingService.getUnreadCount()
+      unreadCount.value = count
+      return count
     } catch (e) {
       console.error('Error fetching unread message count:', e)
       error.value = e instanceof Error ? e.message : 'Error al obtener mensajes no leídos'

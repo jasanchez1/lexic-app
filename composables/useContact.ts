@@ -1,11 +1,9 @@
 import { ref } from 'vue'
-import { useFetch } from '~/utils/api'
 import type { Lawyer } from '~/types/lawyer'
 import { useMessagingService } from '~/services/api'
 import { useAuth } from '~/composables/useAuth'
 
 export const useContact = () => {
-  const api = useFetch()
   const { user } = useAuth() // Get current user info
   const messagingService = useMessagingService()
   

@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { useMessagingService } from '~/services/api'
 import { useAuth } from '~/composables/useAuth'
+import type { Message } from '~/types/message'
 
 // Types for the messaging feature
 export interface MessageAuthor {
@@ -148,9 +149,9 @@ export const useMessaging = () => {
       }))
       
       return true
-    } catch (e) {
-      console.error(`Error marking conversation ${conversationId} as read:`, e)
-      error.value = e instanceof Error ? e.message : 'Error al marcar la conversación como leída'
+    } catch (error) {
+      console.error(`Error marking conversation ${conversationId} as read:`, error)
+      error.value = error instanceof Error ? error.message : 'Error al marcar la conversación como leída'
       return false
     }
   }

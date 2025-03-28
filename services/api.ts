@@ -649,210 +649,22 @@ export const useExperienceService = () => {
   }
 }
 
-// Export the messaging service to be used in the app
+// Update to useMessagingService in services/api.ts
+
 export const useMessagingService = () => {
   const api = useFetch()
 
   return {
     // Get all conversations for the current user
     getConversations: async (): Promise<Conversation[]> => {
-      try {
-        const response = await api.get('/conversations')
-        return response.map((conversation: any) =>
-          mapApiResponseToModel<Conversation>(conversation)
-        )
-      } catch (error) {
-        console.error('Error fetching conversations:', error)
-        // Mock response for development
-        return [
-          {
-            id: 'conv-1',
-            lawyer: {
-              id: 'lawyer-1',
-              name: 'Ana García',
-              title: 'Abogada Civil',
-              imageURL: 'https://randomuser.me/api/portraits/women/43.jpg'
-            },
-            lastMessage: 'Revisé su caso y le recomendaría proceder con la demanda.',
-            lastMessageDate: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
-            unreadCount: 2
-          },
-          {
-            id: 'conv-2',
-            lawyer: {
-              id: 'lawyer-2',
-              name: 'Carlos Mendoza',
-              title: 'Abogado Laboral',
-              imageURL: 'https://randomuser.me/api/portraits/men/32.jpg'
-            },
-            lastMessage: 'Necesitaré revisar su contrato para darle una respuesta adecuada.',
-            lastMessageDate: new Date(Date.now() - 86400000 * 2).toISOString(), // 2 days ago
-            unreadCount: 0
-          },
-          {
-            id: 'conv-3',
-            lawyer: {
-              id: 'lawyer-3',
-              name: 'María Rodríguez',
-              title: 'Abogada de Familia'
-            },
-            lastMessage: 'Podemos agendar una videollamada para discutir los detalles.',
-            lastMessageDate: new Date(Date.now() - 86400000 * 5).toISOString(), // 5 days ago
-            unreadCount: 0
-          }
-        ]
-      }
+      const response = await api.get('/conversations')
+      return response.map((conversation: any) => mapApiResponseToModel<Conversation>(conversation))
     },
 
     // Get messages for a specific conversation
     getMessages: async (conversationId: string): Promise<Message[]> => {
-      try {
-        const response = await api.get(`/conversations/${conversationId}/messages`)
-        return response.map((message: any) => mapApiResponseToModel<Message>(message))
-      } catch (error) {
-        console.error(`Error fetching messages for conversation ${conversationId}:`, error)
-
-        // Mock response for development
-        const baseTime = Date.now() - 86400000 * 3 // 3 days ago as base
-
-        // Different message sets based on conversation ID
-        if (conversationId === 'conv-1') {
-          return [
-            {
-              id: 'msg-1-1',
-              conversationId: 'conv-1',
-              content: 'Hola Ana, tengo una consulta sobre un problema de arrendamiento.',
-              timestamp: new Date(baseTime).toISOString(),
-              fromLawyer: false,
-              read: true
-            },
-            {
-              id: 'msg-1-2',
-              conversationId: 'conv-1',
-              content: 'Buenas tardes. Cuénteme más detalles sobre su situación de arrendamiento.',
-              timestamp: new Date(baseTime + 3600000).toISOString(), // +1 hour
-              fromLawyer: true,
-              read: true
-            },
-            {
-              id: 'msg-1-3',
-              conversationId: 'conv-1',
-              content:
-                'Mi arrendador quiere terminar el contrato anticipadamente sin justificación válida.',
-              timestamp: new Date(baseTime + 7200000).toISOString(), // +2 hours
-              fromLawyer: false,
-              read: true
-            },
-            {
-              id: 'msg-1-4',
-              conversationId: 'conv-1',
-              content: 'Entiendo. ¿Podría enviarme una copia del contrato para revisarlo?',
-              timestamp: new Date(baseTime + 10800000).toISOString(), // +3 hours
-              fromLawyer: true,
-              read: true
-            },
-            {
-              id: 'msg-1-5',
-              conversationId: 'conv-1',
-              content:
-                'Revisé su contrato y tiene cláusulas que protegen su posición. Recomendaría enviar una carta formal.',
-              timestamp: new Date(baseTime + 86400000).toISOString(), // +1 day
-              fromLawyer: true,
-              read: true
-            },
-            {
-              id: 'msg-1-6',
-              conversationId: 'conv-1',
-              content: 'Revisé su caso y le recomendaría proceder con la demanda.',
-              timestamp: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
-              fromLawyer: true,
-              read: false
-            }
-          ]
-        } else if (conversationId === 'conv-2') {
-          return [
-            {
-              id: 'msg-2-1',
-              conversationId: 'conv-2',
-              content: 'Buenas tardes, necesito asesoría sobre un despido injustificado.',
-              timestamp: new Date(baseTime).toISOString(),
-              fromLawyer: false,
-              read: true
-            },
-            {
-              id: 'msg-2-2',
-              conversationId: 'conv-2',
-              content:
-                'Hola, lamento escuchar eso. ¿Podría contarme las circunstancias de su despido?',
-              timestamp: new Date(baseTime + 3600000).toISOString(), // +1 hour
-              fromLawyer: true,
-              read: true
-            },
-            {
-              id: 'msg-2-3',
-              conversationId: 'conv-2',
-              content:
-                'Me despidieron después de solicitar un permiso médico por una lesión laboral.',
-              timestamp: new Date(baseTime + 7200000).toISOString(), // +2 hours
-              fromLawyer: false,
-              read: true
-            },
-            {
-              id: 'msg-2-4',
-              conversationId: 'conv-2',
-              content: 'Necesitaré revisar su contrato para darle una respuesta adecuada.',
-              timestamp: new Date(Date.now() - 86400000 * 2).toISOString(), // 2 days ago
-              fromLawyer: true,
-              read: true
-            }
-          ]
-        } else {
-          return [
-            {
-              id: 'msg-3-1',
-              conversationId: 'conv-3',
-              content: 'Hola, necesito ayuda para un proceso de divorcio.',
-              timestamp: new Date(baseTime).toISOString(),
-              fromLawyer: false,
-              read: true
-            },
-            {
-              id: 'msg-3-2',
-              conversationId: 'conv-3',
-              content:
-                'Buenos días. Por supuesto, puedo ayudarle con su caso de divorcio. ¿Es de mutuo acuerdo?',
-              timestamp: new Date(baseTime + 3600000).toISOString(), // +1 hour
-              fromLawyer: true,
-              read: true
-            },
-            {
-              id: 'msg-3-3',
-              conversationId: 'conv-3',
-              content: 'Sí, es de mutuo acuerdo. Tenemos dos hijos menores de edad.',
-              timestamp: new Date(baseTime + 7200000).toISOString(), // +2 hours
-              fromLawyer: false,
-              read: true
-            },
-            {
-              id: 'msg-3-4',
-              conversationId: 'conv-3',
-              content:
-                'Entiendo. En ese caso necesitaremos preparar un convenio regulador que incluya la custodia y manutención.',
-              timestamp: new Date(baseTime + 10800000).toISOString(), // +3 hours
-              fromLawyer: true,
-              read: true
-            },
-            {
-              id: 'msg-3-5',
-              conversationId: 'conv-3',
-              content: 'Podemos agendar una videollamada para discutir los detalles.',
-              timestamp: new Date(Date.now() - 86400000 * 5).toISOString(), // 5 days ago
-              fromLawyer: true,
-              read: true
-            }
-          ]
-        }
-      }
+      const response = await api.get(`/conversations/${conversationId}/messages`)
+      return response.map((message: any) => mapApiResponseToModel<Message>(message))
     },
 
     // Send a new message to a conversation
@@ -860,288 +672,38 @@ export const useMessagingService = () => {
       conversationId: string,
       data: { content: string; user_id?: string }
     ): Promise<Message> => {
-      try {
-        const apiData = mapModelToApiRequest(data)
-        const response = await api.post(`/conversations/${conversationId}/messages`, apiData)
-        return mapApiResponseToModel<Message>(response)
-      } catch (error) {
-        console.error(`Error sending message to conversation ${conversationId}:`, error)
-
-        // Mock response for development
-        return {
-          id: `msg-new-${Date.now()}`,
-          conversationId,
-          content: data.content,
-          timestamp: new Date().toISOString(),
-          fromLawyer: false,
-          read: true
-        }
-      }
+      const apiData = mapModelToApiRequest(data)
+      const response = await api.post(`/conversations/${conversationId}/messages`, apiData)
+      return mapApiResponseToModel<Message>(response)
     },
 
     // Mark a conversation as read
     markAsRead: async (conversationId: string): Promise<void> => {
-      try {
-        await api.post(`/conversations/${conversationId}/read`, {})
-      } catch (error) {
-        console.error(`Error marking conversation ${conversationId} as read:`, error)
-        // No need to return anything for the mock
-      }
+      await api.post(`/conversations/${conversationId}/read`, {})
     },
 
     // Create a new conversation with a lawyer
     createConversation: async (lawyerId: string, initialMessage: string): Promise<Conversation> => {
-      try {
-        const response = await api.post('/conversations', {
-          lawyer_id: lawyerId,
-          message: initialMessage
-        })
-        return mapApiResponseToModel<Conversation>(response)
-      } catch (error) {
-        console.error(`Error creating conversation with lawyer ${lawyerId}:`, error)
+      const response = await api.post(`/conversations/lawyers/${lawyerId}/messages`, {
+        content: initialMessage
+      })
+      return mapApiResponseToModel<Conversation>(response)
+    },
 
-        // Mock response for development
-        return {
-          id: `conv-new-${Date.now()}`,
-          lawyer: {
-            id: lawyerId,
-            name: 'Nuevo Abogado',
-            title: 'Especialista Legal',
-            imageURL: 'https://randomuser.me/api/portraits/men/44.jpg'
-          },
-          lastMessage: initialMessage,
-          lastMessageDate: new Date().toISOString(),
-          unreadCount: 0
-        }
-      }
+    // Send a message to a lawyer (creates a conversation if doesn't exist)
+    send: async (lawyerId: string, data: any): Promise<any> => {
+      const response = await api.post(`/lawyers/${lawyerId}/messages`, mapModelToApiRequest(data))
+      return response
     },
 
     // Get unread message count
     getUnreadCount: async (): Promise<number> => {
-      try {
-        const response = await api.get('/conversations/unread')
-        return response.unread_count
-      } catch (error) {
-        console.error('Error fetching unread count:', error)
-        // Mock response: random between 0-3
-        return Math.floor(Math.random() * 4)
-      }
+      const response = await api.get('/conversations/unread')
+      return response.unread_count || 0
     }
   }
 }
 
-// Mock data for development and testing
-// This is used when the API endpoints are not yet implemented
-
-// Mock conversations
-function getMockConversations(): Conversation[] {
-  return [
-    {
-      id: 'conv-1',
-      lawyer: {
-        id: 'lawyer-1',
-        name: 'Ana García',
-        title: 'Abogada Civil',
-        imageURL: 'https://randomuser.me/api/portraits/women/43.jpg'
-      },
-      lastMessage: 'Revisé su caso y le recomendaría proceder con la demanda.',
-      lastMessageDate: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
-      unreadCount: 2
-    },
-    {
-      id: 'conv-2',
-      lawyer: {
-        id: 'lawyer-2',
-        name: 'Carlos Mendoza',
-        title: 'Abogado Laboral',
-        imageURL: 'https://randomuser.me/api/portraits/men/32.jpg'
-      },
-      lastMessage: 'Necesitaré revisar su contrato para darle una respuesta adecuada.',
-      lastMessageDate: new Date(Date.now() - 86400000 * 2).toISOString(), // 2 days ago
-      unreadCount: 0
-    },
-    {
-      id: 'conv-3',
-      lawyer: {
-        id: 'lawyer-3',
-        name: 'María Rodríguez',
-        title: 'Abogada de Familia'
-      },
-      lastMessage: 'Podemos agendar una videollamada para discutir los detalles.',
-      lastMessageDate: new Date(Date.now() - 86400000 * 5).toISOString(), // 5 days ago
-      unreadCount: 0
-    }
-  ]
-}
-
-// Mock messages for a conversation
-function getMockMessages(conversationId: string): Message[] {
-  const baseTime = Date.now() - 86400000 * 3 // 3 days ago as base
-
-  // Different message sets based on conversation ID
-  if (conversationId === 'conv-1') {
-    return [
-      {
-        id: 'msg-1-1',
-        conversationId: 'conv-1',
-        content: 'Hola Ana, tengo una consulta sobre un problema de arrendamiento.',
-        timestamp: new Date(baseTime).toISOString(),
-        fromLawyer: false,
-        read: true
-      },
-      {
-        id: 'msg-1-2',
-        conversationId: 'conv-1',
-        content: 'Buenas tardes. Cuénteme más detalles sobre su situación de arrendamiento.',
-        timestamp: new Date(baseTime + 3600000).toISOString(), // +1 hour
-        fromLawyer: true,
-        read: true
-      },
-      {
-        id: 'msg-1-3',
-        conversationId: 'conv-1',
-        content:
-          'Mi arrendador quiere terminar el contrato anticipadamente sin justificación válida.',
-        timestamp: new Date(baseTime + 7200000).toISOString(), // +2 hours
-        fromLawyer: false,
-        read: true
-      },
-      {
-        id: 'msg-1-4',
-        conversationId: 'conv-1',
-        content: 'Entiendo. ¿Podría enviarme una copia del contrato para revisarlo?',
-        timestamp: new Date(baseTime + 10800000).toISOString(), // +3 hours
-        fromLawyer: true,
-        read: true
-      },
-      {
-        id: 'msg-1-5',
-        conversationId: 'conv-1',
-        content:
-          'Revisé su contrato y tiene cláusulas que protegen su posición. Recomendaría enviar una carta formal.',
-        timestamp: new Date(baseTime + 86400000).toISOString(), // +1 day
-        fromLawyer: true,
-        read: true
-      },
-      {
-        id: 'msg-1-6',
-        conversationId: 'conv-1',
-        content: 'Revisé su caso y le recomendaría proceder con la demanda.',
-        timestamp: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
-        fromLawyer: true,
-        read: false
-      }
-    ]
-  } else if (conversationId === 'conv-2') {
-    return [
-      {
-        id: 'msg-2-1',
-        conversationId: 'conv-2',
-        content: 'Buenas tardes, necesito asesoría sobre un despido injustificado.',
-        timestamp: new Date(baseTime).toISOString(),
-        fromLawyer: false,
-        read: true
-      },
-      {
-        id: 'msg-2-2',
-        conversationId: 'conv-2',
-        content: 'Hola, lamento escuchar eso. ¿Podría contarme las circunstancias de su despido?',
-        timestamp: new Date(baseTime + 3600000).toISOString(), // +1 hour
-        fromLawyer: true,
-        read: true
-      },
-      {
-        id: 'msg-2-3',
-        conversationId: 'conv-2',
-        content: 'Me despidieron después de solicitar un permiso médico por una lesión laboral.',
-        timestamp: new Date(baseTime + 7200000).toISOString(), // +2 hours
-        fromLawyer: false,
-        read: true
-      },
-      {
-        id: 'msg-2-4',
-        conversationId: 'conv-2',
-        content: 'Necesitaré revisar su contrato para darle una respuesta adecuada.',
-        timestamp: new Date(Date.now() - 86400000 * 2).toISOString(), // 2 days ago
-        fromLawyer: true,
-        read: true
-      }
-    ]
-  } else {
-    return [
-      {
-        id: 'msg-3-1',
-        conversationId: 'conv-3',
-        content: 'Hola, necesito ayuda para un proceso de divorcio.',
-        timestamp: new Date(baseTime).toISOString(),
-        fromLawyer: false,
-        read: true
-      },
-      {
-        id: 'msg-3-2',
-        conversationId: 'conv-3',
-        content:
-          'Buenos días. Por supuesto, puedo ayudarle con su caso de divorcio. ¿Es de mutuo acuerdo?',
-        timestamp: new Date(baseTime + 3600000).toISOString(), // +1 hour
-        fromLawyer: true,
-        read: true
-      },
-      {
-        id: 'msg-3-3',
-        conversationId: 'conv-3',
-        content: 'Sí, es de mutuo acuerdo. Tenemos dos hijos menores de edad.',
-        timestamp: new Date(baseTime + 7200000).toISOString(), // +2 hours
-        fromLawyer: false,
-        read: true
-      },
-      {
-        id: 'msg-3-4',
-        conversationId: 'conv-3',
-        content:
-          'Entiendo. En ese caso necesitaremos preparar un convenio regulador que incluya la custodia y manutención.',
-        timestamp: new Date(baseTime + 10800000).toISOString(), // +3 hours
-        fromLawyer: true,
-        read: true
-      },
-      {
-        id: 'msg-3-5',
-        conversationId: 'conv-3',
-        content: 'Podemos agendar una videollamada para discutir los detalles.',
-        timestamp: new Date(Date.now() - 86400000 * 5).toISOString(), // 5 days ago
-        fromLawyer: true,
-        read: true
-      }
-    ]
-  }
-}
-
-// Mock sending a message
-function getMockSendMessage(conversationId: string, content: string): Message {
-  return {
-    id: `msg-new-${Date.now()}`,
-    conversationId,
-    content,
-    timestamp: new Date().toISOString(),
-    fromLawyer: false,
-    read: true
-  }
-}
-
-// Mock creating a new conversation
-function getMockCreateConversation(lawyerId: string, initialMessage: string): Conversation {
-  return {
-    id: `conv-new-${Date.now()}`,
-    lawyer: {
-      id: lawyerId,
-      name: 'Nuevo Abogado',
-      title: 'Especialista Legal',
-      imageURL: 'https://randomuser.me/api/portraits/men/44.jpg'
-    },
-    lastMessage: initialMessage,
-    lastMessageDate: new Date().toISOString(),
-    unreadCount: 0
-  }
-}
 // For analytics
 export const useAnalyticsService = () => {
   const api = useFetch()
