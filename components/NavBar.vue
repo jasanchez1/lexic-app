@@ -161,7 +161,7 @@
             <div v-if="isAuthenticated" class="mr-4">
               <CommonNotificationBell />
             </div>
-            
+
             <!-- Auth Section - Improved with smoother state transition -->
             <div>
               <template v-if="!isFullyInitialized">
@@ -229,6 +229,13 @@
                         >
                           {{ unreadCount }}
                         </span>
+                      </NuxtLink>
+                      <NuxtLink
+                        to="/reviews"
+                        class="block px-3 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 rounded-md transition-colors duration-200"
+                        @click="isUserMenuOpen = false"
+                      >
+                        Mis Reseñas
                       </NuxtLink>
                       <button
                         class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 rounded-md transition-colors duration-200"
@@ -494,12 +501,11 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { ChevronDown, ChevronRight, Menu, X } from 'lucide-vue-next'
+import { ChevronDown, Menu, X } from 'lucide-vue-next'
 import { onClickOutside } from '@vueuse/core'
 import { useLawyerAreas } from '~/composables/useLawyerAreas'
 import type { PracticeArea } from '~/types/lawyer'
 import { useNavigation } from '~/composables/useNavigation'
-import { useLegalTopics } from '~/composables/useLegalTopics'
 import { useAuth } from '~/composables/useAuth'
 import { useNavigationMenu } from '~/composables/useNavigationMenu'
 import AuthModal from '~/components/auth/Modal.vue'

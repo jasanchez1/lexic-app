@@ -805,3 +805,31 @@ export const useGuidesService = () => {
     }
   }
 }
+
+export const useUserService = () => {
+  const api = useFetch()
+  
+  return {
+    // Get a user by ID
+    get: async (id: string) => {
+      const response = await api.get(`/users/${id}`)
+      return mapApiResponseToModel<User>(response)
+    },
+    
+    // Update a user
+    update: async (id: string, data: any) => {
+      const apiData = mapModelToApiRequest(data)
+      const response = await api.patch(`/users/${id}`, apiData)
+      return mapApiResponseToModel<User>(response)
+    },
+    
+    // Get reviews for a user
+    getReviews: async (id: string) => {
+      const response = await api.get(`/users/${id}/reviews`)
+      return {
+        reviews: response.reviews.map((review: any) => mapApiResponseToModel(review)),
+        stats: mapApiResponseToModel(response.stats)
+      }
+    }
+  }
+}
