@@ -40,7 +40,7 @@
             :key="review.id" 
             class="bg-white p-6 rounded-lg shadow border"
           >
-            <!-- Lawyer Info - Get from lawyerId -->
+            <!-- Lawyer Info and Review Actions -->
             <div class="flex justify-between items-start mb-4">
               <div>
                 <NuxtLink 
@@ -50,8 +50,17 @@
                   Ver Abogado
                 </NuxtLink>
               </div>
-              <div class="text-sm text-gray-500">
-                {{ new Date(review.date).toLocaleDateString() }}
+              
+              <!-- Add Review Actions Component -->
+              <div class="flex items-center space-x-2">
+                <div class="text-sm text-gray-500 mr-2">
+                  {{ new Date(review.date).toLocaleDateString() }}
+                </div>
+                <ReviewActions
+                  :can-edit="true"
+                  @edit="editReview(review)"
+                  @delete="handleReviewDelete(review.id, review.lawyerId)"
+                />
               </div>
             </div>
             
@@ -79,23 +88,45 @@
           </div>
         </div>
       </div>
+      
+      <!-- Review Modal for Editing -->
+      <ReviewModal
+        v-if="reviewToEdit && selectedLawyerId"
+        :show="showReviewModal"
+        :lawyer="{id: selectedLawyerId, name: 'Abogado'}"
+        :review-to-edit="reviewToEdit"
+        @close="handleCloseReviewModal"
+        @update="handleReviewUpdate"
+      />
     </div>
   </template>
   
   <script setup lang="ts">
   import { ref, onMounted } from 'vue'
   import { useAuth } from '~/composables/useAuth'
-  import { useUserService } from '~/services/api'
+  import { useUserService, useReviewsService } from '~/services/api'
+  import { useNotifications } from '~/composables/useNotifications'
   import AuthModal from '~/components/auth/Modal.vue'
+  import ReviewModal from '~/components/review/Modal.vue'
+  import ReviewActions from '~/components/review/Actions.vue'
+  import type { LawyerReview } from '~/types/review'
   
   // Auth state
   const { user, isAuthenticated, authLoading } = useAuth()
   const showAuthModal = ref(false)
   
   // Reviews state
-  const reviews = ref([])
+  const reviews = ref<LawyerReview[]>([])
   const isLoading = ref(false)
   const error = ref<string | null>(null)
+  
+  // Edit/delete functionality
+  const reviewToEdit = ref<LawyerReview | undefined>(undefined)
+  const showReviewModal = ref(false)
+  const selectedLawyerId = ref<string | null>(null)
+  
+  // Notifications
+  const { success, error: showError } = useNotifications()
   
   // Load user reviews
   const loadUserReviews = async () => {
@@ -120,6 +151,63 @@
   const handleLogin = () => {
     showAuthModal.value = false
     loadUserReviews()
+  }
+  
+  // Edit a review
+  const editReview = (review: LawyerReview) => {
+    reviewToEdit.value = review
+    selectedLawyerId.value = review.lawyerId
+    showReviewModal.value = true
+  }
+  
+  // Handle review update
+  const handleReviewUpdate = async (reviewId: string, reviewData: any) => {
+    if (!selectedLawyerId.value) return
+    
+    try {
+      const reviewsService = useReviewsService()
+      await reviewsService.update(selectedLawyerId.value, reviewId, reviewData)
+      
+      // Update the review in the list
+      const index = reviews.value.findIndex(r => r.id === reviewId)
+      if (index !== -1) {
+        reviews.value[index] = {
+          ...reviews.value[index],
+          ...reviewData
+        }
+      }
+      
+      // Close the modal
+      handleCloseReviewModal()
+      
+      // Show success notification
+      success('Reseña actualizada', 'Tu reseña ha sido actualizada correctamente')
+    } catch (err) {
+      showError('Error al actualizar la reseña', err instanceof Error ? err.message : 'Ocurrió un error')
+    }
+  }
+  
+  // Handle review delete
+  const handleReviewDelete = async (reviewId: string, lawyerId: string) => {
+    try {
+      const reviewsService = useReviewsService()
+      await reviewsService.delete(lawyerId, reviewId)
+      
+      // Remove the review from the list
+      reviews.value = reviews.value.filter(r => r.id !== reviewId)
+      
+      // Show success notification
+      success('Reseña eliminada', 'Tu reseña ha sido eliminada correctamente')
+    } catch (err) {
+      showError('Error al eliminar la reseña', err instanceof Error ? err.message : 'Ocurrió un error')
+    }
+  }
+  
+  // Close the review modal
+  const handleCloseReviewModal = () => {
+    showReviewModal.value = false
+    reviewToEdit.value = undefined
+    selectedLawyerId.value = null
   }
   
   onMounted(async () => {
