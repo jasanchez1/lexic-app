@@ -16,14 +16,13 @@ export default defineNuxtConfig({
   runtimeConfig: {
     // Private keys that are exposed only on the server
     apiSecret: process.env.API_SECRET || 'default_secret',
-    
+
     // Public keys that are exposed to the client
     public: {
-      apiUrl: process.env.NUXT_PUBLIC_API_URL || 'https://api.lexic.cl'
+      apiUrl: process.env.NUXT_PUBLIC_API_URL || 'https://api.lexic.cl',
+      lawyerDashboardUrl: process.env.LAWYER_DASHBOARD_URL || 'https://lawyers.lexic.cl'
     }
   },
   // Add plugin to initialize auth on app start
-  plugins: [
-    '~/plugins/auth.ts'
-  ]
+  plugins: ['~/plugins/auth.ts']
 })

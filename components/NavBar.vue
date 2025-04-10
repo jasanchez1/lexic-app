@@ -157,6 +157,16 @@
           </div>
 
           <div class="flex items-center">
+            <!-- Lawyer Dashboard Button -->
+            <a
+              v-if="isAuthenticated && user?.lawyerId"
+              :href="config.public.lawyerDashboardUrl"
+              target="_blank"
+              class="mr-3 bg-primary-600 hover:bg-primary-700 text-white px-3 py-1.5 rounded text-xs font-medium transition-colors duration-200"
+            >
+              Panel de Abogado
+            </a>
+
             <!-- Add the notification bell only for authenticated users -->
             <div v-if="isAuthenticated" class="mr-4">
               <CommonNotificationBell />
@@ -184,7 +194,7 @@
                 </button>
 
                 <!-- Show user dropdown if authenticated -->
-                <div v-else class="relative" ref="userMenuRef">
+                <div v-else ref="userMenuRef" class="relative">
                   <button
                     class="flex items-center text-gray-700 hover:text-primary-600 transition-colors"
                     @click="isUserMenuOpen = !isUserMenuOpen"
@@ -251,9 +261,9 @@
 
             <!-- Mobile menu button -->
             <button
-              @click="toggleMobileMenu"
               class="ml-4 md:hidden text-gray-500 hover:text-gray-700 focus:outline-none"
               aria-label="Toggle menu"
+              @click="toggleMobileMenu"
             >
               <Menu v-if="!isMobileMenuOpen" class="w-6 h-6" />
               <X v-else class="w-6 h-6" />
@@ -272,7 +282,7 @@
         <!-- Header with close button -->
         <div class="p-4 border-b flex justify-between items-center">
           <span class="font-medium">Menú</span>
-          <button @click="isMobileMenuOpen = false" class="text-gray-500 hover:text-gray-700">
+          <button class="text-gray-500 hover:text-gray-700" @click="isMobileMenuOpen = false">
             <X class="w-6 h-6" />
           </button>
         </div>
@@ -511,6 +521,12 @@ import { useNavigationMenu } from '~/composables/useNavigationMenu'
 import AuthModal from '~/components/auth/Modal.vue'
 import GuidesMenu from '~/components/guides/Menu.vue'
 import { useUnreadMessages } from '~/composables/useUnreadMessages'
+import { useNotifications } from '~/composables/useNotifications'
+import { useMessaging } from '~/composables/useMessaging'
+import { useConfig } from '~/composables/useConfig'
+import type { HTMLElement } from 'node_modules/@types/dom'
+
+const config = useConfig()
 const { unreadCount, hasUnreadMessages } = useUnreadMessages()
 
 const route = useRoute()

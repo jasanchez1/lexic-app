@@ -12,6 +12,7 @@ export interface User {
   is_verified: boolean
   createdAt: string
   updatedAt: string
+  lawyerId?: string | null
 }
 
 // Auth state
@@ -20,8 +21,8 @@ const isAuthenticated = ref(false)
 const authLoading = ref(false)
 const authError = ref<string | null>(null)
 const userLoaded = ref(false)
-const loginAction = ref(false)     // Track explicit login actions
-const logoutAction = ref(false)    // Track explicit logout actions
+const loginAction = ref(false) // Track explicit login actions
+const logoutAction = ref(false) // Track explicit logout actions
 const tokens = ref<{
   access_token: string
   refresh_token: string
@@ -43,12 +44,12 @@ export const useAuth = () => {
         tokens.value = newTokens
         isAuthenticated.value = true
       })
-      
+
       // Listen for refresh failures
       api.authEvents.on('tokenRefreshFailed', () => {
         logout(false) // Silent logout, don't trigger notification
       })
-      
+
       // Listen for unauthorized responses
       api.authEvents.on('unauthorized', () => {
         logout(false) // Silent logout, don't trigger notification
@@ -65,11 +66,11 @@ export const useAuth = () => {
 
     try {
       const data = await authService.login(email, password)
-      
+
       // Calculate expiration time and store it
       const expiresInMs = data.expiresIn * 1000
       const expiresAt = new Date(Date.now() + expiresInMs)
-      
+
       // Store tokens
       tokens.value = {
         access_token: data.accessToken,
@@ -79,21 +80,21 @@ export const useAuth = () => {
         token_type: data.tokenType || 'bearer',
         expires_at: expiresAt.toISOString()
       }
-      
+
       // Store tokens in localStorage for persistence (client-side only)
       if (process.client) {
         localStorage.setItem('auth_tokens', JSON.stringify(tokens.value))
       }
-      
+
       // Set authenticated state
       isAuthenticated.value = true
-      
+
       // Fetch user details before returning
       await fetchUserProfile()
-      
+
       // Set login action flag to trigger toast notification
       loginAction.value = true
-      
+
       return { success: true, data }
     } catch (error) {
       console.error('Login error:', error)
@@ -113,11 +114,11 @@ export const useAuth = () => {
 
     try {
       const data = await authService.signup(email, password, firstName, lastName)
-      
+
       // Calculate expiration time and store it
       const expiresInMs = data.expiresIn * 1000
       const expiresAt = new Date(Date.now() + expiresInMs)
-      
+
       // Store tokens
       tokens.value = {
         access_token: data.accessToken,
@@ -127,21 +128,21 @@ export const useAuth = () => {
         token_type: data.tokenType || 'bearer',
         expires_at: expiresAt.toISOString()
       }
-      
+
       // Store tokens in localStorage for persistence (client-side only)
       if (process.client) {
         localStorage.setItem('auth_tokens', JSON.stringify(tokens.value))
       }
-      
+
       // Set authenticated state
       isAuthenticated.value = true
-      
+
       // Fetch user details before returning
       await fetchUserProfile()
-      
+
       // Set login action flag to trigger toast notification
       loginAction.value = true
-      
+
       return { success: true, data }
     } catch (error) {
       console.error('Signup error:', error)
@@ -159,7 +160,7 @@ export const useAuth = () => {
     try {
       // Skip fetching if already logged out
       if (!isAuthenticated.value) return null
-      
+
       const userData = await authService.getCurrentUser()
       user.value = userData
       userLoaded.value = true
@@ -188,16 +189,16 @@ export const useAuth = () => {
       tokens.value = null
       isAuthenticated.value = false
       userLoaded.value = false
-      
+
       if (process.client) {
         localStorage.removeItem('auth_tokens')
       }
-      
+
       // Set logout action flag if notification should be shown
       if (showNotification) {
         logoutAction.value = true
       }
-      
+
       authLoading.value = false
     }
   }
@@ -207,14 +208,14 @@ export const useAuth = () => {
     // Only access localStorage on the client side
     if (process.client) {
       setupTokenRefresh()
-      
+
       const storedTokens = localStorage.getItem('auth_tokens')
-      
+
       if (storedTokens) {
         try {
           authLoading.value = true
           tokens.value = JSON.parse(storedTokens)
-          
+
           // Check if token is expired
           if (tokens.value?.expires_at && new Date(tokens.value.expires_at) < new Date()) {
             // Token is expired, try to refresh
@@ -226,7 +227,7 @@ export const useAuth = () => {
               return
             }
           }
-          
+
           isAuthenticated.value = true
           await fetchUserProfile()
           authLoading.value = false
@@ -247,11 +248,11 @@ export const useAuth = () => {
 
     try {
       const data = await authService.refreshToken(tokens.value.refresh_token)
-      
+
       // Calculate expiration time
       const expiresInMs = data.expiresIn * 1000
       const expiresAt = new Date(Date.now() + expiresInMs)
-      
+
       // Update tokens
       tokens.value = {
         access_token: data.accessToken,
@@ -261,12 +262,12 @@ export const useAuth = () => {
         token_type: data.tokenType || 'bearer',
         expires_at: expiresAt.toISOString()
       }
-      
+
       // Update localStorage (client-side only)
       if (process.client) {
         localStorage.setItem('auth_tokens', JSON.stringify(tokens.value))
       }
-      
+
       return true
     } catch (error) {
       console.error('Token refresh error:', error)
