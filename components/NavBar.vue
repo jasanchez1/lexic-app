@@ -159,7 +159,7 @@
           <div class="flex items-center">
             <!-- Lawyer Dashboard Button -->
             <a
-              v-if="isAuthenticated && user?.lawyerId"
+              v-if="isAuthenticated && user?.isLawyer"
               :href="config.public.lawyerDashboardUrl"
               target="_blank"
               class="mr-3 bg-primary-600 hover:bg-primary-700 text-white px-3 py-1.5 rounded text-xs font-medium transition-colors duration-200"

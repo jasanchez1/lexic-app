@@ -1,4 +1,4 @@
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { useAuthService } from '~/services/api'
 import { useFetch } from '~/utils/api'
 
@@ -13,6 +13,7 @@ export interface User {
   createdAt: string
   updatedAt: string
   lawyerId?: string | null
+  isLawyer?: boolean
 }
 
 // Auth state
