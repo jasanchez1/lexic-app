@@ -31,6 +31,16 @@
               />
             </div>
 
+            <div class="flex justify-end -mb-2">
+              <button
+                class="flex items-center gap-1 text-primary-600 hover:text-primary-700 text-sm font-medium transition-colors"
+                @click="router.push('/lawyers')"
+              >
+                <ArrowRight class="w-4 h-4" />
+                Ver todos los abogados
+              </button>
+            </div>
+
             <!-- Popular searches instead of location -->
             <div class="pt-2">
               <p class="text-sm text-gray-500 mb-2">Búsquedas populares:</p>
@@ -123,7 +133,7 @@
             <Shield class="w-8 h-8 text-primary-600 mb-4" />
             <h3 class="font-semibold text-gray-900 mb-2">Abogados Verificados</h3>
             <p class="text-gray-600 text-sm">
-              Todos nuestros abogados están verificados y cuentan con su titulo otorgado por el
+              Todos nuestros abogados están verificados y cuentan con su titulo otorgad zzzzo por el
               ministerio de justicia
             </p>
           </div>
@@ -147,7 +157,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Search, Check, Shield, Clock, UserCheck } from 'lucide-vue-next'
+import { Search, Check, Shield, Clock, UserCheck, ArrowRight } from 'lucide-vue-next'
 
 const router = useRouter()
 
