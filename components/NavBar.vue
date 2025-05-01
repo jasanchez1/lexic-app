@@ -160,7 +160,7 @@
             <!-- Lawyer Dashboard Button -->
             <a
               v-if="isAuthenticated && user?.isLawyer"
-              :href="config.public.lawyerDashboardUrl"
+              :href="getLawyerDashboardUrl()"
               target="_blank"
               class="mr-3 bg-primary-600 hover:bg-primary-700 text-white px-3 py-1.5 rounded text-xs font-medium transition-colors duration-200"
             >
@@ -524,6 +524,7 @@ import { useUnreadMessages } from '~/composables/useUnreadMessages'
 import { useNotifications } from '~/composables/useNotifications'
 import { useMessaging } from '~/composables/useMessaging'
 import { useConfig } from '~/composables/useConfig'
+import { createLawyerPanelLink } from '~/utils/auth-transfer'
 import type { HTMLElement } from 'node_modules/@types/dom'
 
 const config = useConfig()
@@ -611,6 +612,12 @@ const currentTopic = computed(() => {
 const bestArea = computed(() =>
   currentLawyer.value?.areas.find((x: PracticeArea) => Math.max(x.experienceScore))
 )
+
+// Function to get the dashboard URL with auth token
+const getLawyerDashboardUrl = () => {
+  // Use the createLawyerPanelLink function to generate a URL with auth token
+  return createLawyerPanelLink(config.public.lawyerDashboardUrl);
+};
 
 // Close dropdowns when clicking outside
 onClickOutside(dropdownRef, () => {
