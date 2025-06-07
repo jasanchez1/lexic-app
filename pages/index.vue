@@ -133,7 +133,7 @@
             <Shield class="w-8 h-8 text-primary-600 mb-4" />
             <h3 class="font-semibold text-gray-900 mb-2">Abogados Verificados</h3>
             <p class="text-gray-600 text-sm">
-              Todos nuestros abogados están verificados y cuentan con su titulo otorgad zzzzo por el
+              Todos nuestros abogados están verificados y cuentan con su titulo otorgado por el
               ministerio de justicia
             </p>
           </div>
