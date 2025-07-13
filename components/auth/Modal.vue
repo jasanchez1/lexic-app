@@ -108,6 +108,26 @@
           />
         </div>
 
+        <div v-if="!isLogin" class="space-y-3">
+          <div class="flex items-start">
+            <div class="flex items-center h-5">
+              <input
+                id="isLawyer"
+                v-model="form.isLawyer"
+                type="checkbox"
+                class="focus:ring-primary-500 h-4 w-4 text-primary-600 border-gray-300 rounded"
+              />
+            </div>
+            <div class="ml-3 text-sm">
+              <label for="isLawyer" class="font-medium text-gray-700"> Soy abogado(a) </label>
+              <p class="text-gray-500">
+                Marque esta casilla si es abogado y desea crear un perfil profesional para recibir
+                consultas de clientes.
+              </p>
+            </div>
+          </div>
+        </div>
+
         <!-- Error Message -->
         <p v-if="authError" class="text-red-600 text-sm">{{ authError }}</p>
 
@@ -163,7 +183,8 @@ const form = ref({
   password: '',
   passwordConfirm: '',
   firstName: '',
-  lastName: ''
+  lastName: '',
+  isLawyer: false
 })
 
 const resetForm = () => {
@@ -172,7 +193,8 @@ const resetForm = () => {
     password: '',
     passwordConfirm: '',
     firstName: '',
-    lastName: ''
+    lastName: '',
+    isLawyer: false
   }
 }
 
@@ -217,7 +239,8 @@ const handleSubmit = async () => {
         form.value.email,
         form.value.password,
         form.value.firstName,
-        form.value.lastName
+        form.value.lastName,
+        form.value.isLawyer,
       )
     }
 

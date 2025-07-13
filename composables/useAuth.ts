@@ -107,14 +107,14 @@ export const useAuth = () => {
   }
 
   // Sign up function
-  const signup = async (email: string, password: string, firstName: string, lastName: string) => {
+  const signup = async (email: string, password: string, firstName: string, lastName: string, isLawyer: string) => {
     authLoading.value = true
     authError.value = null
     userLoaded.value = false
-    loginAction.value = false // Reset login action flag
+    loginAction.value = false 
 
     try {
-      const data = await authService.signup(email, password, firstName, lastName)
+      const data = await authService.signup(email, password, firstName, lastName, isLawyer)
 
       // Calculate expiration time and store it
       const expiresInMs = data.expiresIn * 1000

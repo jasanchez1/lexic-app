@@ -515,13 +515,14 @@ export const useAuthService = () => {
     },
 
     // Signup
-    signup: async (email: string, password: string, first_name: string, last_name: string) => {
+    signup: async (email: string, password: string, first_name: string, last_name: string, is_lawyer: string) => {
       // Auth endpoints expect snake_case parameters
       const response = await api.post('/auth/signup', {
         email,
         password,
         first_name,
-        last_name
+        last_name,
+        is_lawyer
       })
       return mapApiResponseToModel(response)
     },
