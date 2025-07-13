@@ -5,7 +5,9 @@
       <div class="max-w-7xl mx-auto px-4">
         <div class="flex justify-between h-16 items-center">
           <div class="flex items-center">
-            <NuxtLink to="/" class="text-2xl font-bold text-primary-700">Logo</NuxtLink>
+            <NuxtLink to="/" class="flex items-center justify-center min-w-[120px]">
+              <img src="/lexic-logo.png" alt="Lexic - Asesoría Legal" class="h-10 w-auto" />
+            </NuxtLink>
           </div>
 
           <!-- Desktop Navigation -->
@@ -616,8 +618,8 @@ const bestArea = computed(() =>
 // Function to get the dashboard URL with auth token
 const getLawyerDashboardUrl = () => {
   // Use the createLawyerPanelLink function to generate a URL with auth token
-  return createLawyerPanelLink(config.public.lawyerDashboardUrl);
-};
+  return createLawyerPanelLink(config.public.lawyerDashboardUrl)
+}
 
 // Close dropdowns when clicking outside
 onClickOutside(dropdownRef, () => {
