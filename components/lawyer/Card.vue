@@ -7,6 +7,9 @@ import type { Lawyer } from '~/types/lawyer'
 import LawyerCallModal from './CallModal.vue'
 import LawyerContactModal from './ContactModal.vue'
 import AuthModal from '~/components/auth/Modal.vue'
+import { useExperienceLevels } from '~/composables/useExperienceLevels'
+
+const { getExperienceLevelColor } = useExperienceLevels()
 
 const props = withDefaults(
   defineProps<{

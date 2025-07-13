@@ -10,6 +10,7 @@ import { CheckCircle } from 'lucide-vue-next'
 import { formatDate } from '~/utils/date'
 import ReviewActions from '~/components/review/Actions.vue'
 import type { LawyerReview } from '~/types/review'
+import { useExperienceLevels } from '~/composables/useExperienceLevels'
 
 const { setCurrentLawyer } = useNavigation()
 const { profile, isLoading, error, fetchProfile } = useLawyerProfile()
@@ -29,6 +30,22 @@ const { isAuthenticated } = useAuth()
 const showReviewModal = ref(false)
 const showAuthModal = ref(false)
 const reviewToEdit = ref<LawyerReview | undefined>(undefined) // For editing reviews
+
+const {
+  getExperienceLevelName,
+  getExperienceLevelColor,
+  getExperienceLevelTextColor,
+} = useExperienceLevels()
+
+// Sort areas by experience level (highest first)
+const sortedAreas = computed(() => {
+  if (!profile.value) return []
+
+  return [...profile.value.areas].sort((a, b) => {
+    return b.experienceScore - a.experienceScore
+  })
+})
+
 
 const {
   education,
@@ -222,39 +239,43 @@ onMounted(async () => {
 
           <!-- Practice Areas Section with Graph -->
           <div>
-            <h3 class="text-lg font-semibold mb-6">Áreas de Práctica</h3>
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <h3 class="text-lg font-semibold mb-4">Áreas de Práctica</h3>
+
+            <!-- Simple list layout with clear text -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
               <!-- Areas List -->
-              <div class="lg:col-span-8">
-                <div class="space-y-4">
+              <div class="lg:col-span-3">
+                <div class="space-y-3">
                   <div
-                    v-for="area in profile.areas"
+                    v-for="area in sortedAreas"
                     :key="area.id"
-                    class="flex items-center justify-between"
+                    class="flex items-center justify-between p-4 bg-white border rounded-lg hover:shadow-sm transition-shadow"
                   >
-                    <div class="flex-1">
-                      <div class="flex justify-between mb-1">
-                        <span class="text-gray-700 font-medium">{{ area.name }}</span>
-                        <span class="text-gray-500">{{ area.experienceScore }}%</span>
-                      </div>
-                      <div class="w-full bg-gray-100 rounded-full h-2">
-                        <div
-                          class="bg-primary-500 h-2 rounded-full transition-all duration-500"
-                          :style="{ width: `${area.experienceScore}%` }"
-                        ></div>
-                      </div>
+                    <div>
+                      <h4 class="font-semibold text-gray-900">{{ area.name }}</h4>
+                      <p
+                        class="text-sm font-medium"
+                        :class="getExperienceLevelTextColor(area.experienceScore)"
+                      >
+                        {{ getExperienceLevelName(area.experienceScore) }}
+                      </p>
                     </div>
+                    <!-- Experience indicator dot -->
+                    <div
+                      class="w-4 h-4 rounded-full"
+                      :class="getExperienceLevelColor(area.experienceScore)"
+                    ></div>
                   </div>
                 </div>
               </div>
 
-              <!-- Stats Circle -->
-              <div class="lg:col-span-4">
-                <div class="bg-gray-50 rounded-lg p-6 text-center">
-                  <div class="text-4xl font-bold text-primary-600 mb-2">
+              <!-- Stats Summary -->
+              <div class="lg:col-span-1">
+                <div class="bg-primary-50 rounded-lg p-4 text-center">
+                  <div class="text-2xl font-bold text-primary-600">
                     {{ profile.areas.length }}
                   </div>
-                  <p class="text-gray-600">Áreas de Práctica</p>
+                  <p class="text-sm text-gray-600">Áreas</p>
                 </div>
               </div>
             </div>
