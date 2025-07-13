@@ -112,7 +112,7 @@
     <div class="border-t border-gray-200 bg-white">
       <div class="max-w-7xl mx-auto px-4 py-12">
         <!-- Stats Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center mb-12">
+        <!-- <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center mb-12">
           <div>
             <p class="text-3xl font-bold text-gray-900">2,500+</p>
             <p class="text-gray-600 mt-1">Abogados en la Red</p>
@@ -125,10 +125,10 @@
             <p class="text-3xl font-bold text-gray-900">4.8/5</p>
             <p class="text-gray-600 mt-1">Satisfacción Promedio</p>
           </div>
-        </div>
+        </div> -->
 
         <!-- Trust Indicators -->
-        <div class="grid md:grid-cols-3 gap-8 text-center pt-8 border-t border-gray-100">
+        <div class="grid md:grid-cols-3 gap-8 text-center pt-8">
           <div class="flex flex-col items-center">
             <Shield class="w-8 h-8 text-primary-600 mb-4" />
             <h3 class="font-semibold text-gray-900 mb-2">Abogados Verificados</h3>
