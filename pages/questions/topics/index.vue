@@ -105,4 +105,5 @@ onMounted(async () => {
       </div>
     </div>
   </div>
+  <Footer />
 </template>
