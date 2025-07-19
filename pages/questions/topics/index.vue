@@ -92,7 +92,7 @@ onMounted(async () => {
     <!-- Ask Question CTA -->
     <div class="bg-primary-50 border-t">
       <div class="max-w-7xl mx-auto px-4 py-12 text-center">
-        <h2 class="text-2xl font-bold text-gray-900 mb-4">¿No encuentra lo que busca?</h2>
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">¿No encuentras lo que buscas?</h2>
         <p class="text-gray-600 mb-6 max-w-2xl mx-auto">
           Haga su consulta legal y reciba respuestas de abogados expertos de forma gratuita.
         </p>

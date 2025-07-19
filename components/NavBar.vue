@@ -156,6 +156,14 @@
 
             <!-- Guides Menu - Now using the GuidesMenu component -->
             <GuidesMenu />
+
+            <!-- FAQ Link -->
+            <NuxtLink
+              to="/faq"
+              class="text-gray-600 hover:text-primary-700 px-3 py-2 text-sm font-medium transition-colors duration-200"
+            >
+              FAQ
+            </NuxtLink>
           </div>
 
           <div class="flex items-center">
@@ -442,6 +450,24 @@
               </NuxtLink>
             </div>
           </div>
+
+          <!-- FAQ Link -->
+          <NuxtLink
+            to="/faq"
+            class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md"
+            @click="isMobileMenuOpen = false"
+          >
+            Preguntas Frecuentes
+          </NuxtLink>
+
+          <!-- About Link -->
+          <NuxtLink
+            to="/about"
+            class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md"
+            @click="isMobileMenuOpen = false"
+          >
+            Acerca de Nosotros
+          </NuxtLink>
         </div>
       </div>
     </div>
@@ -523,24 +549,15 @@ import { useNavigationMenu } from '~/composables/useNavigationMenu'
 import AuthModal from '~/components/auth/Modal.vue'
 import GuidesMenu from '~/components/guides/Menu.vue'
 import { useUnreadMessages } from '~/composables/useUnreadMessages'
-import { useNotifications } from '~/composables/useNotifications'
-import { useMessaging } from '~/composables/useMessaging'
 import { useConfig } from '~/composables/useConfig'
 import { createLawyerPanelLink } from '~/utils/auth-transfer'
-import type { HTMLElement } from 'node_modules/@types/dom'
 
 const config = useConfig()
 const { unreadCount, hasUnreadMessages } = useUnreadMessages()
 
 const route = useRoute()
 const { currentLawyer } = useNavigation()
-const {
-  areas,
-  categoriesData,
-  groupedAreas,
-  isLoading: isAreasLoading,
-  error: areasError
-} = useLawyerAreas()
+const { areas } = useLawyerAreas()
 
 // Use the new navigation menu
 const {
@@ -560,9 +577,9 @@ const showAuthModal = ref(false)
 const isAreasMenuOpen = ref(false)
 const isUserMenuOpen = ref(false)
 const isLegalTopicsOpen = ref(false)
-const dropdownRef = ref<HTMLElement | null>(null)
-const userMenuRef = ref<HTMLElement | null>(null)
-const legalTopicsRef = ref<HTMLElement | null>(null)
+const dropdownRef = ref<Element | null>(null)
+const userMenuRef = ref<Element | null>(null)
+const legalTopicsRef = ref<Element | null>(null)
 
 // Mobile navigation state
 const isMobileMenuOpen = ref(false)
@@ -604,11 +621,7 @@ const currentTopic = computed(() => {
     }
   }
 
-  // Fallback to topics
-  return (
-    topics.value.find(t => t.slug === route.params.slug) ||
-    topics.value.flatMap(t => t.subtopics || []).find(st => st.slug === route.params.slug)
-  )
+  return null
 })
 
 const bestArea = computed(() =>
@@ -635,7 +648,7 @@ onClickOutside(legalTopicsRef, () => {
 })
 
 // Handle login success
-const handleLogin = (data: any) => {
+const handleLogin = (data: unknown) => {
   console.log('Login successful:', data)
   showAuthModal.value = false
 }
@@ -658,10 +671,12 @@ const toggleMobileMenu = () => {
   }
 
   // Prevent body scrolling when menu is open
-  if (isMobileMenuOpen.value) {
-    document.body.style.overflow = 'hidden'
-  } else {
-    document.body.style.overflow = ''
+  if (import.meta.client) {
+    if (isMobileMenuOpen.value) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
   }
 }
 
@@ -705,13 +720,17 @@ watch(
   () => {
     isMobileMenuOpen.value = false
     mobileSubmenu.value = null
-    document.body.style.overflow = ''
+    if (import.meta.client) {
+      document.body.style.overflow = ''
+    }
   }
 )
 
 // Clean up when component is unmounted
 onUnmounted(() => {
   // Restore body scrolling
-  document.body.style.overflow = ''
+  if (import.meta.client) {
+    document.body.style.overflow = ''
+  }
 })
 </script>
