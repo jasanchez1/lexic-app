@@ -32,11 +32,9 @@ export const useMessageNotifications = () => {
       conversations.forEach(conversation => {
         const lastChecked = lastCheckedTimestamps.value[conversation.id]
         
-        // If we have unread messages and either we've never checked this conversation before
-        // or the last message is newer than our last check
+        // If we have a new message since last check
         if (
-          conversation.unreadCount > 0 && 
-          (!lastChecked || new Date(conversation.lastMessageDate) > new Date(lastChecked))
+          !lastChecked || new Date(conversation.last_message_date) > new Date(lastChecked)
         ) {
           // Show notification for new message
           showNewMessageNotification(conversation)
@@ -52,8 +50,8 @@ export const useMessageNotifications = () => {
   
   // Show notification for a new message
   const showNewMessageNotification = (conversation: Conversation) => {
-    const title = `Nuevo mensaje de ${conversation.lawyer.name}`
-    const messageText = conversation.lastMessage
+    const title = `Nuevo mensaje de ${conversation.other_participant.name}`
+    const messageText = conversation.last_message
     
     // Show notification with action to navigate to messages
     message(

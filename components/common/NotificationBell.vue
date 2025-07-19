@@ -202,14 +202,14 @@ const checkForNewMessages = async () => {
           notifications.value.unshift({
             id: `msg-notification-${Date.now()}`,
             type: 'message',
-            title: `Nuevo mensaje de ${conversation.lawyer.name}`,
-            content: conversation.lastMessage,
-            timestamp: conversation.lastMessageDate,
+            title: `Nuevo mensaje de ${conversation.other_participant.name}`,
+            content: conversation.last_message,
+            timestamp: conversation.last_message_date,
             read: false,
             action: () => router.push(`/messages?conversation=${conversation.id}`),
             data: {
               conversationId: conversation.id,
-              lawyerId: conversation.lawyer.id
+              participantId: conversation.other_participant.id
             }
           })
         }

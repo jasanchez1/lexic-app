@@ -60,26 +60,23 @@
               @click="selectConversation(conversation)"
             >
               <div class="flex items-center">
-                <div v-if="conversation.lawyer.imageURL" class="mr-3">
+                <div v-if="conversation.other_participant.image_url" class="mr-3">
                   <img
-                    :src="conversation.lawyer.imageURL"
-                    :alt="conversation.lawyer.name"
+                    :src="conversation.other_participant.image_url"
+                    :alt="conversation.other_participant.name"
                     class="h-10 w-10 rounded-full object-cover"
                   />
                 </div>
                 <div v-else class="h-10 w-10 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center mr-3">
-                  {{ getInitials(conversation.lawyer.name) }}
+                  {{ getInitials(conversation.other_participant.name) }}
                 </div>
                 <div class="flex-1 min-w-0">
                   <div class="flex justify-between items-baseline">
-                    <p class="font-medium truncate">{{ conversation.lawyer.name }}</p>
-                    <span class="text-xs text-gray-500">{{ formatDate(conversation.lastMessageDate) }}</span>
+                    <p class="font-medium truncate">{{ conversation.other_participant.name }}</p>
+                    <span class="text-xs text-gray-500">{{ formatDate(conversation.last_message_date) }}</span>
                   </div>
                   <p class="text-sm text-gray-500 truncate">
-                    <span v-if="conversation.unreadCount" class="inline-block bg-primary-600 text-white text-xs rounded-full px-1.5 mr-1">
-                      {{ conversation.unreadCount }}
-                    </span>
-                    {{ conversation.lastMessage }}
+                    {{ conversation.last_message }}
                   </p>
                 </div>
               </div>
@@ -101,23 +98,23 @@
             <!-- Conversation Header -->
             <div class="p-4 border-b flex items-center justify-between">
               <div class="flex items-center">
-                <div v-if="selectedConversation.lawyer.imageURL" class="mr-3">
+                <div v-if="selectedConversation.other_participant.image_url" class="mr-3">
                   <img
-                    :src="selectedConversation.lawyer.imageURL"
-                    :alt="selectedConversation.lawyer.name"
+                    :src="selectedConversation.other_participant.image_url"
+                    :alt="selectedConversation.other_participant.name"
                     class="h-10 w-10 rounded-full object-cover"
                   />
                 </div>
                 <div v-else class="h-10 w-10 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center mr-3">
-                  {{ getInitials(selectedConversation.lawyer.name) }}
+                  {{ getInitials(selectedConversation.other_participant.name) }}
                 </div>
                 <div>
-                  <h3 class="font-medium">{{ selectedConversation.lawyer.name }}</h3>
-                  <p class="text-xs text-gray-500">{{ selectedConversation.lawyer.title }}</p>
+                  <h3 class="font-medium">{{ selectedConversation.other_participant.name }}</h3>
+                  <p class="text-xs text-gray-500">{{ selectedConversation.other_participant.title }}</p>
                 </div>
               </div>
               <NuxtLink 
-                :to="`/lawyers/${selectedConversation.lawyer.id}`" 
+                :to="`/lawyers/${selectedConversation.other_participant.id}`" 
                 class="text-primary-600 text-sm hover:text-primary-800"
               >
                 Ver Perfil
@@ -150,7 +147,7 @@
                   <div 
                     class="max-w-[75%] rounded-lg p-3 mb-1"
                     :class="[
-                      isMessageFromCurrentUser(message) ? 
+                      message.is_from_me ? 
                         'bg-primary-100 self-end' : 
                         'bg-white border border-gray-200 self-start'
                     ]"
@@ -161,7 +158,7 @@
                   <!-- Timestamp -->
                   <div 
                     class="text-xs text-gray-500 mb-2"
-                    :class="[isMessageFromCurrentUser(message) ? 'self-end' : 'self-start']"
+                    :class="[message.is_from_me ? 'self-end' : 'self-start']"
                   >
                     {{ formatMessageTime(message.timestamp) }}
                   </div>
@@ -199,14 +196,13 @@
 import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { MessageCircle } from 'lucide-vue-next'
 import { useAuth } from '~/composables/useAuth'
-import { useMessaging } from '~/composables/useMessaging'
+import { useMessaging, type Message } from '~/composables/useMessaging'
 import { formatDate } from '~/utils/date'
 
 // Auth state
 const { isAuthenticated, authLoading } = useAuth()
 const showAuthModal = ref(false)
 
-// Messaging state
 const { 
   conversations, 
   currentMessages,
@@ -217,69 +213,54 @@ const {
   fetchMessages,
   sendNewMessage,
   markConversationAsRead,
-  isMessageFromCurrentUser,
-  isMessageFromLawyer
+  getUnreadCount
 } = useMessaging()
 
 const selectedConversation = ref(null)
 const newMessage = ref('')
 const messagesContainer = ref(null)
 
-// Select a conversation
 const selectConversation = async (conversation) => {
   selectedConversation.value = conversation
   
-  // Clear new message when changing conversations
   newMessage.value = ''
   
-  // Fetch messages for the selected conversation
   if (conversation) {
     await fetchMessages(conversation.id)
+    await markConversationAsRead(conversation.id)
     
-    // Mark conversation as read
-    if (conversation.unreadCount) {
-      await markConversationAsRead(conversation.id)
-      // Update local state to reflect read status
-      conversation.unreadCount = 0
-    }
-    
-    // Scroll to bottom after messages load
     await nextTick()
     scrollToBottom()
   }
 }
 
-// Send a new message
 const sendMessage = async () => {
   if (!newMessage.value.trim() || !selectedConversation.value) return
   
   await sendNewMessage(selectedConversation.value.id, newMessage.value)
   newMessage.value = ''
   
-  // Scroll to bottom after sending
   await nextTick()
   scrollToBottom()
 }
 
-// Helper to scroll messages container to bottom
 const scrollToBottom = () => {
   if (messagesContainer.value) {
     messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
   }
 }
 
-// Get initials from a name
-const getInitials = (name) => {
+const getInitials = (name: string) => {
   return name
     .split(' ')
-    .map(n => n[0])
+    .map((n: string) => n[0])
     .join('')
     .substr(0, 2)
     .toUpperCase()
 }
 
 // Format message date for display
-const formatMessageDate = (timestamp) => {
+const formatMessageDate = (timestamp: string) => {
   const date = new Date(timestamp)
   const today = new Date()
   const yesterday = new Date(today)
@@ -299,13 +280,13 @@ const formatMessageDate = (timestamp) => {
 }
 
 // Format message time for display
-const formatMessageTime = (timestamp) => {
+const formatMessageTime = (timestamp: string) => {
   const date = new Date(timestamp)
   return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
 }
 
 // Determine if we should show a date separator
-const shouldShowDateSeparator = (currentMessage, previousMessage) => {
+const shouldShowDateSeparator = (currentMessage: Message, previousMessage: Message) => {
   const currentDate = new Date(currentMessage.timestamp).toDateString()
   const previousDate = new Date(previousMessage.timestamp).toDateString()
   return currentDate !== previousDate
@@ -326,7 +307,7 @@ watch(currentMessages, () => {
 })
 
 // Handle opening conversation from URL parameter or notification
-const handleOpenConversation = (conversationId) => {
+const handleOpenConversation = (conversationId: string) => {
   const conversation = conversations.value.find(c => c.id === conversationId)
   if (conversation) {
     selectConversation(conversation)
@@ -353,9 +334,9 @@ onMounted(async () => {
     }
     
     // Listen for the global event
-    if (process.client) {
-      window.addEventListener('open-conversation', (event) => {
-        const { conversationId } = event.detail
+    if (typeof window !== 'undefined') {
+      window.addEventListener('open-conversation', (event: Event) => {
+        const { conversationId } = (event as CustomEvent).detail
         handleOpenConversation(conversationId)
       })
     }
@@ -364,7 +345,7 @@ onMounted(async () => {
 
 // Remove event listener on unmount
 onUnmounted(() => {
-  if (process.client) {
+  if (typeof window !== 'undefined') {
     window.removeEventListener('open-conversation', () => {})
   }
 })

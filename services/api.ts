@@ -659,13 +659,13 @@ export const useMessagingService = () => {
     // Get all conversations for the current user
     getConversations: async (): Promise<Conversation[]> => {
       const response = await api.get('/conversations')
-      return response.map((conversation: any) => mapApiResponseToModel<Conversation>(conversation))
+      return response
     },
 
     // Get messages for a specific conversation
     getMessages: async (conversationId: string): Promise<Message[]> => {
       const response = await api.get(`/conversations/${conversationId}/messages`)
-      return response.map((message: any) => mapApiResponseToModel<Message>(message))
+      return response
     },
 
     // Send a new message to a conversation
@@ -673,9 +673,8 @@ export const useMessagingService = () => {
       conversationId: string,
       data: { content: string; user_id?: string }
     ): Promise<Message> => {
-      const apiData = mapModelToApiRequest(data)
-      const response = await api.post(`/conversations/${conversationId}/messages`, apiData)
-      return mapApiResponseToModel<Message>(response)
+      const response = await api.post(`/conversations/${conversationId}/messages`, data)
+      return response
     },
 
     // Mark a conversation as read
@@ -688,12 +687,12 @@ export const useMessagingService = () => {
       const response = await api.post(`/conversations/lawyers/${lawyerId}/messages`, {
         content: initialMessage
       })
-      return mapApiResponseToModel<Conversation>(response)
+      return response
     },
 
     // Send a message to a lawyer (creates a conversation if doesn't exist)
     send: async (lawyerId: string, data: any): Promise<any> => {
-      const response = await api.post(`/lawyers/${lawyerId}/messages`, mapModelToApiRequest(data))
+      const response = await api.post(`/lawyers/${lawyerId}/messages`, data)
       return response
     },
 

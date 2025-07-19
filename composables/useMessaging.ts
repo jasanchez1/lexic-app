@@ -3,38 +3,28 @@ import { useMessagingService } from '~/services/api'
 import { useAuth } from '~/composables/useAuth'
 import type { Message } from '~/types/message'
 
-// Types for the messaging feature
-export interface MessageAuthor {
+export interface ParticipantData {
   id: string
   name: string
   title?: string
-  imageURL?: string
+  image_url?: string
 }
 
 export interface Message {
   id: string
-  conversationId: string
+  conversation_id: string
+  sender_id: string
   content: string
-  timestamp: string
-  fromLawyer: boolean  // Keep for backward compatibility during transition
-  userIdFrom: string   // NEW: ID of message sender
-  userIdTo: string     // NEW: ID of message recipient
+  is_from_me: boolean
   read: boolean
-  created_at?: string  // API field mapping
-  updated_at?: string  // API field mapping
+  timestamp: string
 }
 
 export interface Conversation {
   id: string
-  lawyer: {
-    id: string
-    name: string
-    title: string
-    imageURL?: string
-  }
-  lastMessage: string
-  lastMessageDate: string
-  unreadCount: number
+  other_participant: ParticipantData
+  last_message: string
+  last_message_date: string
 }
 
 export const useMessaging = () => {
@@ -70,7 +60,6 @@ export const useMessaging = () => {
     }
   }
   
-  // Fetch messages for a specific conversation
   const fetchMessages = async (conversationId: string) => {
     if (!isAuthenticated.value) {
       return []
@@ -92,7 +81,6 @@ export const useMessaging = () => {
     }
   }
   
-  // Send a new message in a conversation
   const sendNewMessage = async (conversationId: string, content: string) => {
     if (!isAuthenticated.value || !content.trim()) {
       return null
@@ -106,23 +94,20 @@ export const useMessaging = () => {
         user_id: user.value?.id
       })
       
-      // Optimistically add the message to the current messages
       currentMessages.value.push({
         id: response.id,
-        conversationId,
+        conversation_id: conversationId,
+        sender_id: user.value?.id || '',
         content,
-        timestamp: new Date().toISOString(),
-        fromLawyer: false,  // Keep for backward compatibility
-        userIdFrom: user.value?.id || '',  // Current user is sender
-        userIdTo: '', // Will be set by backend based on conversation
-        read: true
+        is_from_me: true,
+        read: true,
+        timestamp: new Date().toISOString()
       })
       
-      // Update conversation's last message in the list
       const conversationIndex = conversations.value.findIndex(c => c.id === conversationId)
       if (conversationIndex !== -1) {
-        conversations.value[conversationIndex].lastMessage = content
-        conversations.value[conversationIndex].lastMessageDate = new Date().toISOString()
+        conversations.value[conversationIndex].last_message = content
+        conversations.value[conversationIndex].last_message_date = new Date().toISOString()
       }
       
       return response
@@ -133,7 +118,6 @@ export const useMessaging = () => {
     }
   }
   
-  // Mark a conversation as read
   const markConversationAsRead = async (conversationId: string) => {
     if (!isAuthenticated.value) {
       return false
@@ -142,13 +126,6 @@ export const useMessaging = () => {
     try {
       await messagingService.markAsRead(conversationId)
       
-      // Update conversation in local state
-      const conversationIndex = conversations.value.findIndex(c => c.id === conversationId)
-      if (conversationIndex !== -1) {
-        conversations.value[conversationIndex].unreadCount = 0
-      }
-      
-      // Mark all messages as read
       currentMessages.value = currentMessages.value.map((message: Message) => ({
         ...message,
         read: true
@@ -162,7 +139,6 @@ export const useMessaging = () => {
     }
   }
   
-  // Get total unread message count
   const getUnreadCount = async () => {
     if (!isAuthenticated.value) {
       return 0
@@ -175,27 +151,6 @@ export const useMessaging = () => {
       return 0
     }
   }
-  
-  // Helper function to check if message is from current user
-  const isMessageFromCurrentUser = (message: Message): boolean => {
-    // Prefer new explicit user IDs
-    if (message.userIdFrom) {
-      return message.userIdFrom === user.value?.id
-    }
-    // Fallback to old fromLawyer logic for backward compatibility
-    return !message.fromLawyer
-  }
-
-  // Helper function to check if message is from lawyer
-  const isMessageFromLawyer = (message: Message): boolean => {
-    // If we have userIdFrom and conversation context, we can be more explicit
-    if (message.userIdFrom) {
-      // This would need conversation context to determine if userIdFrom is a lawyer
-      // For now, fallback to fromLawyer
-      return message.fromLawyer
-    }
-    return message.fromLawyer
-  }
 
   return {
     conversations,
@@ -207,8 +162,6 @@ export const useMessaging = () => {
     fetchMessages,
     sendNewMessage,
     markConversationAsRead,
-    getUnreadCount,
-    isMessageFromCurrentUser,
-    isMessageFromLawyer
+    getUnreadCount
   }
 }
