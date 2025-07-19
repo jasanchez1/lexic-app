@@ -150,9 +150,9 @@
                   <div 
                     class="max-w-[75%] rounded-lg p-3 mb-1"
                     :class="[
-                      message.fromLawyer ? 
-                        'bg-white border border-gray-200 self-start' : 
-                        'bg-primary-100 self-end'
+                      isMessageFromCurrentUser(message) ? 
+                        'bg-primary-100 self-end' : 
+                        'bg-white border border-gray-200 self-start'
                     ]"
                   >
                     {{ message.content }}
@@ -161,7 +161,7 @@
                   <!-- Timestamp -->
                   <div 
                     class="text-xs text-gray-500 mb-2"
-                    :class="[message.fromLawyer ? 'self-start' : 'self-end']"
+                    :class="[isMessageFromCurrentUser(message) ? 'self-end' : 'self-start']"
                   >
                     {{ formatMessageTime(message.timestamp) }}
                   </div>
@@ -216,7 +216,9 @@ const {
   fetchConversations,
   fetchMessages,
   sendNewMessage,
-  markConversationAsRead
+  markConversationAsRead,
+  isMessageFromCurrentUser,
+  isMessageFromLawyer
 } = useMessaging()
 
 const selectedConversation = ref(null)

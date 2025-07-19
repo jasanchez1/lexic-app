@@ -16,8 +16,12 @@ export interface Message {
   conversationId: string
   content: string
   timestamp: string
-  fromLawyer: boolean
+  fromLawyer: boolean  // Keep for backward compatibility during transition
+  userIdFrom: string   // NEW: ID of message sender
+  userIdTo: string     // NEW: ID of message recipient
   read: boolean
+  created_at?: string  // API field mapping
+  updated_at?: string  // API field mapping
 }
 
 export interface Conversation {
@@ -108,7 +112,9 @@ export const useMessaging = () => {
         conversationId,
         content,
         timestamp: new Date().toISOString(),
-        fromLawyer: false,
+        fromLawyer: false,  // Keep for backward compatibility
+        userIdFrom: user.value?.id || '',  // Current user is sender
+        userIdTo: '', // Will be set by backend based on conversation
         read: true
       })
       
@@ -143,15 +149,15 @@ export const useMessaging = () => {
       }
       
       // Mark all messages as read
-      currentMessages.value = currentMessages.value.map(message => ({
+      currentMessages.value = currentMessages.value.map((message: Message) => ({
         ...message,
         read: true
       }))
       
       return true
-    } catch (error) {
-      console.error(`Error marking conversation ${conversationId} as read:`, error)
-      error.value = error instanceof Error ? error.message : 'Error al marcar la conversación como leída'
+    } catch (e) {
+      console.error(`Error marking conversation ${conversationId} as read:`, e)
+      error.value = e instanceof Error ? e.message : 'Error al marcar la conversación como leída'
       return false
     }
   }
@@ -170,6 +176,27 @@ export const useMessaging = () => {
     }
   }
   
+  // Helper function to check if message is from current user
+  const isMessageFromCurrentUser = (message: Message): boolean => {
+    // Prefer new explicit user IDs
+    if (message.userIdFrom) {
+      return message.userIdFrom === user.value?.id
+    }
+    // Fallback to old fromLawyer logic for backward compatibility
+    return !message.fromLawyer
+  }
+
+  // Helper function to check if message is from lawyer
+  const isMessageFromLawyer = (message: Message): boolean => {
+    // If we have userIdFrom and conversation context, we can be more explicit
+    if (message.userIdFrom) {
+      // This would need conversation context to determine if userIdFrom is a lawyer
+      // For now, fallback to fromLawyer
+      return message.fromLawyer
+    }
+    return message.fromLawyer
+  }
+
   return {
     conversations,
     currentMessages,
@@ -180,6 +207,8 @@ export const useMessaging = () => {
     fetchMessages,
     sendNewMessage,
     markConversationAsRead,
-    getUnreadCount
+    getUnreadCount,
+    isMessageFromCurrentUser,
+    isMessageFromLawyer
   }
 }
