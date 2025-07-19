@@ -8,14 +8,14 @@
 
       <div class="bg-white rounded-lg shadow-lg p-8">
         <div class="prose max-w-none">
-          <div class="bg-green-50 border border-green-200 rounded-lg p-6 mb-8">
-            <p class="text-green-800 font-medium mb-4">
+          <div class="bg-primary-50 border border-primary-200 rounded-lg p-6 mb-8">
+            <p class="text-primary-800 font-medium mb-4">
               Nuestra política de privacidad completa está disponible en el documento oficial actualizado.
             </p>
             <a 
-              href="/docs/Politica_Privacidad_Lexic 16.06.2025.docx" 
+              href="/Politica_Privacidad_Lexic 16.06.2025.docx" 
               download
-              class="inline-flex items-center bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200"
+              class="inline-flex items-center bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200"
             >
               <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -80,14 +80,14 @@
 
             <section>
               <h2 class="text-2xl font-bold text-gray-900 mb-4">Consentimiento para Tratamiento de Datos</h2>
-              <div class="bg-purple-50 border border-purple-200 rounded-lg p-6">
-                <p class="text-purple-800 font-medium mb-4">
+              <div class="bg-primary-50 border border-primary-200 rounded-lg p-6">
+                <p class="text-primary-800 font-medium mb-4">
                   Para obtener información detallada sobre el consentimiento para el tratamiento de datos personales, consulte nuestro documento específico:
                 </p>
                 <a 
-                  href="/docs/Consentimiento_Tratamiento_Datos.docx" 
+                  href="/Consentimiento_Tratamiento_Datos.docx" 
                   download
-                  class="inline-flex items-center bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200"
+                  class="inline-flex items-center bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200"
                 >
                   <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>

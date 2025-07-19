@@ -8,14 +8,14 @@
 
       <div class="bg-white rounded-lg shadow-lg p-8">
         <div class="prose max-w-none">
-          <div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
-            <p class="text-red-800 font-medium mb-4">
+          <div class="bg-primary-50 border border-primary-200 rounded-lg p-6 mb-8">
+            <p class="text-primary-800 font-medium mb-4">
               Las políticas completas de prevención de abuso y mal uso están disponibles en el documento oficial.
             </p>
             <a 
-              href="/docs/Lexic_Politicas_Antiabuso_Mal Uso 24.06.2025.docx" 
+              href="/Lexic_Politicas_Antiabuso_Mal Uso 24.06.2025.docx" 
               download
-              class="inline-flex items-center bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200"
+              class="inline-flex items-center bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200"
             >
               <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -42,9 +42,9 @@
 
             <section>
               <h2 class="text-2xl font-bold text-gray-900 mb-4">Uso Apropiado de la Plataforma</h2>
-              <div class="bg-green-50 rounded-lg p-6">
-                <h3 class="text-lg font-semibold text-green-900 mb-3">Prácticas Recomendadas</h3>
-                <ul class="list-disc list-inside text-green-800 space-y-2">
+              <div class="bg-primary-50 rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-primary-900 mb-3">Prácticas Recomendadas</h3>
+                <ul class="list-disc list-inside text-primary-800 space-y-2">
                   <li>Mantener comunicaciones profesionales y respetuosas</li>
                   <li>Proporcionar información precisa en las consultas</li>
                   <li>Respetar los términos de servicio de los abogados</li>
@@ -84,9 +84,9 @@
 
             <section>
               <h2 class="text-2xl font-bold text-gray-900 mb-4">Protección de Menores</h2>
-              <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-                <h3 class="text-lg font-semibold text-yellow-900 mb-3">Protección Especial</h3>
-                <p class="text-yellow-800">
+              <div class="bg-primary-50 border border-primary-200 rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-primary-900 mb-3">Protección Especial</h3>
+                <p class="text-primary-800">
                   Tenemos políticas especiales para la protección de menores de edad. Cualquier contenido o comportamiento que pueda poner en riesgo a menores será tratado con la máxima severidad y reportado a las autoridades correspondientes.
                 </p>
               </div>

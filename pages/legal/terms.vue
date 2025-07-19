@@ -13,7 +13,7 @@
               Los términos y condiciones completos están disponibles en el documento oficial actualizado.
             </p>
             <a 
-              href="/docs/Lexic TyC_24.06.2025.docx" 
+              href="/Lexic TyC_24.06.2025.docx" 
               download
               class="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200"
             >
@@ -56,12 +56,12 @@
               </p>
             </section>
 
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mt-8">
-              <h3 class="text-lg font-semibold text-yellow-800 mb-3">Documento Completo</h3>
-              <p class="text-yellow-700 mb-4">
+            <div class="bg-primary-50 border border-primary-200 rounded-lg p-6 mt-8">
+              <h3 class="text-lg font-semibold text-primary-800 mb-3">Documento Completo</h3>
+              <p class="text-primary-700 mb-4">
                 Este es un resumen de los términos y condiciones. Para consultar el documento completo y actualizado, por favor descargue el archivo oficial.
               </p>
-              <p class="text-sm text-yellow-600">
+              <p class="text-sm text-primary-600">
                 Última actualización: Junio 24, 2025
               </p>
             </div>

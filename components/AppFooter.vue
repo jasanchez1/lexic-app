@@ -64,12 +64,12 @@
               </NuxtLink>
             </li>
             <li>
-              <a href="/docs/Consentimiento_Tratamiento_Datos.docx" download class="text-gray-300 hover:text-white transition-colors duration-200">
+              <a href="/Consentimiento_Tratamiento_Datos.docx" download class="text-gray-300 hover:text-white transition-colors duration-200">
                 Consentimiento de Datos
               </a>
             </li>
             <li>
-              <a href="/docs/Lista_Chequeo_Legal_Lexic.docx" download class="text-gray-300 hover:text-white transition-colors duration-200">
+              <a href="/Lista_Chequeo_Legal_Lexic.docx" download class="text-gray-300 hover:text-white transition-colors duration-200">
                 Lista de Chequeo Legal
               </a>
             </li>

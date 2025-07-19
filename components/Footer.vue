@@ -25,7 +25,7 @@
             <li style="margin-bottom: 8px;"><NuxtLink to="/legal/terms" style="color: #6b7280; text-decoration: none;">Términos y Condiciones</NuxtLink></li>
             <li style="margin-bottom: 8px;"><NuxtLink to="/legal/privacy" style="color: #6b7280; text-decoration: none;">Política de Privacidad</NuxtLink></li>
             <li style="margin-bottom: 8px;"><NuxtLink to="/legal/abuse-policy" style="color: #6b7280; text-decoration: none;">Políticas Anti-abuso</NuxtLink></li>
-            <li style="margin-bottom: 8px;"><a href="/docs/Consentimiento_Tratamiento_Datos.docx" download style="color: #6b7280; text-decoration: none;">Consentimiento de Datos</a></li>
+            <li style="margin-bottom: 8px;"><a href="/Consentimiento_Tratamiento_Datos.docx" download style="color: #6b7280; text-decoration: none;">Consentimiento de Datos</a></li>
           </ul>
         </div>
       </div>
