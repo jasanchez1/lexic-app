@@ -2,100 +2,153 @@
   <div class="min-h-screen bg-gray-50">
     <div class="max-w-4xl mx-auto px-4 py-12">
       <div class="text-center mb-12">
-        <h1 class="text-4xl font-bold text-gray-900 mb-4">Preguntas Frecuentes</h1>
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">Preguntas Frecuentes (FAQ) - Lexic</h1>
         <p class="text-xl text-gray-600">Encuentra respuestas a las preguntas más comunes sobre Lexic</p>
       </div>
 
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <!-- FAQ Items -->
+      <!-- Para personas que buscan abogados -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-8">
+        <div class="bg-gray-100 p-6 border-b border-gray-200">
+          <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+            <span class="text-2xl mr-3">👤</span>
+            Para personas que buscan abogados
+          </h2>
+        </div>
         <div class="divide-y divide-gray-200">
           <div class="p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-start">
-              <span class="flex-shrink-0 w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-0.5">1</span>
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">
               ¿Qué es Lexic?
             </h3>
-            <p class="text-gray-700 leading-relaxed ml-11">
-              Lexic es una plataforma digital innovadora que conecta usuarios con abogados especializados y verificados. Facilitamos el acceso a asesoría legal de calidad, haciendo que la justicia sea más accesible para todos los ciudadanos.
+            <p class="text-gray-700 leading-relaxed">
+              Lexic es una plataforma que conecta a personas con abogados independientes o estudios pequeños, de manera rápida y directa, según el área legal que necesiten.
             </p>
           </div>
 
           <div class="p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-start">
-              <span class="flex-shrink-0 w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-0.5">2</span>
-              ¿Cómo funciona el servicio?
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">
+              ¿Cómo encuentro un abogado en Lexic?
             </h3>
-            <p class="text-gray-700 leading-relaxed ml-11">
-              El proceso es simple: los usuarios pueden publicar preguntas legales especificando su área de interés, buscar abogados por especialización y ubicación, y recibir asesoría personalizada directamente a través de nuestra plataforma segura. Todo el proceso es transparente y está diseñado para ser eficiente.
+            <p class="text-gray-700 leading-relaxed">
+              Solo debes ingresar al portal y usar nuestro buscador por especialidad jurídica. Puedes filtrar por región, tipo de servicio, o directamente por el nombre del profesional si lo conoces.
             </p>
           </div>
 
           <div class="p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-start">
-              <span class="flex-shrink-0 w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-0.5">3</span>
-              ¿Es seguro usar Lexic?
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">
+              ¿Cuánto cuesta usar Lexic?
             </h3>
-            <p class="text-gray-700 leading-relaxed ml-11">
-              Absolutamente. Todos nuestros abogados pasan por un riguroso proceso de verificación que incluye validación de licencias profesionales y antecedentes. Además, cumplimos con estrictas políticas de privacidad y protección de datos, utilizando encriptación de extremo a extremo para todas las comunicaciones.
+            <p class="text-gray-700 leading-relaxed">
+              Usar Lexic es completamente gratuito para los usuarios que buscan abogados. No cobramos por acceder a la plataforma ni por contactar a un profesional.
             </p>
           </div>
 
           <div class="p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-start">
-              <span class="flex-shrink-0 w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-0.5">4</span>
-              ¿Cuáles son los costos?
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">
+              ¿Quién fija los honorarios del abogado?
             </h3>
-            <p class="text-gray-700 leading-relaxed ml-11">
-              Los costos varían según el tipo de consulta, la complejidad del caso y el abogado elegido. Cada profesional establece sus propias tarifas, que son transparentes y se muestran claramente desde el inicio. Ofrecemos opciones para todos los presupuestos, desde consultas rápidas hasta asesorías completas.
+            <p class="text-gray-700 leading-relaxed">
+              Cada abogado define libremente sus tarifas, las cuales pueden variar según la complejidad del caso, el tipo de servicio y su experiencia profesional.
             </p>
           </div>
 
           <div class="p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-start">
-              <span class="flex-shrink-0 w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-0.5">5</span>
-              ¿En qué áreas del derecho pueden ayudarme?
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">
+              ¿Cómo se realiza el contacto con el abogado?
             </h3>
-            <p class="text-gray-700 leading-relaxed ml-11">
-              Tenemos abogados especializados en todas las principales áreas del derecho: civil, penal, laboral, familiar, comercial, tributario, administrativo, inmobiliario, y más. Cada abogado especifica claramente sus áreas de especialización para que puedas encontrar el experto adecuado para tu caso.
+            <p class="text-gray-700 leading-relaxed">
+              Puedes iniciar una conversación a través del chat interno de Lexic o acordar otro medio de comunicación directamente con el profesional (teléfono, email, videollamada, etc.).
             </p>
           </div>
 
           <div class="p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-start">
-              <span class="flex-shrink-0 w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-0.5">6</span>
-              ¿Qué debo preparar antes de una consulta?
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">
+              ¿Lexic verifica a los abogados que aparecen en la plataforma?
             </h3>
-            <p class="text-gray-700 leading-relaxed ml-11">
-              Para maximizar el valor de tu consulta, te recomendamos tener listos todos los documentos relevantes, una descripción clara del problema, fechas importantes, y cualquier comunicación previa relacionada con tu caso. También puedes consultar nuestra lista de chequeo legal para prepararte mejor.
+            <p class="text-gray-700 leading-relaxed">
+              Sí. Todos los abogados deben acreditar su título profesional y antecedentes básicos antes de ser habilitados en la plataforma.
             </p>
           </div>
 
           <div class="p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-start">
-              <span class="flex-shrink-0 w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-0.5">7</span>
-              ¿Cómo se garantiza la confidencialidad?
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">
+              ¿Están protegidos mis datos y la información que comparto?
             </h3>
-            <p class="text-gray-700 leading-relaxed ml-11">
-              La confidencialidad es fundamental en nuestro servicio. Todos los abogados están sujetos al secreto profesional y hemos implementado medidas técnicas y organizativas para proteger tu información. Todas las comunicaciones se realizan a través de canales seguros y encriptados.
+            <p class="text-gray-700 leading-relaxed">
+              Sí. En Lexic aplicamos políticas de confidencialidad que resguardan tanto tus datos personales como cualquier información que compartas con los abogados registrados.
             </p>
           </div>
 
           <div class="p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-start">
-              <span class="flex-shrink-0 w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-0.5">8</span>
-              ¿Puedo elegir mi abogado?
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">
+              ¿Qué puedo hacer si tengo un problema con un abogado contactado por Lexic?
             </h3>
-            <p class="text-gray-700 leading-relaxed ml-11">
-              Sí, tienes total libertad para elegir el abogado que prefieras. Puedes revisar los perfiles completos, incluyendo especialidades, experiencia, calificaciones de otros usuarios, y tarifas antes de tomar tu decisión. También ofrecemos un sistema de recomendaciones basado en tu tipo de consulta.
+            <p class="text-gray-700 leading-relaxed">
+              Puedes escribirnos a través de nuestro canal de reclamos, disponible en el sitio. Revisaremos tu caso y tomaremos las medidas que correspondan según nuestras políticas de uso.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Para abogados y estudios jurídicos -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="bg-gray-100 p-6 border-b border-gray-200">
+          <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+            <span class="text-2xl mr-3">⚖️</span>
+            Para abogados y estudios jurídicos
+          </h2>
+        </div>
+        <div class="divide-y divide-gray-200">
+          <div class="p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">
+              ¿Quiénes pueden ofrecer servicios en Lexic?
+            </h3>
+            <p class="text-gray-700 leading-relaxed">
+              Abogados titulados en Chile que acrediten su condición profesional, ya sea que trabajen de forma independiente o en estudios jurídicos.
             </p>
           </div>
 
           <div class="p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-start">
-              <span class="flex-shrink-0 w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-0.5">9</span>
-              ¿Qué pasa si no estoy satisfecho con el servicio?
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">
+              ¿Qué tipo de servicios legales puedo ofrecer?
             </h3>
-            <p class="text-gray-700 leading-relaxed ml-11">
-              Tu satisfacción es nuestra prioridad. Tenemos un sistema de calificaciones y reseñas para ayudar a mantener la calidad del servicio. Si no estás satisfecho, puedes contactar a nuestro equipo de soporte y trabajaremos para resolver cualquier problema. También tienes la opción de solicitar una segunda opinión.
+            <p class="text-gray-700 leading-relaxed">
+              Lexic permite ofrecer cualquier tipo de asesoría o representación jurídica, desde redacción de contratos y asesoría en litigios, hasta materias como derecho laboral, familiar, inmobiliario, de aguas, entre otros.
+            </p>
+          </div>
+
+          <div class="p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">
+              ¿Tiene algún costo ofrecer mis servicios en Lexic?
+            </h3>
+            <p class="text-gray-700 leading-relaxed">
+              No. Actualmente, Lexic es gratuito para los abogados que se registran. En el futuro podrían existir servicios premium con costo, pero no hay cobros por el uso básico de la plataforma.
+            </p>
+          </div>
+
+          <div class="p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">
+              ¿Cómo se contactan los clientes conmigo?
+            </h3>
+            <p class="text-gray-700 leading-relaxed">
+              Los usuarios pueden contactarte directamente a través del chat de Lexic, y luego pueden continuar la comunicación por el medio que acuerden mutuamente.
+            </p>
+          </div>
+
+          <div class="p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">
+              ¿Cómo se asegura Lexic de que no haya fraudes o suplantaciones?
+            </h3>
+            <p class="text-gray-700 leading-relaxed">
+              Cada abogado debe pasar por un proceso de validación documental antes de ser publicado en el sitio. Además, nos reservamos el derecho a suspender cuentas si detectamos malas prácticas.
+            </p>
+          </div>
+
+          <div class="p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">
+              ¿Puedo editar mis servicios o tarifas una vez registrado?
+            </h3>
+            <p class="text-gray-700 leading-relaxed">
+              Sí. Puedes actualizar tu perfil, especialidades, tarifas y métodos de contacto en cualquier momento desde tu cuenta.
             </p>
           </div>
 
