@@ -97,15 +97,6 @@
                 Consentimiento de Datos
               </a>
             </li>
-            <li>
-              <a
-                href="/Lista_Chequeo_Legal_Lexic.pdf"
-                download
-                class="text-gray-300 hover:text-white transition-colors duration-200"
-              >
-                Lista de Chequeo Legal
-              </a>
-            </li>
           </ul>
         </div>
       </div>
