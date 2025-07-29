@@ -8,7 +8,8 @@
             <img src="/lexic-logo.png" alt="Lexic" class="h-8 w-auto filter brightness-0 invert" />
           </div>
           <p class="text-gray-300 mb-6 max-w-md">
-            Democratizando el acceso a la asesoría legal de calidad a través de nuestra plataforma digital segura y transparente.
+            Democratizando el acceso a la asesoría legal de calidad a través de nuestra plataforma
+            digital segura y transparente.
           </p>
         </div>
 
@@ -17,27 +18,42 @@
           <h3 class="text-lg font-semibold mb-4">Enlaces Rápidos</h3>
           <ul class="space-y-3">
             <li>
-              <NuxtLink to="/lawyers" class="text-gray-300 hover:text-white transition-colors duration-200">
+              <NuxtLink
+                to="/lawyers"
+                class="text-gray-300 hover:text-white transition-colors duration-200"
+              >
                 Buscar Abogados
               </NuxtLink>
             </li>
             <li>
-              <NuxtLink to="/questions/ask" class="text-gray-300 hover:text-white transition-colors duration-200">
+              <NuxtLink
+                to="/questions/ask"
+                class="text-gray-300 hover:text-white transition-colors duration-200"
+              >
                 Hacer una Pregunta
               </NuxtLink>
             </li>
             <li>
-              <NuxtLink to="/guides" class="text-gray-300 hover:text-white transition-colors duration-200">
+              <NuxtLink
+                to="/guides"
+                class="text-gray-300 hover:text-white transition-colors duration-200"
+              >
                 Guías Legales
               </NuxtLink>
             </li>
             <li>
-              <NuxtLink to="/faq" class="text-gray-300 hover:text-white transition-colors duration-200">
+              <NuxtLink
+                to="/faq"
+                class="text-gray-300 hover:text-white transition-colors duration-200"
+              >
                 Preguntas Frecuentes
               </NuxtLink>
             </li>
             <li>
-              <NuxtLink to="/about" class="text-gray-300 hover:text-white transition-colors duration-200">
+              <NuxtLink
+                to="/about"
+                class="text-gray-300 hover:text-white transition-colors duration-200"
+              >
                 Acerca de Nosotros
               </NuxtLink>
             </li>
@@ -49,27 +65,44 @@
           <h3 class="text-lg font-semibold mb-4">Legal</h3>
           <ul class="space-y-3">
             <li>
-              <NuxtLink to="/legal/terms" class="text-gray-300 hover:text-white transition-colors duration-200">
+              <NuxtLink
+                to="/legal/terms"
+                class="text-gray-300 hover:text-white transition-colors duration-200"
+              >
                 Términos y Condiciones
               </NuxtLink>
             </li>
             <li>
-              <NuxtLink to="/legal/privacy" class="text-gray-300 hover:text-white transition-colors duration-200">
+              <NuxtLink
+                to="/legal/privacy"
+                class="text-gray-300 hover:text-white transition-colors duration-200"
+              >
                 Política de Privacidad
               </NuxtLink>
             </li>
             <li>
-              <NuxtLink to="/legal/abuse-policy" class="text-gray-300 hover:text-white transition-colors duration-200">
+              <NuxtLink
+                to="/legal/abuse-policy"
+                class="text-gray-300 hover:text-white transition-colors duration-200"
+              >
                 Políticas Anti-abuso
               </NuxtLink>
             </li>
             <li>
-              <a href="/Consentimiento_Tratamiento_Datos.docx" download class="text-gray-300 hover:text-white transition-colors duration-200">
+              <a
+                href="/Consentimiento_Tratamiento_Datos.pdf"
+                download
+                class="text-gray-300 hover:text-white transition-colors duration-200"
+              >
                 Consentimiento de Datos
               </a>
             </li>
             <li>
-              <a href="/Lista_Chequeo_Legal_Lexic.docx" download class="text-gray-300 hover:text-white transition-colors duration-200">
+              <a
+                href="/Lista_Chequeo_Legal_Lexic.pdf"
+                download
+                class="text-gray-300 hover:text-white transition-colors duration-200"
+              >
                 Lista de Chequeo Legal
               </a>
             </li>
@@ -84,13 +117,22 @@
             © {{ currentYear }} Lexic. Todos los derechos reservados.
           </p>
           <div class="flex space-x-6 text-sm">
-            <NuxtLink to="/legal/terms" class="text-gray-400 hover:text-white transition-colors duration-200">
+            <NuxtLink
+              to="/legal/terms"
+              class="text-gray-400 hover:text-white transition-colors duration-200"
+            >
               Términos
             </NuxtLink>
-            <NuxtLink to="/legal/privacy" class="text-gray-400 hover:text-white transition-colors duration-200">
+            <NuxtLink
+              to="/legal/privacy"
+              class="text-gray-400 hover:text-white transition-colors duration-200"
+            >
               Privacidad
             </NuxtLink>
-            <NuxtLink to="/faq" class="text-gray-400 hover:text-white transition-colors duration-200">
+            <NuxtLink
+              to="/faq"
+              class="text-gray-400 hover:text-white transition-colors duration-200"
+            >
               FAQ
             </NuxtLink>
           </div>
